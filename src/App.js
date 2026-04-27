@@ -240,8 +240,7 @@ function PipelineDemo({ type, onBack }) {
     <div style={{ minHeight: "100vh", background: C.bg, color: C.txt, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       <div style={{ padding: "12px 24px", borderBottom: `1px solid ${C.bdr}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-          <span style={{ fontSize: 22, fontWeight: 800, background: `linear-gradient(135deg,${tc},${C.accent})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>TP.ai</span>
-          <span style={{ fontSize: 9, letterSpacing: 3, color: C.txt }}>{conf.label.toUpperCase()}</span>
+          <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ height: 28 }} />
         </div>
         <button style={btn(C.txt, true, { padding: "5px 12px", fontSize: 10 })} onClick={onBack}>← All Journeys</button>
       </div>
@@ -491,8 +490,7 @@ export default function App() {
     <div style={{ minHeight: "100vh", background: C.bg, color: C.txt, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       <div style={{ padding: "14px 28px", borderBottom: `1px solid ${C.bdr}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-          <span style={{ fontSize: 26, fontWeight: 800, background: `linear-gradient(135deg,${C.accent},${C.cyan})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>TP.ai</span>
-          <span style={{ fontSize: 10, letterSpacing: 3, color: C.txt }}>SYNTHETIC DATA GENERATION</span>
+          <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ height: 32 }} />
         </div>
         <span style={{ fontSize: 10, color: C.txt, letterSpacing: 1.5 }}>TELEPERFORMANCE</span>
       </div>
