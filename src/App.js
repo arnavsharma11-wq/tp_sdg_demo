@@ -238,11 +238,12 @@ function PipelineDemo({ type, onBack }) {
 
   return (
     <div style={{ minHeight: "100vh", background: C.bg, color: C.txt, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-      <div style={{ padding: "12px 24px", borderBottom: `1px solid ${C.bdr}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-          <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ height: 28 }} />
+      <div>
+        <div style={{ padding: "0 24px", height: 56, background: "hsl(0,0%,5%)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ height: 20, width: "auto", objectFit: "contain" }} />
+          <button style={btn(C.txt, true, { padding: "5px 12px", fontSize: 10 })} onClick={onBack}>← All Journeys</button>
         </div>
-        <button style={btn(C.txt, true, { padding: "5px 12px", fontSize: 10 })} onClick={onBack}>← All Journeys</button>
+        <div style={{ height: 2, background: "linear-gradient(90deg, #5b21b6 0%, #9071f0 100%)" }} />
       </div>
       <div style={{ padding: "10px 24px" }}>
         <Nav stage={stage} setStage={setStage} />
@@ -488,11 +489,12 @@ export default function App() {
 
   return (
     <div style={{ minHeight: "100vh", background: C.bg, color: C.txt, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-      <div style={{ padding: "14px 28px", borderBottom: `1px solid ${C.bdr}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-          <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ height: 32 }} />
+      <div>
+        <div style={{ padding: "0 28px", height: 56, background: "hsl(0,0%,5%)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ height: 20, width: "auto", objectFit: "contain" }} />
+          <img src="/TP-logo.png" alt="TP" style={{ height: 26, width: "auto", objectFit: "contain" }} />
         </div>
-        <img src="/TP-logo.png" alt="TP" style={{ height: 28 }} />
+        <div style={{ height: 2, background: "linear-gradient(90deg, #5b21b6 0%, #9071f0 100%)" }} />
       </div>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 56px)", padding: 32 }}>
         <h1 style={{ fontSize: 50, fontWeight: 800, color: "#fff", textAlign: "center", letterSpacing: -2, lineHeight: 1.08, marginBottom: 10 }}>
