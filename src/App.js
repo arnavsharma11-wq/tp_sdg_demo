@@ -497,9 +497,9 @@ export default function App() {
         <div style={{ height: 2, background: "linear-gradient(90deg, #5b21b6 0%, #9071f0 100%)" }} />
       </div>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 56px)", padding: 32 }}>
-        <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ height: 26, width: "auto", objectFit: "contain", opacity: 0.92, marginBottom: 12 }} />
-        <span style={{ display: "block", fontSize: "1.1rem", fontWeight: 700, letterSpacing: "0.32em", textTransform: "uppercase", color: "rgba(210,195,225,0.5)", marginBottom: "0.55rem", textAlign: "center" }}>Introducing</span>
-        <h1 style={{ fontSize: "clamp(2.4rem, 6.5vw, 5rem)", fontWeight: 900, color: "#fff", lineHeight: 1.04, letterSpacing: "-0.025em", marginBottom: "0.55rem", textShadow: "0 0 40px rgba(144,113,240,0.25), 0 2px 20px rgba(0,0,0,0.5)", textAlign: "center" }}>
+        <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ display: "block", height: 26, width: "auto", objectFit: "contain", margin: "0 auto 0.5rem auto", opacity: 0.92 }} />
+        <span style={{ display: "block", fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "1.1rem", fontWeight: 700, letterSpacing: "0.32em", textTransform: "uppercase", color: "rgba(210,195,225,0.5)", marginBottom: "0.55rem", textAlign: "center" }}>Introducing</span>
+        <h1 style={{ fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "clamp(2.4rem, 6.5vw, 5rem)", fontWeight: 900, color: "#ffffff", lineHeight: 1.04, letterSpacing: "-0.025em", margin: "0 0 0.55rem 0", textShadow: "0 0 40px rgba(144,113,240,0.25), 0 2px 20px rgba(0,0,0,0.5)", textAlign: "center" }}>
           TP.ai <span style={{ color: "#9071f0" }}>Data</span>Gen
         </h1>
         <p style={{ fontSize: 16, color: C.txt, textAlign: "center", maxWidth: 640, lineHeight: 1.6, marginBottom: 12 }}>
