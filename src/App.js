@@ -496,18 +496,23 @@ export default function App() {
         </div>
         <div style={{ height: 2, background: "linear-gradient(90deg, #5b21b6 0%, #9071f0 100%)" }} />
       </div>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 56px)", padding: 32 }}>
-        <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ display: "block", height: 26, width: "auto", objectFit: "contain", margin: "0 auto 0.5rem auto", opacity: 0.92 }} />
-        <span style={{ display: "block", fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "1.1rem", fontWeight: 700, letterSpacing: "0.32em", textTransform: "uppercase", color: "rgba(210,195,225,0.5)", marginBottom: "0.55rem", textAlign: "center" }}>Introducing</span>
-        <h1 style={{ fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "clamp(2.4rem, 6.5vw, 5rem)", fontWeight: 900, color: "#ffffff", lineHeight: 1.04, letterSpacing: "-0.025em", margin: "0 0 0.55rem 0", textShadow: "0 0 40px rgba(144,113,240,0.25), 0 2px 20px rgba(0,0,0,0.5)", textAlign: "center" }}>
+      <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 56px)", padding: 32, overflow: "hidden" }}>
+        {/* GIF background */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "url('/banner.gif')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", opacity: 0.55 }} />
+        {/* Dark overlays matching DataStudio's banner */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(0,0,0,0.93) 0%, transparent 28%), linear-gradient(to left, rgba(0,0,0,0.93) 0%, transparent 28%), linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 35%), linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 35%)" }} />
+        {/* Content */}
+        <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ position: "relative", zIndex: 2, display: "block", height: 26, width: "auto", objectFit: "contain", margin: "0 auto 0.5rem auto", opacity: 0.92 }} />
+        <span style={{ position: "relative", zIndex: 2, display: "block", fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "1.1rem", fontWeight: 700, letterSpacing: "0.32em", textTransform: "uppercase", color: "rgba(210,195,225,0.5)", marginBottom: "0.55rem", textAlign: "center" }}>Introducing</span>
+        <h1 style={{ position: "relative", zIndex: 2, fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "clamp(2.4rem, 6.5vw, 5rem)", fontWeight: 900, color: "#ffffff", lineHeight: 1.04, letterSpacing: "-0.025em", margin: "0 0 0.55rem 0", textShadow: "0 0 40px rgba(144,113,240,0.25), 0 2px 20px rgba(0,0,0,0.5)", textAlign: "center" }}>
           TP.ai <span style={{ color: "#9071f0" }}>Data</span>Gen
         </h1>
-        <p style={{ fontSize: 16, color: C.txt, textAlign: "center", maxWidth: 640, lineHeight: 1.6, marginBottom: 12 }}>
+        <p style={{ position: "relative", zIndex: 2, fontSize: 16, color: C.txt, textAlign: "center", maxWidth: 640, lineHeight: 1.6, marginBottom: 12 }}>
           Synthetic Data Generation &amp; Curation Platform — end-to-end pipelines with human-in-the-loop quality, regulatory compliance, and full provenance across text, image, and video.
         </p>
-        <p style={{ fontSize: 12, color: C.accent, textAlign: "center", marginBottom: 40 }}>Choose a demo journey to experience the full 6-stage pipeline ↓</p>
+        <p style={{ position: "relative", zIndex: 2, fontSize: 12, color: C.accent, textAlign: "center", marginBottom: 40 }}>Choose a demo journey to experience the full 6-stage pipeline ↓</p>
 
-        <div style={{ display: "flex", gap: 18, flexWrap: "wrap", justifyContent: "center", marginBottom: 48 }}>
+        <div style={{ position: "relative", zIndex: 2, display: "flex", gap: 18, flexWrap: "wrap", justifyContent: "center", marginBottom: 48 }}>
           {[
             { k: "warehouse", icon: "🏭", title: "Warehouse Safety", sub: "Image SDG", desc: "Generate synthetic warehouse images with workers, forklifts, safety violations, and edge cases from a single seed photo.", color: C.amber, brief: "Logistics client · 500 annotated images" },
             { k: "driving", icon: "🚗", title: "Self-Driving Car", sub: "Video SDG", desc: "Generate dashcam video clips with pedestrians, rain, night driving, and construction zones for perception training.", color: C.cyan, brief: "AV OEM · 200 video clips · 30fps" },
@@ -526,7 +531,7 @@ export default function App() {
           ))}
         </div>
 
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+        <div style={{ position: "relative", zIndex: 2, display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
           <div style={{ padding: "8px 14px", borderRadius: 6, background: C.red + "10", border: `1px solid ${C.red}22`, fontSize: 10, color: C.red, fontWeight: 600 }}><HT s={7} /> Human-in-the-loop at every stage</div>
           <div style={{ padding: "8px 14px", borderRadius: 6, background: C.green + "10", border: `1px solid ${C.green}22`, fontSize: 10, color: C.green, fontWeight: 600 }}>🔒 GDPR · HIPAA · EU AI Act · SOC 2</div>
           <div style={{ padding: "8px 14px", borderRadius: 6, background: C.accent + "10", border: `1px solid ${C.accent}22`, fontSize: 10, color: C.accent, fontWeight: 600 }}>📋 Full compliance report per delivery</div>
