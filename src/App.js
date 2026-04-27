@@ -202,7 +202,7 @@ function ComplianceReport({ type, onClose }) {
             </div>
           ))}
         </div>
-        <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 6, marginTop: 8, textAlign: "center", fontSize: 8 }}><strong style={{ color: C.hi }}>TP.ai Data Services</strong> · Teleperformance · Confidential</div>
+        <div style={{ borderTop: `1px solid ${C.bdr}`, paddingTop: 6, marginTop: 8, textAlign: "center", fontSize: 8 }}><strong style={{ color: C.hi }}>TP.ai Data Services</strong> · TP · Confidential</div>
       </div>
     </div>
   );
@@ -492,7 +492,7 @@ export default function App() {
         <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
           <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ height: 32 }} />
         </div>
-        <span style={{ fontSize: 10, color: C.txt, letterSpacing: 1.5 }}>TELEPERFORMANCE</span>
+        <span style={{ fontSize: 10, color: C.txt, letterSpacing: 1.5 }}>TP</span>
       </div>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 56px)", padding: 32 }}>
         <h1 style={{ fontSize: 50, fontWeight: 800, color: "#fff", textAlign: "center", letterSpacing: -2, lineHeight: 1.08, marginBottom: 10 }}>
