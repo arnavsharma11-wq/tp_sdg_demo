@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 
 // ===== SHARED STYLES =====
-const C = { bg: "#07090F", card: "#0D1119", bdr: "#171E2E", txt: "#8896AB", hi: "#D6DEE8", accent: "#7C3AED", green: "#10B981", amber: "#F59E0B", red: "#EF4444", cyan: "#06B6D4", orange: "#F97316" };
+const C = { bg: "#131313", card: "#1A1A1A", bdr: "#222222", txt: "#9E9E9E", hi: "#E5E0DB", accent: "#7C3AED", green: "#10B981", amber: "#F59E0B", red: "#EF4444", cyan: "#06B6D4", orange: "#F97316" };
 const btn = (c, o, x = {}) => ({ padding: "10px 22px", borderRadius: 8, border: o ? `1.5px solid ${c}` : "none", background: o ? "transparent" : c, color: o ? c : "#000", fontSize: 13, fontWeight: 700, cursor: "pointer", ...x });
 const cardS = { background: C.card, borderRadius: 12, border: `1px solid ${C.bdr}`, padding: 20 };
 const imgS = { width: "100%", borderRadius: 8, border: `1px solid ${C.bdr}` };
@@ -237,7 +237,7 @@ function PipelineDemo({ type, onBack }) {
   const tc = conf.color;
 
   return (
-    <div style={{ minHeight: "100vh", background: C.bg, color: C.txt, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: C.bg, color: C.txt, fontFamily: "'TP Sans', 'DM Sans', sans-serif" }}>
       <div>
         <div style={{ padding: "0 24px", height: 56, background: "hsl(0,0%,5%)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ height: 20, width: "auto", objectFit: "contain" }} />
@@ -488,7 +488,7 @@ export default function App() {
   if (journey) return <PipelineDemo type={journey} onBack={() => setJourney(null)} />;
 
   return (
-    <div style={{ minHeight: "100vh", background: C.bg, color: C.txt, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: C.bg, color: C.txt, fontFamily: "'TP Sans', 'DM Sans', sans-serif" }}>
       <div>
         <div style={{ padding: "0 28px", height: 56, background: "hsl(0,0%,5%)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ height: 20, width: "auto", objectFit: "contain" }} />
