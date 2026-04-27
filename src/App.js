@@ -498,9 +498,9 @@ export default function App() {
       </div>
       <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 56px)", padding: 32, overflow: "hidden" }}>
         {/* GIF background */}
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "url('/banner.gif')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", opacity: 0.55 }} />
-        {/* Dark overlays matching DataStudio's banner */}
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(0,0,0,0.93) 0%, transparent 28%), linear-gradient(to left, rgba(0,0,0,0.93) 0%, transparent 28%), linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 35%), linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 35%)" }} />
+        <img src="/banner.gif" alt="" aria-hidden="true" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: 0.72, pointerEvents: "none" }} />
+        {/* Dark overlays */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(19,19,19,0.92) 0%, transparent 30%), linear-gradient(to left, rgba(19,19,19,0.92) 0%, transparent 30%), linear-gradient(to bottom, rgba(19,19,19,0.85) 0%, transparent 40%), linear-gradient(to top, rgba(19,19,19,0.95) 0%, transparent 40%)", pointerEvents: "none" }} />
         {/* Content */}
         <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ position: "relative", zIndex: 2, display: "block", height: 26, width: "auto", objectFit: "contain", margin: "0 auto 0.5rem auto", opacity: 0.92 }} />
         <span style={{ position: "relative", zIndex: 2, display: "block", fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "1.1rem", fontWeight: 700, letterSpacing: "0.32em", textTransform: "uppercase", color: "rgba(210,195,225,0.5)", marginBottom: "0.55rem", textAlign: "center" }}>Introducing</span>
