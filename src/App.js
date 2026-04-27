@@ -497,11 +497,13 @@ export default function App() {
         <div style={{ height: 2, background: "linear-gradient(90deg, #5b21b6 0%, #9071f0 100%)" }} />
       </div>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 56px)", padding: 32 }}>
-        <h1 style={{ fontSize: 50, fontWeight: 800, color: "#fff", textAlign: "center", letterSpacing: -2, lineHeight: 1.08, marginBottom: 10 }}>
-          Synthetic Data Generation<br /><span style={{ background: `linear-gradient(135deg,${C.accent},${C.cyan})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>& Curation Platform</span>
+        <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ height: 26, width: "auto", objectFit: "contain", opacity: 0.92, marginBottom: 12 }} />
+        <span style={{ display: "block", fontSize: "1.1rem", fontWeight: 700, letterSpacing: "0.32em", textTransform: "uppercase", color: "rgba(210,195,225,0.5)", marginBottom: "0.55rem", textAlign: "center" }}>Introducing</span>
+        <h1 style={{ fontSize: "clamp(2.4rem, 6.5vw, 5rem)", fontWeight: 900, color: "#fff", lineHeight: 1.04, letterSpacing: "-0.025em", marginBottom: "0.55rem", textShadow: "0 0 40px rgba(144,113,240,0.25), 0 2px 20px rgba(0,0,0,0.5)", textAlign: "center" }}>
+          TP.ai <span style={{ color: "#9071f0" }}>Data</span>Gen
         </h1>
         <p style={{ fontSize: 16, color: C.txt, textAlign: "center", maxWidth: 640, lineHeight: 1.6, marginBottom: 12 }}>
-          End-to-end synthetic data pipelines with human-in-the-loop quality, regulatory compliance, and full provenance — across text, image, and video.
+          Synthetic Data Generation &amp; Curation Platform — end-to-end pipelines with human-in-the-loop quality, regulatory compliance, and full provenance across text, image, and video.
         </p>
         <p style={{ fontSize: 12, color: C.accent, textAlign: "center", marginBottom: 40 }}>Choose a demo journey to experience the full 6-stage pipeline ↓</p>
 
