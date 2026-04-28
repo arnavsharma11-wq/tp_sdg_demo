@@ -1245,18 +1245,18 @@ const CARD_ICONS = { warehouse: <WarehouseIcon />, driving: <DrivingIcon />, sup
 function SyntheticHome({ hov, setHov, setJourney }) {
   return (
     <div style={{ position: "relative", display: "flex", flexDirection: "column", minHeight: "calc(100vh - 58px)" }}>
-      {/* Banner — matches DataStudio's 30vh banner section */}
-      <div style={{ flexShrink: 0, height: "30vh", minHeight: 190, maxHeight: 322, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-        <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "0 2rem" }}>
-          <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ display: "block", height: 26, width: "auto", objectFit: "contain", margin: "0 auto 0.5rem auto", opacity: 0.92 }} />
-          <span style={{ display: "block", fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "1.1rem", fontWeight: 700, letterSpacing: "0.32em", textTransform: "uppercase", color: "rgba(210,195,225,0.5)", marginBottom: "0.55rem" }}>Introducing</span>
-          <h1 style={{ fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "clamp(2.4rem, 6.5vw, 5rem)", fontWeight: 900, color: "#ffffff", lineHeight: 1.04, letterSpacing: "-0.025em", margin: "0 0 0.55rem 0", textShadow: "0 0 40px rgba(144,113,240,0.25), 0 2px 20px rgba(0,0,0,0.5)" }}>
+      {/* Banner */}
+      <div style={{ flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "clamp(28px, 3.5vh, 48px) 2rem clamp(20px, 2.5vh, 36px)" }}>
+        <div style={{ position: "relative", zIndex: 2, textAlign: "center", maxWidth: 680 }}>
+          <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ display: "block", height: 26, width: "auto", objectFit: "contain", margin: "0 auto 0.4rem auto", opacity: 0.92 }} />
+          <span style={{ display: "block", fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "1.1rem", fontWeight: 700, letterSpacing: "0.32em", textTransform: "uppercase", color: "rgba(210,195,225,0.5)", marginBottom: "0.4rem" }}>Introducing</span>
+          <h1 style={{ fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "clamp(2.4rem, 6.5vw, 5rem)", fontWeight: 900, color: "#ffffff", lineHeight: 1.04, letterSpacing: "-0.025em", margin: "0 0 0.5rem 0", textShadow: "0 0 40px rgba(144,113,240,0.25), 0 2px 20px rgba(0,0,0,0.5)" }}>
             TP.ai <span style={{ color: "#9071f0" }}>Data</span>Gen
           </h1>
-          <p style={{ fontSize: "clamp(0.95rem, 1.7vw, 1.15rem)", color: C.hi, maxWidth: 580, lineHeight: 1.6, margin: "0 auto 0.3rem auto" }}>
+          <p style={{ fontSize: "clamp(0.95rem, 1.7vw, 1.15rem)", color: C.hi, lineHeight: 1.55, margin: "0 auto 0.25rem auto" }}>
             Machine-generated data created algorithmically to simulate real-world scenarios at scale.
           </p>
-          <p style={{ fontSize: "clamp(0.85rem, 1.4vw, 1rem)", color: C.txt, maxWidth: 600, lineHeight: 1.6, margin: "0 auto" }}>
+          <p style={{ fontSize: "clamp(0.85rem, 1.4vw, 1rem)", color: C.txt, lineHeight: 1.55, margin: "0 auto" }}>
             Used to expand coverage, stress-test models, and generate edge cases that are rare, sensitive, or unsafe to collect in the real world.
           </p>
         </div>
