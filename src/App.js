@@ -1189,10 +1189,10 @@ function SyntheticHome({ hov, setHov, setJourney }) {
       <h1 style={{ position: "relative", zIndex: 2, fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "clamp(2.4rem, 6.5vw, 5rem)", fontWeight: 900, color: "#ffffff", lineHeight: 1.04, letterSpacing: "-0.025em", margin: "0 0 0.75rem 0", textShadow: "0 0 40px rgba(144,113,240,0.25), 0 2px 20px rgba(0,0,0,0.5)", textAlign: "center" }}>
         TP.ai <span style={{ color: "#9071f0" }}>Data</span>Gen
       </h1>
-      <p style={{ position: "relative", zIndex: 2, fontSize: 30, color: C.hi, textAlign: "center", maxWidth: 780, lineHeight: 1.6, marginBottom: 6 }}>
+      <p style={{ position: "relative", zIndex: 2, fontSize: "clamp(0.95rem, 1.7vw, 1.15rem)", color: C.hi, textAlign: "center", maxWidth: 580, lineHeight: 1.6, marginBottom: 6 }}>
         Machine-generated data created algorithmically to simulate real-world scenarios at scale.
       </p>
-      <p style={{ position: "relative", zIndex: 2, fontSize: 24, color: C.txt, textAlign: "center", maxWidth: 800, lineHeight: 1.6, marginBottom: 40 }}>
+      <p style={{ position: "relative", zIndex: 2, fontSize: "clamp(0.85rem, 1.4vw, 1rem)", color: C.txt, textAlign: "center", maxWidth: 600, lineHeight: 1.6, marginBottom: 40 }}>
         Used to expand coverage, stress-test models, and generate edge cases that are rare, sensitive, or unsafe to collect in the real world.
       </p>
 
