@@ -1244,19 +1244,26 @@ const CARD_ICONS = { warehouse: <WarehouseIcon />, driving: <DrivingIcon />, sup
 // ===== SYNTHETIC HOME =====
 function SyntheticHome({ hov, setHov, setJourney }) {
   return (
-    <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 112px)", padding: "16px 32px" }}>
-      <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ position: "relative", zIndex: 2, display: "block", height: 26, width: "auto", objectFit: "contain", margin: "0 auto 0.25rem auto", opacity: 0.92 }} />
-      <span style={{ position: "relative", zIndex: 2, display: "block", fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "1.1rem", fontWeight: 700, letterSpacing: "0.32em", textTransform: "uppercase", color: "rgba(210,195,225,0.5)", marginBottom: "0.2rem", textAlign: "center" }}>Introducing</span>
-      <h1 style={{ position: "relative", zIndex: 2, fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "clamp(2.4rem, 6.5vw, 5rem)", fontWeight: 900, color: "#ffffff", lineHeight: 1.04, letterSpacing: "-0.025em", margin: "0 0 0.4rem 0", textShadow: "0 0 40px rgba(144,113,240,0.25), 0 2px 20px rgba(0,0,0,0.5)", textAlign: "center" }}>
-        TP.ai <span style={{ color: "#9071f0" }}>Data</span>Gen
-      </h1>
-      <p style={{ position: "relative", zIndex: 2, fontSize: "clamp(0.95rem, 1.7vw, 1.15rem)", color: C.hi, textAlign: "center", maxWidth: 580, lineHeight: 1.5, marginBottom: 4 }}>
-        Machine-generated data created algorithmically to simulate real-world scenarios at scale.
-      </p>
-      <p style={{ position: "relative", zIndex: 2, fontSize: "clamp(0.85rem, 1.4vw, 1rem)", color: C.txt, textAlign: "center", maxWidth: 600, lineHeight: 1.5, marginBottom: 14 }}>
-        Used to expand coverage, stress-test models, and generate edge cases that are rare, sensitive, or unsafe to collect in the real world.
-      </p>
+    <div style={{ position: "relative", display: "flex", flexDirection: "column", minHeight: "calc(100vh - 58px)" }}>
+      {/* Banner — matches DataStudio's 30vh banner section */}
+      <div style={{ flexShrink: 0, height: "30vh", minHeight: 190, maxHeight: 322, display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+        <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "0 2rem" }}>
+          <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ display: "block", height: 26, width: "auto", objectFit: "contain", margin: "0 auto 0.5rem auto", opacity: 0.92 }} />
+          <span style={{ display: "block", fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "1.1rem", fontWeight: 700, letterSpacing: "0.32em", textTransform: "uppercase", color: "rgba(210,195,225,0.5)", marginBottom: "0.55rem" }}>Introducing</span>
+          <h1 style={{ fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "clamp(2.4rem, 6.5vw, 5rem)", fontWeight: 900, color: "#ffffff", lineHeight: 1.04, letterSpacing: "-0.025em", margin: "0 0 0.55rem 0", textShadow: "0 0 40px rgba(144,113,240,0.25), 0 2px 20px rgba(0,0,0,0.5)" }}>
+            TP.ai <span style={{ color: "#9071f0" }}>Data</span>Gen
+          </h1>
+          <p style={{ fontSize: "clamp(0.95rem, 1.7vw, 1.15rem)", color: C.hi, maxWidth: 580, lineHeight: 1.6, margin: "0 auto 0.3rem auto" }}>
+            Machine-generated data created algorithmically to simulate real-world scenarios at scale.
+          </p>
+          <p style={{ fontSize: "clamp(0.85rem, 1.4vw, 1rem)", color: C.txt, maxWidth: 600, lineHeight: 1.6, margin: "0 auto" }}>
+            Used to expand coverage, stress-test models, and generate edge cases that are rare, sensitive, or unsafe to collect in the real world.
+          </p>
+        </div>
+      </div>
 
+      {/* Cards + badges */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "16px 32px 24px" }}>
       <div style={{ position: "relative", zIndex: 2, display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center", marginBottom: 16 }}>
         {[
           { k: "warehouse", icon: "🏭", title: "Warehouse Safety", sub: "Image SDG", desc: "Generate synthetic warehouse images with workers, forklifts, safety violations, and edge cases from a single seed photo.", color: C.amber, brief: "Logistics client · 500 annotated images" },
@@ -1280,6 +1287,7 @@ function SyntheticHome({ hov, setHov, setJourney }) {
         <div style={{ padding: "8px 16px", borderRadius: 6, background: C.red + "10", border: `1px solid ${C.red}22`, fontSize: 18, color: C.red, fontWeight: 600 }}><HT s={11} /> Human-in-the-loop at every stage</div>
         <div style={{ padding: "8px 16px", borderRadius: 6, background: C.green + "10", border: `1px solid ${C.green}22`, fontSize: 18, color: C.green, fontWeight: 600 }}>🔒 GDPR · HIPAA · EU AI Act · SOC 2</div>
         <div style={{ padding: "8px 16px", borderRadius: 6, background: C.accent + "10", border: `1px solid ${C.accent}22`, fontSize: 18, color: C.accent, fontWeight: 600 }}>📋 Full compliance report per delivery</div>
+      </div>
       </div>
     </div>
   );
