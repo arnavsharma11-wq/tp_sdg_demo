@@ -1767,7 +1767,7 @@ export default function App() {
                 background: "none", border: "none",
                 borderBottom: `2px solid ${activeTab === i ? C.accent : "transparent"}`,
                 color: activeTab === i ? "#fff" : C.txt,
-                cursor: "pointer", fontSize: 14, fontWeight: activeTab === i ? 700 : 500,
+                cursor: "pointer", fontSize: 17.5, fontWeight: activeTab === i ? 700 : 500,
                 fontFamily: "'TP Sans', 'DM Sans', sans-serif",
                 padding: "0 24px", letterSpacing: "0.01em", whiteSpace: "nowrap",
                 transition: "color .15s, border-color .15s",
