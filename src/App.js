@@ -551,8 +551,8 @@ const HDG_INTENT_TAGS = ["billing_dispute", "escalation", "de_escalation", "refu
 const HDG_SENT_TAGS = ["frustrated", "empathetic", "urgent", "neutral", "relieved", "adversarial"];
 const HDG_DIFF_TAGS = ["baseline", "moderate", "edge_case", "adversarial"];
 
-// ===== HUMAN DATA GENERATION DEMO =====
-function HumanDataGenDemo() {
+// ===== HUMAN DATA GENERATION DEMO (CHAT CONVERSATIONS) =====
+function ChatHDGDemo({ onBack }) {
   const [stage, setStage] = useState(0);
   const [maxStage, setMaxStage] = useState(0);
   const [domain, setDomain] = useState("Customer Support");
@@ -588,7 +588,11 @@ function HumanDataGenDemo() {
 
   return (
     <div style={{ background: C.bg, color: C.txt, fontFamily: "'TP Sans','DM Sans',sans-serif", minHeight: "calc(100vh - 112px)", padding: "10px 24px" }}>
-      <DemoNav stage={stage} stageLabels={STAGE_L} stageColors={STAGE_C} maxStage={maxStage} advance={advance} label="HUMAN DATA GENERATION" />
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, borderBottom: `1px solid ${C.bdr}`, paddingBottom: 8 }}>
+        <button style={btn(C.txt, true, { padding: "4px 10px", fontSize: 13 })} onClick={onBack}>← Use Cases</button>
+        <span style={{ fontSize: 12, fontWeight: 700, color: C.txt, letterSpacing: "0.1em", textTransform: "uppercase" }}>Conversation Data Generation</span>
+      </div>
+      <DemoNav stage={stage} stageLabels={STAGE_L} stageColors={STAGE_C} maxStage={maxStage} advance={advance} label="" />
 
       {/* STAGE 0: BRIEF */}
       {stage === 0 && (
@@ -755,6 +759,553 @@ function HumanDataGenDemo() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ===== PODCAST HDG — DATA =====
+const PODCAST_LOCALES = [
+  { key: "mandarin",   label: "Mandarin",  flag: "🇨🇳", region: "China" },
+  { key: "japanese",   label: "Japanese",  flag: "🇯🇵", region: "Japan" },
+  { key: "english-ea", label: "English",   flag: "🌍", region: "Kenya · Nigeria · S. Africa · Uganda" },
+  { key: "hindi",      label: "Hindi",     flag: "🇮🇳", region: "India" },
+];
+const PODCAST_TOPICS = ["Travel","Nature","Science","History","Philosophy","Culture"];
+const PODCAST_TRANSCRIPTS = {
+  Travel: [
+    { spk:"A", ts:"00:00:04", text:"Welcome to today's conversation. We're exploring the coastlines of East Africa — a region that often gets overlooked on the travel circuit." },
+    { spk:"B", ts:"00:00:13", text:"Absolutely. What draws people once they discover it is that combination of ancient Swahili architecture and those incredible white-sand beaches." },
+    { spk:"A", ts:"00:00:24", text:"And the food scene has exploded. The influence of Indian spices in coastal Kenyan cuisine is something visitors rarely expect." },
+    { spk:"B", ts:"00:00:34", text:"Mombasa's old town alone could keep you busy for a week. The Fort Jesus ruins, the narrow streets — it's a living museum." },
+    { spk:"A", ts:"00:00:44", text:"If you had to pick one underrated destination in the region, what would it be?" },
+    { spk:"B", ts:"00:00:51", text:"Lamu Island. No cars, donkeys on cobblestone streets, and arguably the best seafood I have ever had." },
+  ],
+  Nature: [
+    { spk:"A", ts:"00:00:03", text:"Today we're looking at coral reef ecosystems and why their recovery is both more fragile and more hopeful than most people realise." },
+    { spk:"B", ts:"00:00:13", text:"The fragility is well-documented. But there are reefs in the Indian Ocean recovering faster than models predicted." },
+    { spk:"A", ts:"00:00:24", text:"What's driving that? Is it reduced human activity or something more biological?" },
+    { spk:"B", ts:"00:00:30", text:"Mostly biological. Certain coral species have shown thermal tolerance that simply was not there twenty years ago." },
+    { spk:"A", ts:"00:00:40", text:"Which raises the question of whether selective breeding of heat-resistant corals could accelerate recovery at scale." },
+    { spk:"B", ts:"00:00:50", text:"That's the heart of the assisted evolution debate — genuinely controversial in marine biology circles." },
+  ],
+  Science: [
+    { spk:"A", ts:"00:00:05", text:"The paper that caught my attention this week was on protein folding using diffusion models — a different paradigm from AlphaFold entirely." },
+    { spk:"B", ts:"00:00:16", text:"AlphaFold was essentially a structure prediction engine. Diffusion approaches treat the folding pathway as a generative process." },
+    { spk:"A", ts:"00:00:26", text:"Which opens the door to modelling not just the final structure but the intermediate states — where most drug-target interactions happen." },
+    { spk:"B", ts:"00:00:36", text:"Exactly. And that's the pharmacological holy grail. Understanding conformational change mid-fold." },
+    { spk:"A", ts:"00:00:44", text:"The compute requirements are still prohibitive for most labs though. This is a resource inequality problem as much as a scientific one." },
+    { spk:"B", ts:"00:00:54", text:"Agreed. Unless cloud access democratises it, these tools stay concentrated in well-funded institutions." },
+  ],
+  History: [
+    { spk:"A", ts:"00:00:04", text:"We often think of the Silk Road as a trade route for goods, but it was arguably more important as a conduit for ideas." },
+    { spk:"B", ts:"00:00:13", text:"Papermaking, printing, the spread of Buddhism, even early epidemics — all travelled that corridor." },
+    { spk:"A", ts:"00:00:22", text:"What's less appreciated is how many of those exchanges happened not at endpoints but at the oasis cities in between. Samarkand. Dunhuang." },
+    { spk:"B", ts:"00:00:32", text:"Those were the real nodes of the network. Cosmopolitan places where merchants, monks, and diplomats shared the same caravanserai." },
+    { spk:"A", ts:"00:00:42", text:"The Dunhuang caves alone contain texts in seventeen languages. That's not trade — that's civilisation cross-pollinating." },
+    { spk:"B", ts:"00:00:52", text:"And much of that content was only rediscovered in the early twentieth century. We're still processing what was lost and found there." },
+  ],
+  Philosophy: [
+    { spk:"A", ts:"00:00:06", text:"I want to revisit the problem of free will through the lens of compatibilism, because I think it gets unfairly dismissed." },
+    { spk:"B", ts:"00:00:15", text:"The hard determinist critique is compelling — if every neural event is caused by prior states, in what sense is anything chosen?" },
+    { spk:"A", ts:"00:00:25", text:"But compatibilists aren't denying causation. They redefine freedom as acting according to your own reasons rather than external coercion." },
+    { spk:"B", ts:"00:00:35", text:"Which is a semantic move some find satisfying and others find evasive. Does that redefinition preserve moral responsibility?" },
+    { spk:"A", ts:"00:00:46", text:"I think it does. Holding someone responsible doesn't require uncaused cause — it requires that their deliberation be part of the causal chain." },
+    { spk:"B", ts:"00:00:57", text:"That's where I partially land too. But I still worry about what it means for punishment in a deterministic universe." },
+  ],
+  Culture: [
+    { spk:"A", ts:"00:00:05", text:"The resurgence of traditional weaving in the Andes isn't just a craft revival — it's a language preservation movement." },
+    { spk:"B", ts:"00:00:14", text:"Because the patterns encode meaning. Specific communities, lineages, cosmologies — it's textile as text." },
+    { spk:"A", ts:"00:00:23", text:"And what's remarkable is that younger weavers aren't treating it as museum-worthy. They're innovating within the tradition." },
+    { spk:"B", ts:"00:00:33", text:"Which is exactly how living cultures work. Any tradition treated as frozen has already stopped being one." },
+    { spk:"A", ts:"00:00:43", text:"The market forces are complicated though. Global demand creates pressure to standardise designs that were locally specific." },
+    { spk:"B", ts:"00:00:53", text:"That tension between authenticity and accessibility is the central challenge for every indigenous craft tradition entering the global economy." },
+  ],
+};
+
+// ===== PODCAST HDG DEMO =====
+function PodcastHDGDemo({ onBack }) {
+  const [stage, setStage] = useState(0);
+  const [maxStage, setMaxStage] = useState(0);
+  const [selectedLocales, setSelectedLocales] = useState(["english-ea"]);
+  const [selectedTopic, setSelectedTopic] = useState("Travel");
+  const [numSpeakers, setNumSpeakers] = useState(2);
+  const [recFormat, setRecFormat] = useState("Dual-channel");
+  const [generating, setGenerating] = useState(false);
+  const [genProg, setGenProg] = useState(0);
+  const [genDone, setGenDone] = useState(false);
+  const [activeSpeaker, setActiveSpeaker] = useState(0);
+  const [transcriptEdits, setTranscriptEdits] = useState({});
+  const [speakerEdits, setSpeakerEdits] = useState({});
+  const [editingWord, setEditingWord] = useState(null);
+  const [editValue, setEditValue] = useState("");
+  const [accuracy, setAccuracy] = useState(85);
+  const [qaChecks, setQaChecks] = useState({ clarity: null, uniqueness: null, balance: null, confidence: null });
+  const [published, setPublished] = useState(false);
+  const podAudioCtxRef = useRef(null);
+  const podAudioNodesRef = useRef([]);
+
+  const advance = n => { setStage(n); setMaxStage(m => Math.max(m, n)); };
+  const STAGE_C = ["#F97316", "#8B5CF6", C.cyan, C.amber, C.green];
+  const STAGE_L = ["Design", "Generate", "Transcribe", "QA", "Publish"];
+  const SPEAKER_COLORS = ["#7C3AED","#06B6D4","#F97316","#10B981"];
+  const SPK_LABELS = numSpeakers === 1 ? ["Host"] : ["Host","Guest"];
+  const WAVE_ANIMS = ["audioBar1","audioBar2","audioBar3","audioBar4","audioBar2","audioBar1","audioBar3","audioBar4","audioBar2","audioBar1","audioBar3","audioBar4"];
+
+  const transcript = PODCAST_TRANSCRIPTS[selectedTopic] || PODCAST_TRANSCRIPTS.Travel;
+  const activeTranscript = numSpeakers === 1 ? transcript.filter(l => l.spk === "A") : transcript;
+
+  useEffect(() => {
+    if (!generating) return;
+    const iv = setInterval(() => setActiveSpeaker(s => (s + 1) % numSpeakers), 1600);
+    return () => clearInterval(iv);
+  }, [generating, numSpeakers]);
+
+  useEffect(() => {
+    if (!generating || !podAudioCtxRef.current) return;
+    const ctx = podAudioCtxRef.current;
+    podAudioNodesRef.current.forEach(n => { try { n.stop(); } catch(e){} });
+    podAudioNodesRef.current = [];
+    const bufferSize = ctx.sampleRate * 0.5;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    const source = ctx.createBufferSource();
+    source.buffer = buffer; source.loop = true;
+    const bpf = ctx.createBiquadFilter();
+    bpf.type = "bandpass"; bpf.frequency.value = 850 + activeSpeaker * 280 + Math.random() * 180; bpf.Q.value = 1.1;
+    const gainNode = ctx.createGain(); gainNode.gain.value = 0;
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 3.8 + Math.random() * 2;
+    const lfoGain = ctx.createGain(); lfoGain.gain.value = 0.065;
+    lfo.connect(lfoGain); lfoGain.connect(gainNode.gain);
+    gainNode.gain.setTargetAtTime(0.08, ctx.currentTime, 0.05);
+    source.connect(bpf); bpf.connect(gainNode); gainNode.connect(ctx.destination);
+    lfo.start(); source.start();
+    podAudioNodesRef.current = [source, lfo];
+    return () => { podAudioNodesRef.current.forEach(n => { try { n.stop(); } catch(e){} }); podAudioNodesRef.current = []; };
+  }, [activeSpeaker, generating]);
+
+  useEffect(() => {
+    const edits = Object.keys(transcriptEdits).length + Object.keys(speakerEdits).length;
+    setAccuracy(Math.min(99, 85 + edits * 3.5));
+  }, [transcriptEdits, speakerEdits]);
+
+  const runGenerate = () => {
+    if (!podAudioCtxRef.current) {
+      try { podAudioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+    } else if (podAudioCtxRef.current.state === "suspended") { podAudioCtxRef.current.resume(); }
+    setGenerating(true); setGenProg(0);
+    const st = Date.now();
+    const t = () => {
+      const p = Math.min(100, ((Date.now() - st) / 4000) * 100);
+      setGenProg(p);
+      if (p < 100) requestAnimationFrame(t);
+      else { setGenerating(false); setGenDone(true); podAudioNodesRef.current.forEach(n => { try { n.stop(); } catch(e){} }); }
+    };
+    requestAnimationFrame(t);
+  };
+
+  const qaItems = [
+    { key:"clarity",    label:"Audio clarity",           desc:"SNR > 20 dB, no clipping detected" },
+    { key:"uniqueness", label:"Topic uniqueness",         desc:"No duplicate segments found" },
+    { key:"balance",    label:"Speaker balance",          desc: numSpeakers === 2 ? "45–55% split achieved" : "Solo recording — N/A" },
+    { key:"confidence", label:"Transcription confidence", desc:`${Math.round(accuracy)}% word accuracy` },
+  ];
+  const allQADone = qaItems.every(q => qaChecks[q.key] !== null);
+  const allQAPass = qaItems.every(q => qaChecks[q.key] === "approve");
+  const sessionHours = (selectedLocales.length * 0.75).toFixed(1);
+
+  return (
+    <div style={{ background:C.bg, color:C.txt, fontFamily:"'TP Sans','DM Sans',sans-serif", minHeight:"calc(100vh - 112px)", padding:"10px 24px" }}>
+      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10, borderBottom:`1px solid ${C.bdr}`, paddingBottom:8 }}>
+        <button style={btn(C.txt, true, { padding:"4px 10px", fontSize:13 })} onClick={onBack}>← Use Cases</button>
+        <span style={{ fontSize:12, fontWeight:700, color:C.txt, letterSpacing:"0.1em", textTransform:"uppercase" }}>Podcast-Style Human Audio Generation</span>
+      </div>
+      <DemoNav stage={stage} stageLabels={STAGE_L} stageColors={STAGE_C} maxStage={maxStage} advance={advance} label="" />
+
+      {/* ── STAGE 0: DESIGN ── */}
+      {stage === 0 && (
+        <div style={{ display:"flex", gap:16 }}>
+          <div style={{ flex:"0 0 320px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize:26, fontWeight:800, color:"#fff", marginBottom:14 }}><span style={{ color:"#F97316" }}>1.</span> Generation Design</div>
+
+              {/* Locale multi-select */}
+              <div style={{ marginBottom:12 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.hi, marginBottom:6 }}>Locale</div>
+                {PODCAST_LOCALES.map(loc => (
+                  <div key={loc.key} onClick={() => setSelectedLocales(prev => prev.includes(loc.key) ? prev.filter(x => x !== loc.key) : [...prev, loc.key])}
+                    style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 10px", borderRadius:8, cursor:"pointer", marginBottom:5,
+                      border:`1px solid ${selectedLocales.includes(loc.key) ? "#F97316" : C.bdr}`,
+                      background:selectedLocales.includes(loc.key) ? "#F9731614" : C.bg, transition:"border-color .15s, background .15s" }}>
+                    <span style={{ fontSize:20 }}>{loc.flag}</span>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:13, fontWeight:700, color:selectedLocales.includes(loc.key) ? "#F97316" : C.hi }}>{loc.label}</div>
+                      <div style={{ fontSize:11, color:C.txt }}>{loc.region}</div>
+                    </div>
+                    <div style={{ width:16, height:16, borderRadius:4, border:`2px solid ${selectedLocales.includes(loc.key) ? "#F97316" : C.bdr}`, background:selectedLocales.includes(loc.key) ? "#F97316" : "transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                      {selectedLocales.includes(loc.key) && <span style={{ color:"#fff", fontSize:10, fontWeight:900 }}>✓</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <ChipGroup label="Podcast Topic" options={PODCAST_TOPICS} value={selectedTopic} onChange={setSelectedTopic} color="#F97316" />
+
+              <div style={{ marginBottom:12 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:C.hi, marginBottom:6 }}>Number of Speakers</div>
+                <div style={{ display:"flex", gap:8 }}>
+                  {[1,2].map(n => (
+                    <button key={n} onClick={() => setNumSpeakers(n)} style={{ flex:1, padding:"8px 0", borderRadius:8, fontSize:14, fontWeight:700, border:`1px solid ${numSpeakers===n ? "#F97316" : C.bdr}`, background:numSpeakers===n ? "#F9731614" : C.bg, color:numSpeakers===n ? "#F97316" : C.txt, cursor:"pointer", fontFamily:"inherit" }}>
+                      {n === 1 ? "Solo (1)" : "Duo (2)"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <ChipGroup label="Recording Format" options={["Dual-channel","Single-channel"]} value={recFormat} onChange={setRecFormat} color="#F97316" />
+
+              <button style={btn("#F97316", false, { width:"100%", marginTop:8 })} onClick={() => advance(1)} disabled={selectedLocales.length === 0}>
+                Generate Podcast Tasks →
+              </button>
+            </div>
+          </div>
+
+          <div style={{ flex:1 }}>
+            <div style={cardS}>
+              <div style={{ fontSize:17, fontWeight:700, color:C.hi, marginBottom:12 }}>Task Specification Preview</div>
+              <div style={{ padding:14, borderRadius:8, background:C.bg, border:`1px solid ${C.bdr}`, fontFamily:"monospace", fontSize:13, color:C.txt, lineHeight:2.1, marginBottom:12 }}>
+                <div style={{ color:"#F97316", fontWeight:700, marginBottom:6, fontSize:14 }}>PODCAST-{Date.now().toString(36).toUpperCase().slice(-6)}</div>
+                {[
+                  ["Locales", selectedLocales.length === 0 ? "—" : selectedLocales.map(k => PODCAST_LOCALES.find(l=>l.key===k)?.label).join(", ")],
+                  ["Topic", selectedTopic],
+                  ["Speakers", numSpeakers === 1 ? "1 (solo host)" : "2 (host + guest)"],
+                  ["Format", recFormat],
+                  ["Target duration", `${numSpeakers === 1 ? "8–12" : "15–25"} min per locale`],
+                  ["Authoring mode", "Human-authored (not scripted)"],
+                  ["Delivery format", "WAV · 48 kHz · 24-bit"],
+                  ["Transcript format", "WebVTT + JSONL"],
+                  ["Source", "✦ Human-generated audio (authored, not scraped)"],
+                ].map(([k,v]) => (
+                  <div key={k}><strong style={{ color:C.hi }}>{k}:</strong> <span style={{ color:k==="Source"?"#10B981":"inherit" }}>{v}</span><br/></div>
+                ))}
+              </div>
+              <div style={{ padding:"10px 14px", borderRadius:8, background:"#10B98112", border:"1px solid #10B98133", display:"flex", alignItems:"center", gap:8 }}>
+                <span style={{ fontSize:18 }}>✦</span>
+                <span style={{ fontSize:13, color:"#10B981", fontWeight:600 }}>Human-generated audio — authored, not scraped. Fully licensed for AI training.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── STAGE 1: GENERATE ── */}
+      {stage === 1 && (
+        <div style={{ display:"flex", gap:16 }}>
+          <div style={{ flex:"0 0 240px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize:26, fontWeight:800, color:"#fff", marginBottom:10 }}><span style={{ color:"#8B5CF6" }}>2.</span> Recording</div>
+              <div style={{ fontSize:13, color:C.txt, marginBottom:14, lineHeight:1.6 }}>Contributors record the podcast live. Each locale is a separate session.</div>
+              {!generating && !genDone && <button style={btn("#8B5CF6", false, { width:"100%" })} onClick={runGenerate}>▶ Start Recording Session</button>}
+              {generating && (
+                <div>
+                  <div style={{ fontSize:13, color:"#8B5CF6", fontWeight:700, marginBottom:8 }}>Recording in progress…</div>
+                  <div style={{ height:5, borderRadius:3, background:C.bdr, overflow:"hidden", marginBottom:6 }}>
+                    <div style={{ height:"100%", width:`${genProg}%`, background:"#8B5CF6", transition:"width .05s" }} />
+                  </div>
+                  <div style={{ fontSize:12, color:C.txt, marginBottom:12 }}>{Math.round(genProg)}%</div>
+                </div>
+              )}
+              {genDone && (
+                <div>
+                  <div style={{ fontSize:14, color:C.green, fontWeight:700, marginBottom:8 }}>✓ Session complete</div>
+                  <div style={{ padding:"6px 10px", borderRadius:6, background:C.green+"10", border:`1px solid ${C.green}33`, fontSize:13, color:C.green, marginBottom:12, lineHeight:1.6 }}>
+                    {selectedLocales.length} locale{selectedLocales.length!==1?"s":""} · {numSpeakers} speaker{numSpeakers!==1?"s":""} · {recFormat}
+                  </div>
+                  <button style={btn(C.accent, false, { width:"100%" })} onClick={() => advance(2)}>Send to Transcription →</button>
+                </div>
+              )}
+
+              <div style={{ marginTop:14 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:C.txt, marginBottom:8, letterSpacing:"0.08em", textTransform:"uppercase" }}>Sessions</div>
+                {selectedLocales.map((lKey, idx) => {
+                  const loc = PODCAST_LOCALES.find(l=>l.key===lKey);
+                  const segSize = 100 / selectedLocales.length;
+                  const done = genDone || genProg >= (idx+1)*segSize;
+                  const segProg = Math.min(100, Math.max(0, (genProg - idx*segSize) / segSize * 100));
+                  return (
+                    <div key={lKey} style={{ padding:"6px 8px", borderRadius:6, background:C.bg, border:`1px solid ${done?C.green+"44":generating&&segProg>0?"#8B5CF644":C.bdr}`, marginBottom:5, transition:"border-color .3s" }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:3 }}>
+                        <span style={{ fontSize:13, color:done?C.green:generating&&segProg>0?"#8B5CF6":C.txt, fontWeight:600 }}>{loc?.flag} {loc?.label}</span>
+                        <span style={{ fontSize:11, color:done?C.green:C.txt }}>{done?"✓ Done":generating&&segProg>0?`${Math.round(segProg)}%`:"Queued"}</span>
+                      </div>
+                      {(generating||genDone) && <div style={{ height:3, borderRadius:2, background:C.bdr }}><div style={{ height:"100%", width:`${done?100:segProg}%`, background:done?C.green:"#8B5CF6", transition:"width .1s" }} /></div>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Studio monitor */}
+          <div style={{ flex:1 }}>
+            <div style={cardS}>
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
+                <div style={{ fontSize:17, fontWeight:700, color:C.hi }}>Studio Monitor</div>
+                <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:20, background:generating?"#EF444420":genDone?"#10B98120":"#33333330", border:`1px solid ${generating?"#EF444455":genDone?"#10B98155":"#333"}` }}>
+                  <div style={{ width:7, height:7, borderRadius:"50%", background:generating?"#EF4444":genDone?"#10B981":"#555", boxShadow:generating?"0 0 8px #EF4444":"none" }} />
+                  <span style={{ fontSize:12, fontWeight:700, color:generating?"#EF4444":genDone?"#10B981":"#555" }}>{generating?"● REC":genDone?"✓ CAPTURED":"○ READY"}</span>
+                </div>
+              </div>
+
+              <div style={{ display:"flex", gap:14, marginBottom:16 }}>
+                {SPK_LABELS.map((label,si) => {
+                  const color = SPEAKER_COLORS[si];
+                  const isActive = generating && activeSpeaker === si;
+                  return (
+                    <div key={si} style={{ flex:1, padding:16, borderRadius:10, background:`radial-gradient(ellipse at 50% 100%, ${color}15 0%, #12121E 70%)`, border:`1.5px solid ${isActive?color:"#ffffff10"}`, boxShadow:isActive?`0 0 24px ${color}33`:"none", transition:"border-color .3s, box-shadow .3s" }}>
+                      <div style={{ fontSize:14, fontWeight:700, color:isActive?color:C.txt, marginBottom:14 }}>{label}</div>
+                      <div style={{ display:"flex", alignItems:"center", gap:2, height:44, justifyContent:"center" }}>
+                        {WAVE_ANIMS.map((anim,wi) => (
+                          <div key={wi} style={{ width:3, borderRadius:2, background:isActive?color:"#2a2a3a", height:isActive?undefined:4, animation:isActive?`${anim} ${0.42+(wi%3)*0.13}s ${wi*0.055}s ease-in-out infinite`:"none" }} />
+                        ))}
+                      </div>
+                      <div style={{ marginTop:10, fontSize:11, color:isActive?color:"#555", textAlign:"center", fontFamily:"monospace", letterSpacing:"0.06em" }}>
+                        {isActive?"● SPEAKING":generating?"◦ LISTENING":genDone?"✓ RECORDED":"○ STANDBY"}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:14 }}>
+                <span style={{ padding:"3px 10px", borderRadius:20, background:"#8B5CF620", border:"1px solid #8B5CF640", fontSize:12, color:"#8B5CF6" }}>🎙️ {selectedTopic}</span>
+                <span style={{ padding:"3px 10px", borderRadius:20, background:"#F9731614", border:"1px solid #F9731640", fontSize:12, color:"#F97316" }}>{recFormat}</span>
+                <span style={{ padding:"3px 10px", borderRadius:20, background:"#10B98112", border:"1px solid #10B98130", fontSize:12, color:"#10B981" }}>✦ Human-authored</span>
+              </div>
+
+              <div style={{ padding:"10px 14px", borderRadius:8, background:C.bg, border:`1px solid ${C.bdr}` }}>
+                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6, fontSize:12, color:C.txt }}>
+                  <span>Session progress</span>
+                  <span style={{ fontFamily:"monospace", color:genDone?C.green:"#8B5CF6" }}>{Math.round(genProg)}%</span>
+                </div>
+                <div style={{ height:6, borderRadius:3, background:C.bdr }}>
+                  <div style={{ height:"100%", borderRadius:3, width:`${genProg}%`, background:genDone?C.green:"linear-gradient(90deg,#8B5CF6,#7C3AED)", transition:"width .05s" }} />
+                </div>
+                <div style={{ display:"flex", justifyContent:"space-between", marginTop:6, fontSize:11, color:"#555" }}>
+                  <span>0:00</span><span>{numSpeakers===1?"10:00":"20:00"}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── STAGE 2: TRANSCRIBE ── */}
+      {stage === 2 && (
+        <div style={{ display:"flex", gap:16 }}>
+          <div style={{ flex:"0 0 260px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize:26, fontWeight:800, color:"#fff", marginBottom:10 }}><span style={{ color:C.cyan }}>3.</span> Transcription</div>
+              <div style={{ fontSize:13, color:C.txt, marginBottom:12, lineHeight:1.6 }}>Auto-transcription generated. Click any <strong style={{ color:C.hi }}>word</strong> to correct it. Click a <strong style={{ color:C.hi }}>speaker badge</strong> to swap attribution.</div>
+              <div style={{ padding:"10px 12px", borderRadius:8, background:C.bg, border:`1px solid ${C.bdr}`, marginBottom:14 }}>
+                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
+                  <span style={{ fontSize:13, fontWeight:700, color:C.hi }}>Word Accuracy</span>
+                  <span style={{ fontSize:18, fontWeight:800, color:accuracy>=98?C.green:C.amber, fontFamily:"monospace" }}>{Math.round(accuracy)}%</span>
+                </div>
+                <div style={{ height:8, borderRadius:4, background:C.bdr }}>
+                  <div style={{ height:"100%", borderRadius:4, width:`${accuracy}%`, background:accuracy>=98?C.green:`linear-gradient(90deg,${C.amber},#F97316)`, transition:"width .5s, background .5s" }} />
+                </div>
+                <div style={{ fontSize:11, color:C.txt, marginTop:5 }}>Target: 98–99% · {Object.keys(transcriptEdits).length+Object.keys(speakerEdits).length} correction{(Object.keys(transcriptEdits).length+Object.keys(speakerEdits).length)!==1?"s":""} applied</div>
+              </div>
+              <div style={{ padding:"8px 10px", borderRadius:6, background:"#06B6D412", border:"1px solid #06B6D430", fontSize:12, color:C.cyan, lineHeight:1.6, marginBottom:14 }}>
+                💡 Make corrections to push accuracy to 98%+
+              </div>
+              {accuracy >= 98 && <button style={btn(C.cyan, false, { width:"100%" })} onClick={() => advance(3)}>Confirm Transcript →</button>}
+            </div>
+          </div>
+
+          <div style={{ flex:1 }}>
+            <div style={cardS}>
+              <div style={{ fontSize:15, fontWeight:700, color:C.hi, marginBottom:12 }}>Interactive Transcript — {selectedTopic}</div>
+              <div style={{ maxHeight:420, overflowY:"auto" }}>
+                {activeTranscript.map((line, li) => {
+                  const spkColor = line.spk==="A" ? SPEAKER_COLORS[0] : SPEAKER_COLORS[1];
+                  const curLabel = speakerEdits[li] || (line.spk==="A" ? SPK_LABELS[0] : SPK_LABELS[1]);
+                  const words = (transcriptEdits[li] || line.text).split(" ");
+                  return (
+                    <div key={li} style={{ padding:"10px 12px", borderRadius:8, background:C.bg, border:`1px solid ${C.bdr}`, marginBottom:8 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:7 }}>
+                        <button onClick={() => setSpeakerEdits(e => ({ ...e, [li]: curLabel===SPK_LABELS[0] ? (SPK_LABELS[1]||SPK_LABELS[0]) : SPK_LABELS[0] }))}
+                          style={{ padding:"2px 8px", borderRadius:4, fontSize:12, fontWeight:700, border:`1px solid ${spkColor}44`, background:spkColor+"18", color:spkColor, cursor:"pointer", fontFamily:"inherit" }}>{curLabel}</button>
+                        <span style={{ fontSize:11, color:"#555", fontFamily:"monospace" }}>{line.ts}</span>
+                        {speakerEdits[li] && <span style={{ fontSize:11, color:C.amber }}>✎ reassigned</span>}
+                      </div>
+                      <div style={{ fontSize:14, color:C.hi, lineHeight:1.8, display:"flex", flexWrap:"wrap", gap:3 }}>
+                        {words.map((word,wi) => {
+                          const isEditing = editingWord?.li===li && editingWord?.wi===wi;
+                          return isEditing ? (
+                            <input key={wi} autoFocus value={editValue} onChange={e => setEditValue(e.target.value)}
+                              onBlur={() => { if(editValue.trim()){ const nw=[...words]; nw[wi]=editValue.trim(); setTranscriptEdits(e=>({...e,[li]:nw.join(" ")})); } setEditingWord(null); setEditValue(""); }}
+                              onKeyDown={e => { if(e.key==="Enter"||e.key==="Escape") e.target.blur(); }}
+                              style={{ width:Math.max(60,editValue.length*9), fontSize:14, fontFamily:"inherit", background:"#7C3AED22", border:"1px solid #7C3AED", borderRadius:3, color:"#fff", padding:"0 4px", outline:"none" }} />
+                          ) : (
+                            <span key={wi} onClick={() => { setEditingWord({li,wi}); setEditValue(word); }}
+                              style={{ cursor:"pointer", borderRadius:3, padding:"1px 3px", background:transcriptEdits[li]?"#7C3AED0E":"transparent", borderBottom:"1px dashed #ffffff18", color:transcriptEdits[li]?C.accent:C.hi, transition:"background .12s" }}
+                              onMouseEnter={e=>e.currentTarget.style.background="#7C3AED22"}
+                              onMouseLeave={e=>e.currentTarget.style.background=transcriptEdits[li]?"#7C3AED0E":"transparent"}>
+                              {word}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── STAGE 3: QA ── */}
+      {stage === 3 && (
+        <div style={{ display:"flex", gap:16 }}>
+          <div style={{ flex:"0 0 300px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize:26, fontWeight:800, color:"#fff", marginBottom:10 }}><span style={{ color:C.amber }}>4.</span> Quality Assurance</div>
+              <div style={{ fontSize:13, color:C.txt, marginBottom:14, lineHeight:1.6 }}>Review each check and approve or flag for re-record.</div>
+              {qaItems.map(({ key, label, desc }) => (
+                <div key={key} style={{ padding:"10px 12px", borderRadius:8, background:C.bg, border:`1px solid ${qaChecks[key]==="approve"?C.green+"55":qaChecks[key]==="flag"?C.red+"55":C.bdr}`, marginBottom:8, transition:"border-color .2s" }}>
+                  <div style={{ fontSize:14, fontWeight:700, color:C.hi, marginBottom:2 }}>{label}</div>
+                  <div style={{ fontSize:12, color:C.txt, marginBottom:8 }}>{desc}</div>
+                  <div style={{ display:"flex", gap:6 }}>
+                    <button onClick={() => setQaChecks(q=>({...q,[key]:"approve"}))} style={{ flex:1, padding:"4px 0", borderRadius:5, fontSize:12, fontWeight:700, border:`1px solid ${qaChecks[key]==="approve"?C.green:C.bdr}`, background:qaChecks[key]==="approve"?C.green+"20":C.bg, color:qaChecks[key]==="approve"?C.green:C.txt, cursor:"pointer", fontFamily:"inherit" }}>✅ Approve</button>
+                    <button onClick={() => setQaChecks(q=>({...q,[key]:"flag"}))} style={{ flex:1, padding:"4px 0", borderRadius:5, fontSize:12, fontWeight:700, border:`1px solid ${qaChecks[key]==="flag"?C.red:C.bdr}`, background:qaChecks[key]==="flag"?C.red+"20":C.bg, color:qaChecks[key]==="flag"?C.red:C.txt, cursor:"pointer", fontFamily:"inherit" }}>🚩 Re-record</button>
+                  </div>
+                </div>
+              ))}
+              {allQADone && allQAPass && <button style={btn(C.green, false, { width:"100%", marginTop:4 })} onClick={() => advance(4)}>Publish Dataset →</button>}
+              {allQADone && !allQAPass && <div style={{ fontSize:13, color:C.red, marginTop:8, textAlign:"center" }}>⚠ {qaItems.filter(q=>qaChecks[q.key]==="flag").length} item(s) flagged — re-record required.</div>}
+            </div>
+          </div>
+
+          <div style={{ flex:1 }}>
+            <div style={cardS}>
+              <div style={{ fontSize:15, fontWeight:700, color:C.hi, marginBottom:14 }}>QA Dashboard</div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:14 }}>
+                {[
+                  { label:"Recordings reviewed", val:selectedLocales.length, color:C.cyan },
+                  { label:"Speakers", val:numSpeakers, color:"#8B5CF6" },
+                  { label:"Transcript accuracy", val:`${Math.round(accuracy)}%`, color:accuracy>=98?C.green:C.amber },
+                  { label:"Checks completed", val:`${Object.values(qaChecks).filter(v=>v!==null).length} / ${qaItems.length}`, color:"#F97316" },
+                ].map(({label,val,color}) => (
+                  <div key={label} style={{ padding:"14px 16px", borderRadius:10, background:C.bg, border:`1px solid ${C.bdr}` }}>
+                    <div style={{ fontSize:24, fontWeight:800, color, marginBottom:4 }}>{val}</div>
+                    <div style={{ fontSize:12, color:C.txt }}>{label}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ padding:"12px 14px", borderRadius:8, background:C.bg, border:`1px solid ${C.bdr}` }}>
+                {qaItems.map(({key,label}) => (
+                  <div key={key} style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 0", borderBottom:`1px solid ${C.bdr}` }}>
+                    <span style={{ fontSize:16 }}>{qaChecks[key]==="approve"?"✅":qaChecks[key]==="flag"?"🚩":"⬜"}</span>
+                    <span style={{ fontSize:13, color:qaChecks[key]==="approve"?C.green:qaChecks[key]==="flag"?C.red:C.txt }}>{label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── STAGE 4: PUBLISH ── */}
+      {stage === 4 && (
+        <div style={{ display:"flex", gap:16 }}>
+          <div style={{ flex:"0 0 280px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize:26, fontWeight:800, color:"#fff", marginBottom:10 }}><span style={{ color:C.green }}>5.</span> Dataset Complete</div>
+              {!published ? (
+                <>
+                  <div style={{ fontSize:13, color:C.txt, marginBottom:16, lineHeight:1.6 }}>All QA checks passed. Audio + transcripts ready for training corpus ingestion.</div>
+                  <button style={btn(C.green, false, { width:"100%" })} onClick={() => setTimeout(()=>setPublished(true),800)}>🚀 Publish to Training Corpus</button>
+                </>
+              ) : (
+                <div>
+                  <div style={{ fontSize:20, color:C.green, fontWeight:800, marginBottom:10 }}>🎉 Published!</div>
+                  <div style={{ padding:"8px 12px", borderRadius:6, background:C.green+"12", border:`1px solid ${C.green}33`, fontSize:13, color:C.green, marginBottom:14, lineHeight:1.7 }}>
+                    Dataset added to corpus.<br/>Available for training pipeline ingestion.
+                  </div>
+                  <button style={btn("#F97316", true, { width:"100%", fontSize:13 })} onClick={() => { setStage(0); setMaxStage(0); setGenerating(false); setGenDone(false); setGenProg(0); setTranscriptEdits({}); setSpeakerEdits({}); setQaChecks({clarity:null,uniqueness:null,balance:null,confidence:null}); setPublished(false); setAccuracy(85); }}>↺ New Session</button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div style={{ flex:1 }}>
+            <div style={cardS}>
+              <div style={{ fontSize:15, fontWeight:700, color:C.hi, marginBottom:14 }}>Dataset Summary</div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:14 }}>
+                {[
+                  { label:"Hours generated", val:`${sessionHours}h`, color:C.green },
+                  { label:"Locales covered", val:selectedLocales.length, color:C.cyan },
+                  { label:"Topics covered", val:1, color:"#8B5CF6" },
+                  { label:"Speakers", val:numSpeakers, color:"#F97316" },
+                  { label:"Recording format", val:recFormat.replace("-channel","ch"), color:C.amber },
+                  { label:"Transcript accuracy", val:`${Math.round(accuracy)}%`, color:C.green },
+                ].map(({label,val,color}) => (
+                  <div key={label} style={{ padding:"14px 16px", borderRadius:10, background:C.bg, border:`1px solid ${published?color+"44":C.bdr}`, transition:"border-color .4s" }}>
+                    <div style={{ fontSize:22, fontWeight:800, color, marginBottom:4 }}>{val}</div>
+                    <div style={{ fontSize:12, color:C.txt }}>{label}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ padding:"12px 14px", borderRadius:8, background:C.bg, border:`1px solid ${C.bdr}`, fontFamily:"monospace", fontSize:13, lineHeight:2 }}>
+                <div style={{ color:C.green, fontWeight:700, marginBottom:4 }}>PODCAST-HDG-{Date.now().toString(36).toUpperCase().slice(-8)}</div>
+                {[
+                  ["Locales", selectedLocales.map(k=>PODCAST_LOCALES.find(l=>l.key===k)?.label).join(", ")],
+                  ["Topic", selectedTopic],
+                  ["Audio format", "WAV · 48 kHz · 24-bit"],
+                  ["Transcript", "WebVTT + JSONL"],
+                  ["Source", "Human-generated (authored)"],
+                  ["License", "TP.ai Training License v2.0"],
+                  ["Status", published?"✓ Published":"⏳ Pending"],
+                ].map(([k,v]) => (
+                  <div key={k}><strong style={{ color:C.hi }}>{k}:</strong> <span style={{ color:k==="Status"?(published?C.green:C.amber):k==="Source"?"#10B981":"inherit" }}>{v}</span><br/></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ===== HUMAN DATA GENERATION — USE CASE SELECTOR =====
+function HumanDataGenDemo() {
+  const [useCase, setUseCase] = useState(null);
+  if (useCase === "chat")    return <ChatHDGDemo    onBack={() => setUseCase(null)} />;
+  if (useCase === "podcast") return <PodcastHDGDemo onBack={() => setUseCase(null)} />;
+  return (
+    <div style={{ background:C.bg, color:C.txt, fontFamily:"'TP Sans','DM Sans',sans-serif", minHeight:"calc(100vh - 112px)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"32px 24px" }}>
+      <div style={{ fontSize:12, fontWeight:700, color:C.txt, letterSpacing:"0.14em", textTransform:"uppercase", marginBottom:8, textAlign:"center" }}>Human Data Generation</div>
+      <div style={{ fontSize:28, fontWeight:800, color:C.hi, marginBottom:32, textAlign:"center" }}>Select a use case</div>
+      <div style={{ display:"flex", gap:20, flexWrap:"wrap", justifyContent:"center", width:"100%", maxWidth:900 }}>
+        {[
+          { key:"chat",    icon:"💬", label:"Conversation Data Generation",          color:C.accent,  desc:"Human-authored chat conversations across domains. QA-reviewed, intent-labelled, and packaged for LLM alignment training.",                                        tag:"5 stages · HDG v1.0" },
+          { key:"podcast", icon:"🎙️", label:"Podcast-Style Human Audio Generation", color:"#F97316", desc:"Human-recorded podcast audio across locales and topics. Transcribed, diarized, QA-checked, and published to the training corpus.", tag:"5 stages · PODCAST-HDG v1.0" },
+        ].map(({ key, icon, label, color, desc, tag }) => (
+          <div key={key} onClick={() => setUseCase(key)}
+            style={{ flex:"1 1 340px", maxWidth:420, padding:"32px 28px", borderRadius:16, cursor:"pointer", border:`1px solid ${color}44`, background:C.card, transition:"border-color .2s, box-shadow .2s, transform .2s" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor=color; e.currentTarget.style.boxShadow=`0 12px 40px ${color}22`; e.currentTarget.style.transform="translateY(-3px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor=color+"44"; e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="none"; }}>
+            <div style={{ fontSize:36, marginBottom:14 }}>{icon}</div>
+            <div style={{ fontSize:18, fontWeight:700, color, marginBottom:10, lineHeight:1.3 }}>{label}</div>
+            <div style={{ fontSize:14, color:C.txt, lineHeight:1.7, marginBottom:14 }}>{desc}</div>
+            <div style={{ fontSize:12, color, fontWeight:600, letterSpacing:"0.05em" }}>{tag} →</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
