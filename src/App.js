@@ -1232,6 +1232,12 @@ export default function App() {
 
   return (
     <div style={{ minHeight: "100vh", background: C.bg, color: C.txt, fontFamily: "'TP Sans', 'DM Sans', sans-serif" }}>
+      {/* Animated aurora orbs */}
+      <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", overflow: "hidden" }}>
+        <div style={{ position: "absolute", width: 700, height: 700, borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.13) 0%, transparent 70%)", top: "5%", left: "10%", animation: "orbDrift1 30s ease-in-out infinite" }} />
+        <div style={{ position: "absolute", width: 550, height: 550, borderRadius: "50%", background: "radial-gradient(circle, rgba(6,182,212,0.10) 0%, transparent 70%)", bottom: "15%", right: "8%", animation: "orbDrift2 38s ease-in-out infinite" }} />
+        <div style={{ position: "absolute", width: 480, height: 480, borderRadius: "50%", background: "radial-gradient(circle, rgba(79,70,229,0.09) 0%, transparent 70%)", top: "45%", left: "48%", animation: "orbDrift3 26s ease-in-out infinite" }} />
+      </div>
       {/* Blurred GIF strip — fixed at bottom across all tabs */}
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 220, zIndex: 0, pointerEvents: "none", overflow: "hidden" }}>
         <img src="/banner.gif" alt="" aria-hidden="true" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top", filter: "blur(14px)", opacity: 0.55, transform: "scale(1.05)" }} />
