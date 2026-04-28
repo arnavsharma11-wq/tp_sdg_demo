@@ -759,6 +759,62 @@ function HumanDataGenDemo() {
   );
 }
 
+// ===== MEETING GRID VISUAL =====
+function MeetingGrid({ participants, lang, captureRunning, captureDone, activeSpeaker, currentSession }) {
+  const NAME_MAP = {
+    English:    ["Sarah M.","James K.","Emily R.","David L.","Alex T.","Lisa C.","Chris B.","Kate W.","Ryan P.","Mia S."],
+    French:     ["Marie D.","Pierre L.","Sophie B.","Lucas M.","Camille R.","Antoine V.","Léa P.","Julien F."],
+    German:     ["Anna S.","Thomas M.","Laura K.","Felix B.","Hannah W.","Markus R.","Clara J.","Stefan H."],
+    Spanish:    ["Ana G.","Carlos M.","Laura R.","Miguel T.","Sofía L.","Javier P.","Isabel C.","Diego V."],
+    Portuguese: ["João S.","Ana P.","Pedro C.","Maria L.","Bruno F.","Carla M.","Rui V.","Inês D."],
+    Italian:    ["Marco R.","Giulia B.","Luca M.","Chiara F.","Antonio V.","Elena S.","Paolo C.","Francesca T."],
+    Japanese:   ["Yuki T.","Kenji S.","Aiko M.","Ryo K.","Hana N.","Takeshi W.","Mika O.","Sho F."],
+    Korean:     ["Min-jun L.","Ji-yeon K.","Soo-hyun P.","Hyun-woo C.","Ye-jin K.","Ji-hoon L.","Na-rae O.","Dong-hyun S."],
+  };
+  const names = (NAME_MAP[lang] || NAME_MAP.English).slice(0, participants);
+  const COLORS = ["#7C3AED","#06B6D4","#10B981","#F59E0B","#EF4444","#8B5CF6","#F97316","#EC4899","#14B8A6","#6366F1"];
+  const cols = participants <= 2 ? 2 : participants <= 4 ? 2 : participants <= 6 ? 3 : 4;
+  const speaking = captureRunning ? activeSpeaker % participants : -1;
+
+  return (
+    <div style={{ background: "#12121F", borderRadius: 10, overflow: "hidden", width: "100%", aspectRatio: "16/9", display: "flex", flexDirection: "column" }}>
+      {/* Top bar */}
+      <div style={{ background: "#0A0A15", padding: "6px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 8, height: 8, borderRadius: "50%", background: captureRunning ? "#EF4444" : captureDone ? "#10B981" : "#555", boxShadow: captureRunning ? "0 0 6px #EF444488" : "none" }} />
+          <span style={{ fontSize: 11, color: captureRunning ? "#EF4444" : captureDone ? "#10B981" : "#555", fontFamily: "monospace", fontWeight: 700 }}>{captureRunning ? "● REC" : captureDone ? "✓ CAPTURED" : "○ STANDBY"}</span>
+          {currentSession && <span style={{ fontSize: 10, color: "#555", marginLeft: 4 }}>{currentSession.id}</span>}
+        </div>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <span style={{ fontSize: 10, color: "#888" }}>{lang} · {participants} participants</span>
+          {captureRunning && <span style={{ padding: "1px 6px", borderRadius: 3, background: "#EF444420", border: "1px solid #EF444455", fontSize: 10, color: "#EF4444", fontWeight: 700 }}>LIVE</span>}
+        </div>
+      </div>
+      {/* Video grid */}
+      <div style={{ flex: 1, display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 2, padding: 2, background: "#0C0C18", minHeight: 0 }}>
+        {names.map((name, i) => {
+          const color = COLORS[i % COLORS.length];
+          const isSpeaking = i === speaking;
+          return (
+            <div key={i} style={{ background: "#1C1C30", borderRadius: 5, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", border: `2px solid ${isSpeaking ? color : "transparent"}`, transition: "border-color .4s", boxShadow: isSpeaking ? `0 0 14px ${color}55` : "none", overflow: "hidden" }}>
+              <div style={{ width: 38, height: 38, borderRadius: "50%", background: color+"28", border: `2px solid ${color}66`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color, marginBottom: 5, flexShrink: 0 }}>{name.split(" ").map(w=>w[0]).join("").slice(0,2)}</div>
+              <div style={{ fontSize: 9, color: "#bbb", textAlign: "center", padding: "0 4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "92%" }}>{name}</div>
+              {isSpeaking && <div style={{ position: "absolute", bottom: 4, right: 4, width: 16, height: 16, borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9 }}>🎤</div>}
+              {!isSpeaking && captureRunning && <div style={{ position: "absolute", bottom: 4, right: 4, fontSize: 9, opacity: 0.3 }}>🔇</div>}
+            </div>
+          );
+        })}
+      </div>
+      {/* Bottom toolbar */}
+      <div style={{ background: "#0A0A15", padding: "6px 14px", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flexShrink: 0 }}>
+        {[["📷","Cam Off","#EF4444"],["🎙️", captureRunning ? "Recording" : "Standby", captureRunning ? "#10B981" : "#EF4444"],["📝","Transcript On","#7C3AED"],["🔒","E2E Encrypted","#555"]].map(([ic,lbl,col]) => (
+          <div key={lbl} style={{ padding: "2px 8px", borderRadius: 3, background: col+"18", border: `1px solid ${col}44`, fontSize: 9, color: col, display: "flex", gap: 4, alignItems: "center" }}><span>{ic}</span><span>{lbl}</span></div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ===== MEETING DATA COLLECTION DEMO =====
 function MeetingDataCollectDemo({ onBack }) {
   const [stage, setStage] = useState(0);
@@ -779,6 +835,13 @@ function MeetingDataCollectDemo({ onBack }) {
   const [selectedSess, setSelectedSess] = useState(null);
   const [validations, setValidations] = useState({});
   const [delivered, setDelivered] = useState(false);
+  const [activeSpeaker, setActiveSpeaker] = useState(0);
+
+  useEffect(() => {
+    if (!captureRunning) return;
+    const iv = setInterval(() => setActiveSpeaker(s => s + 1), 1800);
+    return () => clearInterval(iv);
+  }, [captureRunning]);
 
   const LANGS = ["English","Portuguese","French","Italian","German","Spanish","Japanese","Korean"];
   const FMT_LABELS = { agenda:"Agenda discussion", brainstorm:"Brainstorming", notes:"Note-taking", closure:"Meeting closure" };
@@ -894,56 +957,64 @@ function MeetingDataCollectDemo({ onBack }) {
       )}
 
       {/* STAGE 1 — CAPTURE */}
-      {stage === 1 && (
-        <div style={{ display: "flex", gap: 16 }}>
-          <div style={{ flex: "0 0 280px" }}>
-            <div style={cardS}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: "#8B5CF6" }}>2.</span> Live Capture</div>
-              {!captureRunning && !captureDone && <button style={btn("#8B5CF6", false, { width: "100%" })} onClick={runCapture}>▶ Start Recording Sessions</button>}
-              {captureRunning && (
-                <div>
-                  <div style={{ fontSize: 13, color: "#8B5CF6", fontWeight: 600, marginBottom: 6 }}>Sessions recording...</div>
-                  <div style={{ height: 4, borderRadius: 3, background: C.bdr, overflow: "hidden", marginBottom: 6 }}>
-                    <div style={{ height: "100%", width: `${(completedList.length / sessionList.length) * 100}%`, background: "#8B5CF6", transition: "width .2s" }} />
-                  </div>
-                  <div style={{ fontSize: 12, color: C.txt }}>{completedList.length} / {sessionList.length} completed</div>
-                </div>
-              )}
-              {captureDone && (
-                <div>
-                  <div style={{ fontSize: 13, color: C.green, fontWeight: 700, marginBottom: 6 }}>✓ {sessionList.length} sessions captured</div>
-                  <div style={{ padding: 8, borderRadius: 6, background: C.green+"10", border: `1px solid ${C.green}22`, fontSize: 12, color: C.green, marginBottom: 6 }}>Speaker IDs de-identified · Transcripts generated</div>
-                  {sessionList.filter(s=>s.issue).length > 0 && <div style={{ padding: 8, borderRadius: 6, background: C.amber+"10", border: `1px solid ${C.amber}22`, fontSize: 12, color: C.amber, marginBottom: 8 }}>{sessionList.filter(s=>s.issue).length} sessions flagged for review</div>}
-                  <button style={btn(C.amber, false, { width: "100%" })} onClick={() => advance(2)}>Run QC →</button>
-                </div>
-              )}
-            </div>
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={cardS}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Session Log</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 3, maxHeight: 420, overflowY: "auto" }}>
-                {sessionList.map(s => {
-                  const status = sessionStatuses[s.id] || "scheduled";
-                  const statusColor = status==="completed" ? C.green : status==="recording" ? "#8B5CF6" : C.txt+"66";
-                  const statusLabel = status==="completed" ? "● Completed" : status==="recording" ? "◉ Recording" : "○ Scheduled";
-                  return (
-                    <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 10px", borderRadius: 6, background: C.bg, border: `1px solid ${status==="completed"&&s.issue ? C.amber+"44" : C.bdr}`, fontSize: 12, transition: "border-color .3s" }}>
-                      <span style={{ fontFamily: "monospace", color: C.hi, minWidth: 54 }}>{s.id}</span>
-                      <span style={{ color: C.cyan, minWidth: 70 }}>{s.lang}</span>
-                      <span style={{ color: C.txt, minWidth: 22 }}>{s.participants}p</span>
-                      <span style={{ color: C.txt, minWidth: 28 }}>{s.dur}</span>
-                      <span style={{ color: C.txt, flex: 1, fontSize: 11 }}>{s.format}</span>
-                      {s.issue && status==="completed" && <span style={{ color: C.amber, fontSize: 11 }}>{s.issue}</span>}
-                      <span style={{ color: statusColor, fontWeight: 600, minWidth: 88, textAlign: "right" }}>{statusLabel}</span>
+      {stage === 1 && (() => {
+        const recordingSession = sessionList.find(s => sessionStatuses[s.id] === "recording");
+        const lastCompleted = [...sessionList].reverse().find(s => sessionStatuses[s.id] === "completed");
+        const displaySession = recordingSession || lastCompleted || sessionList[0];
+        return (
+          <div style={{ display: "flex", gap: 14 }}>
+            {/* Left: controls */}
+            <div style={{ flex: "0 0 240px" }}>
+              <div style={cardS}>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: "#8B5CF6" }}>2.</span> Live Capture</div>
+                {!captureRunning && !captureDone && <button style={btn("#8B5CF6", false, { width: "100%" })} onClick={runCapture}>▶ Start Recording Sessions</button>}
+                {captureRunning && (
+                  <div>
+                    <div style={{ fontSize: 13, color: "#8B5CF6", fontWeight: 600, marginBottom: 6 }}>Sessions recording...</div>
+                    <div style={{ height: 4, borderRadius: 3, background: C.bdr, overflow: "hidden", marginBottom: 6 }}>
+                      <div style={{ height: "100%", width: `${(completedList.length / sessionList.length) * 100}%`, background: "#8B5CF6", transition: "width .2s" }} />
                     </div>
-                  );
-                })}
+                    <div style={{ fontSize: 13, color: C.txt, marginBottom: 4 }}>{completedList.length} / {sessionList.length} completed</div>
+                    {recordingSession && <div style={{ fontSize: 12, color: "#8B5CF6", fontFamily: "monospace" }}>▶ {recordingSession.id} · {recordingSession.lang}</div>}
+                  </div>
+                )}
+                {captureDone && (
+                  <div>
+                    <div style={{ fontSize: 13, color: C.green, fontWeight: 700, marginBottom: 6 }}>✓ {sessionList.length} sessions captured</div>
+                    <div style={{ padding: 8, borderRadius: 6, background: C.green+"10", border: `1px solid ${C.green}22`, fontSize: 12, color: C.green, marginBottom: 6 }}>Speaker IDs de-identified · Transcripts generated</div>
+                    {sessionList.filter(s=>s.issue).length > 0 && <div style={{ padding: 8, borderRadius: 6, background: C.amber+"10", border: `1px solid ${C.amber}22`, fontSize: 12, color: C.amber, marginBottom: 8 }}>{sessionList.filter(s=>s.issue).length} sessions flagged</div>}
+                    <button style={btn(C.amber, false, { width: "100%" })} onClick={() => advance(2)}>Run QC →</button>
+                  </div>
+                )}
+              </div>
+            </div>
+            {/* Middle: meeting visual */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <MeetingGrid participants={displaySession?.participants || PAX[meetingType]} lang={displaySession?.lang || langList[0]} captureRunning={captureRunning} captureDone={captureDone} activeSpeaker={activeSpeaker} currentSession={displaySession} />
+            </div>
+            {/* Right: session log */}
+            <div style={{ flex: "0 0 240px" }}>
+              <div style={cardS}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Session Log</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 3, maxHeight: 360, overflowY: "auto" }}>
+                  {sessionList.map(s => {
+                    const status = sessionStatuses[s.id] || "scheduled";
+                    const statusColor = status==="completed" ? C.green : status==="recording" ? "#8B5CF6" : C.txt+"44";
+                    return (
+                      <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 8px", borderRadius: 5, background: status==="recording" ? "#8B5CF608" : C.bg, border: `1px solid ${status==="completed"&&s.issue ? C.amber+"44" : status==="recording" ? "#8B5CF644" : C.bdr}`, fontSize: 11, transition: "all .3s" }}>
+                        <span style={{ color: statusColor, width: 8, flexShrink: 0 }}>{status==="completed" ? "●" : status==="recording" ? "◉" : "○"}</span>
+                        <span style={{ fontFamily: "monospace", color: C.hi, minWidth: 50 }}>{s.id}</span>
+                        <span style={{ color: C.cyan, flex: 1 }}>{s.lang}</span>
+                        {s.issue && status==="completed" && <span style={{ color: C.amber, fontSize: 9 }}>⚠️</span>}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* STAGE 2 — QC */}
       {stage === 2 && (
@@ -1118,22 +1189,22 @@ function HumanDataCollectDemo() {
   if (useCase === "voice") return <VoiceClipHDC onBack={() => setUseCase(null)} />;
   if (useCase === "meeting") return <MeetingDataCollectDemo onBack={() => setUseCase(null)} />;
   return (
-    <div style={{ background: C.bg, color: C.txt, fontFamily: "'TP Sans','DM Sans',sans-serif", minHeight: "calc(100vh - 112px)", padding: "32px 24px" }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: C.txt, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6 }}>Human Data Collection</div>
-      <div style={{ fontSize: 22, fontWeight: 800, color: C.hi, marginBottom: 24 }}>Select a use case</div>
-      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+    <div style={{ background: C.bg, color: C.txt, fontFamily: "'TP Sans','DM Sans',sans-serif", minHeight: "calc(100vh - 112px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px 24px" }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: C.txt, letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 8, textAlign: "center" }}>Human Data Collection</div>
+      <div style={{ fontSize: 28, fontWeight: 800, color: C.hi, marginBottom: 32, textAlign: "center" }}>Select a use case</div>
+      <div style={{ display: "flex", gap: 20, flexWrap: "wrap", justifyContent: "center", width: "100%", maxWidth: 900 }}>
         {[
           { key: "voice", icon: "📡", label: "Voice Clip Collection", color: C.cyan, desc: "Crowdsourced short voice recordings from mobile contributors across India. ASR transcription, SNR filtering, and transcript annotation.", tag: "5 stages · HDC v1.0" },
           { key: "meeting", icon: "🌐", label: "Multilingual Online Meeting Data Collection", color: C.accent, desc: "Remote corporate meeting recordings across 8 languages and 4 meeting formats. QC, artifact generation, and content writer validation.", tag: "5 stages · MTGDC v1.0" },
         ].map(({ key, icon, label, color, desc, tag }) => (
           <div key={key} onClick={() => setUseCase(key)}
-            style={{ flex: "1 1 320px", maxWidth: 420, padding: "24px 22px", borderRadius: 14, cursor: "pointer", border: `1px solid ${color}44`, background: C.card, transition: "border-color .2s, box-shadow .2s" }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = color; e.currentTarget.style.boxShadow = `0 8px 32px ${color}18`; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = color+"44"; e.currentTarget.style.boxShadow = "none"; }}>
-            <div style={{ fontSize: 28, marginBottom: 10 }}>{icon}</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color, marginBottom: 6 }}>{label}</div>
-            <div style={{ fontSize: 13, color: C.txt, lineHeight: 1.6, marginBottom: 10 }}>{desc}</div>
-            <div style={{ fontSize: 11, color, fontWeight: 600 }}>{tag}</div>
+            style={{ flex: "1 1 340px", maxWidth: 420, padding: "32px 28px", borderRadius: 16, cursor: "pointer", border: `1px solid ${color}44`, background: C.card, transition: "border-color .2s, box-shadow .2s, transform .2s" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = color; e.currentTarget.style.boxShadow = `0 12px 40px ${color}22`; e.currentTarget.style.transform = "translateY(-3px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = color+"44"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}>
+            <div style={{ fontSize: 36, marginBottom: 14 }}>{icon}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color, marginBottom: 10, lineHeight: 1.3 }}>{label}</div>
+            <div style={{ fontSize: 14, color: C.txt, lineHeight: 1.7, marginBottom: 14 }}>{desc}</div>
+            <div style={{ fontSize: 12, color, fontWeight: 600, letterSpacing: "0.05em" }}>{tag} →</div>
           </div>
         ))}
       </div>
