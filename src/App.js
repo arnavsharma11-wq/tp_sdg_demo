@@ -75,57 +75,43 @@ function FrameScrubber({ totalFrames = 300, fps = 30, showFaces, facesOk }) {
   return (
     <div>
       <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", borderRadius: 8, overflow: "hidden", background: `linear-gradient(180deg, #87CEEB ${40 - frame * 0.01}%, #6a6a6a 40%, #555 41%, #444 100%)`, border: `1px solid ${C.bdr}`, marginBottom: 8 }}>
-        {/* Road perspective */}
         <div style={{ position: "absolute", bottom: 0, left: "15%", right: "15%", height: "58%", background: "#444", clipPath: "polygon(30% 0%, 70% 0%, 100% 100%, 0% 100%)" }} />
-        {/* Sidewalks */}
         <div style={{ position: "absolute", bottom: 0, left: 0, width: "22%", height: "58%", background: "#888", clipPath: "polygon(60% 0%, 100% 0%, 100% 100%, 0% 100%)" }} />
         <div style={{ position: "absolute", bottom: 0, right: 0, width: "22%", height: "58%", background: "#888", clipPath: "polygon(0% 0%, 40% 0%, 100% 100%, 0% 100%)" }} />
-        {/* Buildings */}
         <div style={{ position: "absolute", left: "5%", top: "15%", width: "8%", height: "28%", background: "#7788AA", borderRadius: 2 }} />
         <div style={{ position: "absolute", left: "15%", top: "10%", width: "6%", height: "33%", background: "#8899AA", borderRadius: 2 }} />
         <div style={{ position: "absolute", right: "6%", top: "12%", width: "9%", height: "30%", background: "#7788AA", borderRadius: 2 }} />
-        {/* Trees */}
         <div style={{ position: "absolute", left: "28%", top: "22%", width: "10%", height: "10%", background: "#4A7A4A", borderRadius: "50%" }} />
         <div style={{ position: "absolute", right: "22%", top: "19%", width: "11%", height: "11%", background: "#4A7A4A", borderRadius: "50%" }} />
-        {/* Lane markings animated */}
         {[0,1,2,3].map(i => <div key={i} style={{ position: "absolute", left: "49.5%", bottom: `${10 + i * 18 - (frame % 18)}%`, width: "1%", height: "6%", background: "#FFD700", opacity: 0.7 }} />)}
-        {/* Side lane lines */}
         <div style={{ position: "absolute", bottom: 0, left: "22%", width: "1px", height: "58%", background: "#fff", opacity: 0.6, transformOrigin: "bottom center", transform: "perspective(200px) rotateY(-2deg)" }} />
         <div style={{ position: "absolute", bottom: 0, right: "22%", width: "1px", height: "58%", background: "#fff", opacity: 0.6, transformOrigin: "bottom center", transform: "perspective(200px) rotateY(2deg)" }} />
-        {/* Crosswalk */}
         <div style={{ position: "absolute", bottom: "30%", left: "30%", width: "40%", display: "flex", gap: "2%", justifyContent: "center" }}>
           {[0,1,2,3,4].map(i => <div key={i} style={{ width: "4%", height: 6, background: "#fff", opacity: 0.5 }} />)}
         </div>
-        {/* Traffic light */}
         <div style={{ position: "absolute", top: "18%", right: "24%", width: 8, height: 22, background: "#333", borderRadius: 3, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2 }}>
           <div style={{ width: 5, height: 5, borderRadius: "50%", background: frame > 150 ? "#2ECC40" : "#FF0000" }} />
         </div>
-        {/* Objects with tracking boxes */}
         {objects.map(obj => (
           <div key={obj.id} style={{ position: "absolute", left: `${obj.x}%`, top: `${obj.y}%`, width: `${obj.w}%`, height: `${obj.h}%`, border: `2px solid ${obj.color}`, borderRadius: 2, transition: "left .03s, top .03s" }}>
             <div style={{ position: "absolute", top: -12, left: 0, fontSize: 7, fontWeight: 700, color: obj.color, background: "#000A", padding: "1px 3px", borderRadius: 2, whiteSpace: "nowrap" }}>{obj.id}: {obj.cls}</div>
           </div>
         ))}
-        {/* Face detection overlay */}
         {showFaces && objects.filter(o => o.cls !== "vehicle").map(obj => (
           <div key={obj.id + "_face"} style={{ position: "absolute", left: `${obj.x + 1}%`, top: `${obj.y}%`, width: `${obj.w - 2}%`, height: `${obj.h * 0.4}%`, border: `2px solid ${facesOk ? C.green : C.red}`, borderRadius: 2, background: facesOk ? C.green + "20" : C.red + "10", transition: "left .03s" }}>
             <div style={{ position: "absolute", top: -10, left: 0, fontSize: 5, fontWeight: 700, color: facesOk ? C.green : C.red, background: "#000B", padding: "1px 2px", borderRadius: 2, whiteSpace: "nowrap" }}>{facesOk ? "✓" : "⚠"}</div>
           </div>
         ))}
-        {/* License plate detection */}
         {showFaces && <div style={{ position: "absolute", left: `${objects[1].x + 3}%`, top: `${objects[1].y + 6}%`, width: "6%", height: "2%", border: `1.5px solid ${facesOk ? C.green : C.red}`, borderRadius: 1 }}><div style={{ position: "absolute", top: -10, left: 0, fontSize: 5, fontWeight: 700, color: facesOk ? C.green : C.red, background: "#000B", padding: "1px 2px", borderRadius: 2, whiteSpace: "nowrap" }}>{facesOk ? "✓ PLATE" : "⚠ PLATE"}</div></div>}
-        {/* HUD */}
         <div style={{ position: "absolute", top: 6, left: 6, background: "#000A", padding: "3px 8px", borderRadius: 4, fontSize: 9, fontFamily: "monospace", color: "#0F0" }}>● REC {fps}fps</div>
         <div style={{ position: "absolute", bottom: 6, left: 6, background: "#000A", padding: "3px 8px", borderRadius: 4, fontSize: 9, fontFamily: "monospace", color: "#0F0" }}>Frame {frame}/{totalFrames} · {sec}s</div>
         <div style={{ position: "absolute", bottom: 6, right: 6, background: "#000A", padding: "3px 8px", borderRadius: 4, fontSize: 9, fontFamily: "monospace", color: C.amber }}>{objects.length} objects tracked</div>
       </div>
-      {/* Controls */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
         <button onClick={() => setPlaying(!playing)} style={btn(C.cyan, true, { padding: "5px 12px", fontSize: 11 })}>{playing ? "⏸ Pause" : "▶ Play"}</button>
         <input type="range" min={0} max={totalFrames - 1} value={frame} onChange={e => { setPlaying(false); setFrame(+e.target.value); }} style={{ flex: 1, accentColor: C.cyan }} />
         <span style={{ fontSize: 10, color: C.txt, fontFamily: "monospace", minWidth: 50 }}>{sec}s</span>
       </div>
-      {/* Temporal annotation timeline */}
       <div style={{ position: "relative", height: 48, borderRadius: 6, background: C.bg, border: `1px solid ${C.bdr}`, overflow: "hidden" }}>
         {objects.map((obj, i) => (
           <div key={obj.id} style={{ position: "absolute", top: 4 + i * 11, left: `${(i === 0 ? 10 : i === 1 ? 0 : i === 2 ? 20 : 5)}%`, width: `${(i === 0 ? 80 : i === 1 ? 100 : i === 2 ? 60 : 65)}%`, height: 8, background: obj.color + "44", borderRadius: 3 }}>
@@ -237,18 +223,14 @@ function PipelineDemo({ type, onBack }) {
   const tc = conf.color;
 
   return (
-    <div style={{ minHeight: "100vh", background: C.bg, color: C.txt, fontFamily: "'TP Sans', 'DM Sans', sans-serif" }}>
-      <div>
-        <div style={{ padding: "0 24px", height: 56, background: "hsl(0,0%,5%)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ height: 20, width: "auto", objectFit: "contain" }} />
-          <button style={btn(C.txt, true, { padding: "5px 12px", fontSize: 10 })} onClick={onBack}>← All Journeys</button>
-        </div>
-        <div style={{ height: 2, background: "linear-gradient(90deg, #5b21b6 0%, #9071f0 100%)" }} />
+    <div style={{ background: C.bg, color: C.txt, fontFamily: "'TP Sans', 'DM Sans', sans-serif", minHeight: "calc(100vh - 112px)" }}>
+      <div style={{ padding: "8px 24px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${C.bdr}` }}>
+        <button style={btn(C.txt, true, { padding: "4px 10px", fontSize: 10 })} onClick={onBack}>← All Journeys</button>
+        <span style={{ fontSize: 11, color: tc, fontWeight: 700 }}>{conf.icon} {conf.label}</span>
       </div>
       <div style={{ padding: "10px 24px" }}>
         <Nav stage={stage} setStage={setStage} />
 
-        {/* STAGE 1: SEED */}
         {stage === 0 && (
           <div style={{ display: "flex", gap: 16 }}>
             <div style={{ flex: "0 0 340px" }}>
@@ -282,7 +264,6 @@ function PipelineDemo({ type, onBack }) {
           </div>
         )}
 
-        {/* STAGE 2: GENERATE */}
         {stage === 1 && (
           <div style={{ display: "flex", gap: 16 }}>
             <div style={{ flex: "0 0 280px" }}>
@@ -306,7 +287,6 @@ function PipelineDemo({ type, onBack }) {
           </div>
         )}
 
-        {/* STAGE 3: CRITIQUE */}
         {stage === 2 && (
           <div style={{ display: "flex", gap: 16 }}>
             <div style={{ flex: "0 0 280px" }}>
@@ -359,7 +339,6 @@ function PipelineDemo({ type, onBack }) {
           </div>
         )}
 
-        {/* STAGE 4: CURATE */}
         {stage === 3 && (
           <div style={{ display: "flex", gap: 16 }}>
             <div style={{ flex: "0 0 280px" }}>
@@ -391,7 +370,6 @@ function PipelineDemo({ type, onBack }) {
           </div>
         )}
 
-        {/* STAGE 5: COMPLY */}
         {stage === 4 && (
           <div style={{ display: "flex", gap: 16 }}>
             <div style={{ flex: "0 0 280px" }}>
@@ -436,7 +414,6 @@ function PipelineDemo({ type, onBack }) {
           </div>
         )}
 
-        {/* STAGE 6: PACKAGE */}
         {stage === 5 && (
           <div style={{ display: "flex", gap: 16 }}>
             <div style={{ flex: "0 0 300px" }}>
@@ -480,12 +457,255 @@ function PipelineDemo({ type, onBack }) {
   );
 }
 
+// ===== TAB BAR =====
+function TabBar({ activeTab, setActiveTab }) {
+  const TABS = ["Synthetic Data Generation", "Human Data Generation", "Human Data Collection"];
+  return (
+    <div style={{ background: "hsl(0,0%,6%)", borderBottom: `1px solid ${C.bdr}` }}>
+      <div style={{ display: "flex", padding: "0 24px" }}>
+        {TABS.map((label, i) => (
+          <button key={i} onClick={() => setActiveTab(i)} style={{
+            background: "none", border: "none", borderBottom: `2px solid ${activeTab === i ? C.accent : "transparent"}`,
+            color: activeTab === i ? "#fff" : C.txt,
+            cursor: "pointer", fontSize: 12, fontWeight: activeTab === i ? 700 : 500,
+            fontFamily: "'TP Sans', 'DM Sans', sans-serif",
+            padding: "12px 20px", letterSpacing: "0.01em", whiteSpace: "nowrap",
+            transition: "color .15s, border-color .15s",
+          }}>
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ===== STAGE LIST =====
+function StageList({ stages, color }) {
+  return (
+    <div>
+      {stages.map((s, i) => (
+        <div key={i} style={{ display: "flex", gap: 14, paddingBottom: 18, position: "relative" }}>
+          {i < stages.length - 1 && (
+            <div style={{ position: "absolute", left: 15, top: 34, height: "calc(100% - 10px)", width: 2, background: color + "20" }} />
+          )}
+          <div style={{ width: 32, height: 32, borderRadius: "50%", background: color + "15", border: `1.5px solid ${color}44`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 11, fontWeight: 800, color, zIndex: 1, position: "relative" }}>
+            {i + 1}
+          </div>
+          <div style={{ paddingTop: 5 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: C.hi, marginBottom: 2 }}>{s.title}</div>
+            <div style={{ fontSize: 11, color: C.txt, lineHeight: 1.55 }}>{s.desc}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ===== COMPARISON FOOTER =====
+function ComparisonFooter() {
+  return (
+    <div style={{ marginTop: 40, paddingTop: 28, borderTop: `1px solid ${C.bdr}` }}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: C.txt, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 14 }}>Core Distinction</div>
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+        <div style={{ flex: "1 1 260px", padding: "14px 18px", borderRadius: 8, background: C.card, border: `1px solid ${C.bdr}` }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: C.accent, marginBottom: 6 }}>Generation</div>
+          <div style={{ fontSize: 12, color: C.txt, lineHeight: 1.6 }}>Prescriptive — you define what the data should be, humans create it</div>
+        </div>
+        <div style={{ flex: "1 1 260px", padding: "14px 18px", borderRadius: 8, background: C.card, border: `1px solid ${C.bdr}` }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: C.cyan, marginBottom: 6 }}>Collection</div>
+          <div style={{ fontSize: 12, color: C.txt, lineHeight: 1.6 }}>Descriptive — the world produces signals, humans capture and label them</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== HUMAN DATA GENERATION TAB =====
+const HDG_STAGES = [
+  { title: "Task Design", desc: "Define domain, format, persona, tone, and difficulty level for the data to be authored." },
+  { title: "Guideline Authoring", desc: "Specify what to write, what to avoid, and the quality criteria contributors must meet." },
+  { title: "Contributor Onboarding", desc: "Train writers, subject-matter experts, or role-players on the task brief and quality standards." },
+  { title: "Data Authoring", desc: "Contributors produce original content — conversations, prompts, responses, narratives, or code." },
+  { title: "HITL Review", desc: "Human reviewers flag outputs that are low-quality, off-policy, or fail task requirements." },
+  { title: "Metadata Tagging", desc: "Label each item with intent, language, sentiment, difficulty, and domain-specific attributes." },
+  { title: "Provenance Documentation", desc: "Record who created each item, when, under which task brief, and with which quality score." },
+];
+
+const HDG_EXAMPLE_CHAT = [
+  { role: "customer", text: "I just checked my bill and I've been charged twice.", sentiment: "frustrated", intent: "billing_dispute" },
+  { role: "agent", text: "I'm sorry about that — let me take a look.", sentiment: "empathetic", intent: "acknowledge" },
+  { role: "customer", text: "My account number is 4872-99X.", sentiment: "neutral", intent: "provide_info" },
+  { role: "agent", text: "I see the duplicate charge. I'm reversing it now.", sentiment: "proactive", intent: "resolve" },
+  { role: "customer", text: "Will this happen again?", sentiment: "concerned", intent: "reassurance_seek" },
+  { role: "agent", text: "We've flagged your account for review. Anything else I can help with?", sentiment: "reassuring", intent: "confirm_action" },
+];
+
+function HumanDataGen() {
+  return (
+    <div style={{ padding: "32px 40px 48px", maxWidth: 1100, margin: "0 auto" }}>
+      <div style={{ marginBottom: 32 }}>
+        <h2 style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 900, color: "#fff", margin: "0 0 8px 0", letterSpacing: "-0.02em" }}>
+          Human Data Generation
+        </h2>
+        <p style={{ fontSize: 14, color: C.hi, margin: "0 0 8px 0", maxWidth: 600 }}>
+          Purpose-built data authored by people to meet precise training objectives.
+        </p>
+        <p style={{ fontSize: 12, color: C.txt, margin: 0, maxWidth: 680, lineHeight: 1.65 }}>
+          Humans generate data intentionally according to clear task briefs — filling gaps that real-world data cannot cover such as rare scenarios, sensitive interactions, adversarial prompts, multilingual edge cases, or policy-driven content.
+        </p>
+      </div>
+
+      <div style={{ display: "flex", gap: 32, flexWrap: "wrap", alignItems: "flex-start" }}>
+        <div style={{ flex: "1 1 300px", minWidth: 260 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.accent, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 18 }}>Key Stages</div>
+          <StageList stages={HDG_STAGES} color={C.accent} />
+        </div>
+
+        <div style={{ flex: "1 1 320px", minWidth: 280 }}>
+          <div style={{ ...cardS, borderColor: C.accent + "33" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: C.accent, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>
+              Example — Synthetic Customer Support Conversation
+            </div>
+            <div style={{ padding: "10px 12px", borderRadius: 6, background: C.bg, border: `1px solid ${C.bdr}`, marginBottom: 12, fontSize: 11, color: C.txt, lineHeight: 1.6 }}>
+              <span style={{ color: C.hi, fontWeight: 700 }}>Task Brief:</span>
+              <br />
+              <span style={{ fontStyle: "italic", color: C.txt }}>"Write a 6-turn chat between a frustrated customer double-charged on their bill and a support agent who resolves it."</span>
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              {HDG_EXAMPLE_CHAT.map((t, i) => <ChatBubble key={i} turn={t} labels={false} />)}
+            </div>
+            <div style={{ padding: "8px 10px", borderRadius: 6, background: C.accent + "0C", border: `1px solid ${C.accent}22`, fontSize: 10, color: C.txt, lineHeight: 1.6 }}>
+              This conversation is then annotated with intent labels, per-turn sentiment, and resolution outcomes before entering an RLHF or fine-tuning corpus.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ComparisonFooter />
+    </div>
+  );
+}
+
+// ===== HUMAN DATA COLLECTION TAB =====
+const HDC_STAGES = [
+  { title: "Collection Design", desc: "Define what to capture, recording conditions, device requirements, and target demographics." },
+  { title: "Consent & Ethics", desc: "Obtain informed consent from participants and meet privacy and regional compliance requirements." },
+  { title: "Participant Recruitment", desc: "Recruit a balanced pool by accent, geography, age, gender, and domain-specific criteria." },
+  { title: "Data Capture", desc: "Participants speak, record, gesture, or submit data via a controlled app or collection environment." },
+  { title: "Ingestion & Validation", desc: "Automatically check audio levels, file formats, clip duration, and minimum quality thresholds." },
+  { title: "Anonymization", desc: "Remove PII, blur faces, strip GPS and metadata, and verify re-identification risk meets threshold." },
+  { title: "Annotation", desc: "Human annotators produce transcripts, bounding boxes, emotion tags, or intent labels per clip." },
+  { title: "Dataset Packaging", desc: "Version, split (train/val/test), and deliver the dataset with a provenance manifest." },
+];
+
+const HDC_CHECKLIST = [
+  "10,000 participants across 12 Indian cities",
+  "Each records short spoken phrases on their phone",
+  "Produces 500,000+ audio clips",
+  "Noise thresholds enforced automatically",
+  "Human annotators verify transcripts word-by-word",
+  "Each clip tagged by city, age group, gender, device",
+];
+
+function HumanDataCollect() {
+  return (
+    <div style={{ padding: "32px 40px 48px", maxWidth: 1100, margin: "0 auto" }}>
+      <div style={{ marginBottom: 32 }}>
+        <h2 style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 900, color: "#fff", margin: "0 0 8px 0", letterSpacing: "-0.02em" }}>
+          Human Data Collection
+        </h2>
+        <p style={{ fontSize: 14, color: C.hi, margin: "0 0 8px 0", maxWidth: 600 }}>
+          Real-world signals responsibly captured, processed, and labeled by humans.
+        </p>
+        <p style={{ fontSize: 12, color: C.txt, margin: 0, maxWidth: 680, lineHeight: 1.65 }}>
+          Human data collection focuses on capturing authentic behavior — speech, images, video, or interactions — through participant consent, controlled collection environments, and rigorous processing pipelines.
+        </p>
+      </div>
+
+      <div style={{ display: "flex", gap: 32, flexWrap: "wrap", alignItems: "flex-start" }}>
+        <div style={{ flex: "1 1 300px", minWidth: 260 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: C.cyan, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 18 }}>Key Stages</div>
+          <StageList stages={HDC_STAGES} color={C.cyan} />
+        </div>
+
+        <div style={{ flex: "1 1 320px", minWidth: 280 }}>
+          <div style={{ ...cardS, borderColor: C.cyan + "33" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: C.cyan, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14 }}>
+              Example — Voice Data Collection for Speech Recognition
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+              {HDC_CHECKLIST.map((item, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 12, color: C.hi, lineHeight: 1.5 }}>
+                  <span style={{ color: C.cyan, fontSize: 11, marginTop: 1, flexShrink: 0, fontWeight: 700 }}>✓</span>
+                  {item}
+                </div>
+              ))}
+            </div>
+            <div style={{ padding: "8px 10px", borderRadius: 6, background: C.cyan + "0C", border: `1px solid ${C.cyan}22`, fontSize: 10, color: C.txt, lineHeight: 1.6 }}>
+              This enables models to learn accent variation, code-switching, and natural speech rhythms that web data cannot provide.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ComparisonFooter />
+    </div>
+  );
+}
+
+// ===== SYNTHETIC HOME =====
+function SyntheticHome({ hov, setHov, setJourney }) {
+  return (
+    <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 112px)", padding: 32, overflow: "hidden" }}>
+      <img src="/banner.gif" alt="" aria-hidden="true" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: 0.72, pointerEvents: "none" }} />
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(19,19,19,0.92) 0%, transparent 30%), linear-gradient(to left, rgba(19,19,19,0.92) 0%, transparent 30%), linear-gradient(to bottom, rgba(19,19,19,0.85) 0%, transparent 40%), linear-gradient(to top, rgba(19,19,19,0.95) 0%, transparent 40%)", pointerEvents: "none" }} />
+
+      <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ position: "relative", zIndex: 2, display: "block", height: 26, width: "auto", objectFit: "contain", margin: "0 auto 0.5rem auto", opacity: 0.92 }} />
+      <span style={{ position: "relative", zIndex: 2, display: "block", fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "1.1rem", fontWeight: 700, letterSpacing: "0.32em", textTransform: "uppercase", color: "rgba(210,195,225,0.5)", marginBottom: "0.55rem", textAlign: "center" }}>Introducing</span>
+      <h1 style={{ position: "relative", zIndex: 2, fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "clamp(2.4rem, 6.5vw, 5rem)", fontWeight: 900, color: "#ffffff", lineHeight: 1.04, letterSpacing: "-0.025em", margin: "0 0 0.75rem 0", textShadow: "0 0 40px rgba(144,113,240,0.25), 0 2px 20px rgba(0,0,0,0.5)", textAlign: "center" }}>
+        TP.ai <span style={{ color: "#9071f0" }}>Data</span>Gen
+      </h1>
+      <p style={{ position: "relative", zIndex: 2, fontSize: 15, color: C.hi, textAlign: "center", maxWidth: 580, lineHeight: 1.6, marginBottom: 6 }}>
+        Machine-generated data created algorithmically to simulate real-world scenarios at scale.
+      </p>
+      <p style={{ position: "relative", zIndex: 2, fontSize: 12, color: C.txt, textAlign: "center", maxWidth: 600, lineHeight: 1.6, marginBottom: 40 }}>
+        Used to expand coverage, stress-test models, and generate edge cases that are rare, sensitive, or unsafe to collect in the real world.
+      </p>
+
+      <div style={{ position: "relative", zIndex: 2, display: "flex", gap: 18, flexWrap: "wrap", justifyContent: "center", marginBottom: 48 }}>
+        {[
+          { k: "warehouse", icon: "🏭", title: "Warehouse Safety", sub: "Image SDG", desc: "Generate synthetic warehouse images with workers, forklifts, safety violations, and edge cases from a single seed photo.", color: C.amber, brief: "Logistics client · 500 annotated images" },
+          { k: "driving", icon: "🚗", title: "Self-Driving Car", sub: "Video SDG", desc: "Generate dashcam video clips with pedestrians, rain, night driving, and construction zones for perception training.", color: C.cyan, brief: "AV OEM · 200 video clips · 30fps" },
+          { k: "support", icon: "💬", title: "Angry Customer Support", sub: "Text SDG", desc: "Generate customer support conversations with angry, sarcastic, and threatening customers for support AI training.", color: C.red, brief: "FitPulse wearable · 2,000 conversations" },
+        ].map(j => (
+          <div key={j.k}
+            onMouseEnter={() => setHov(j.k)} onMouseLeave={() => setHov(null)}
+            onClick={() => setJourney(j.k)}
+            style={{ width: 290, padding: "28px 22px", borderRadius: 14, cursor: "pointer", transition: "all .35s cubic-bezier(.17,.67,.35,1.15)", border: `1px solid ${hov === j.k ? j.color + "66" : C.bdr}`, background: hov === j.k ? j.color + "08" : C.card, transform: hov === j.k ? "translateY(-4px)" : "none", boxShadow: hov === j.k ? `0 14px 40px ${j.color}18` : "none" }}>
+            <div style={{ fontSize: 36, marginBottom: 10 }}>{j.icon}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: j.color, marginBottom: 2 }}>{j.title}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: j.color, letterSpacing: 1, opacity: 0.7, marginBottom: 8 }}>{j.sub}</div>
+            <div style={{ fontSize: 12, color: C.txt, lineHeight: 1.5, marginBottom: 10 }}>{j.desc}</div>
+            <div style={{ padding: "4px 10px", borderRadius: 6, background: j.color + "12", border: `1px solid ${j.color}22`, fontSize: 10, color: j.color, fontWeight: 600, display: "inline-block" }}>{j.brief}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ position: "relative", zIndex: 2, display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+        <div style={{ padding: "8px 14px", borderRadius: 6, background: C.red + "10", border: `1px solid ${C.red}22`, fontSize: 10, color: C.red, fontWeight: 600 }}><HT s={7} /> Human-in-the-loop at every stage</div>
+        <div style={{ padding: "8px 14px", borderRadius: 6, background: C.green + "10", border: `1px solid ${C.green}22`, fontSize: 10, color: C.green, fontWeight: 600 }}>🔒 GDPR · HIPAA · EU AI Act · SOC 2</div>
+        <div style={{ padding: "8px 14px", borderRadius: 6, background: C.accent + "10", border: `1px solid ${C.accent}22`, fontSize: 10, color: C.accent, fontWeight: 600 }}>📋 Full compliance report per delivery</div>
+      </div>
+    </div>
+  );
+}
+
 // ===== MAIN APP =====
 export default function App() {
+  const [activeTab, setActiveTab] = useState(0);
   const [journey, setJourney] = useState(null);
   const [hov, setHov] = useState(null);
-
-  if (journey) return <PipelineDemo type={journey} onBack={() => setJourney(null)} />;
 
   return (
     <div style={{ minHeight: "100vh", background: C.bg, color: C.txt, fontFamily: "'TP Sans', 'DM Sans', sans-serif" }}>
@@ -496,46 +716,20 @@ export default function App() {
         </div>
         <div style={{ height: 2, background: "linear-gradient(90deg, #5b21b6 0%, #9071f0 100%)" }} />
       </div>
-      <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 56px)", padding: 32, overflow: "hidden" }}>
-        {/* GIF background */}
-        <img src="/banner.gif" alt="" aria-hidden="true" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: 0.72, pointerEvents: "none" }} />
-        {/* Dark overlays */}
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(19,19,19,0.92) 0%, transparent 30%), linear-gradient(to left, rgba(19,19,19,0.92) 0%, transparent 30%), linear-gradient(to bottom, rgba(19,19,19,0.85) 0%, transparent 40%), linear-gradient(to top, rgba(19,19,19,0.95) 0%, transparent 40%)", pointerEvents: "none" }} />
-        {/* Content */}
-        <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ position: "relative", zIndex: 2, display: "block", height: 26, width: "auto", objectFit: "contain", margin: "0 auto 0.5rem auto", opacity: 0.92 }} />
-        <span style={{ position: "relative", zIndex: 2, display: "block", fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "1.1rem", fontWeight: 700, letterSpacing: "0.32em", textTransform: "uppercase", color: "rgba(210,195,225,0.5)", marginBottom: "0.55rem", textAlign: "center" }}>Introducing</span>
-        <h1 style={{ position: "relative", zIndex: 2, fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "clamp(2.4rem, 6.5vw, 5rem)", fontWeight: 900, color: "#ffffff", lineHeight: 1.04, letterSpacing: "-0.025em", margin: "0 0 0.55rem 0", textShadow: "0 0 40px rgba(144,113,240,0.25), 0 2px 20px rgba(0,0,0,0.5)", textAlign: "center" }}>
-          TP.ai <span style={{ color: "#9071f0" }}>Data</span>Gen
-        </h1>
-        <p style={{ position: "relative", zIndex: 2, fontSize: 16, color: C.txt, textAlign: "center", maxWidth: 640, lineHeight: 1.6, marginBottom: 12 }}>
-          Synthetic Data Generation &amp; Curation Platform — end-to-end pipelines with human-in-the-loop quality, regulatory compliance, and full provenance across text, image, and video.
-        </p>
-        <p style={{ position: "relative", zIndex: 2, fontSize: 12, color: C.accent, textAlign: "center", marginBottom: 40 }}>Choose a demo journey to experience the full 6-stage pipeline ↓</p>
 
-        <div style={{ position: "relative", zIndex: 2, display: "flex", gap: 18, flexWrap: "wrap", justifyContent: "center", marginBottom: 48 }}>
-          {[
-            { k: "warehouse", icon: "🏭", title: "Warehouse Safety", sub: "Image SDG", desc: "Generate synthetic warehouse images with workers, forklifts, safety violations, and edge cases from a single seed photo.", color: C.amber, brief: "Logistics client · 500 annotated images" },
-            { k: "driving", icon: "🚗", title: "Self-Driving Car", sub: "Video SDG", desc: "Generate dashcam video clips with pedestrians, rain, night driving, and construction zones for perception training.", color: C.cyan, brief: "AV OEM · 200 video clips · 30fps" },
-            { k: "support", icon: "💬", title: "Angry Customer Support", sub: "Text SDG", desc: "Generate customer support conversations with angry, sarcastic, and threatening customers for support AI training.", color: C.red, brief: "FitPulse wearable · 2,000 conversations" },
-          ].map(j => (
-            <div key={j.k}
-              onMouseEnter={() => setHov(j.k)} onMouseLeave={() => setHov(null)}
-              onClick={() => setJourney(j.k)}
-              style={{ width: 290, padding: "28px 22px", borderRadius: 14, cursor: "pointer", transition: "all .35s cubic-bezier(.17,.67,.35,1.15)", border: `1px solid ${hov === j.k ? j.color + "66" : C.bdr}`, background: hov === j.k ? j.color + "08" : C.card, transform: hov === j.k ? "translateY(-4px)" : "none", boxShadow: hov === j.k ? `0 14px 40px ${j.color}18` : "none" }}>
-              <div style={{ fontSize: 36, marginBottom: 10 }}>{j.icon}</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: j.color, marginBottom: 2 }}>{j.title}</div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: j.color, letterSpacing: 1, opacity: 0.7, marginBottom: 8 }}>{j.sub}</div>
-              <div style={{ fontSize: 12, color: C.txt, lineHeight: 1.5, marginBottom: 10 }}>{j.desc}</div>
-              <div style={{ padding: "4px 10px", borderRadius: 6, background: j.color + "12", border: `1px solid ${j.color}22`, fontSize: 10, color: j.color, fontWeight: 600, display: "inline-block" }}>{j.brief}</div>
-            </div>
-          ))}
-        </div>
+      <TabBar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        <div style={{ position: "relative", zIndex: 2, display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
-          <div style={{ padding: "8px 14px", borderRadius: 6, background: C.red + "10", border: `1px solid ${C.red}22`, fontSize: 10, color: C.red, fontWeight: 600 }}><HT s={7} /> Human-in-the-loop at every stage</div>
-          <div style={{ padding: "8px 14px", borderRadius: 6, background: C.green + "10", border: `1px solid ${C.green}22`, fontSize: 10, color: C.green, fontWeight: 600 }}>🔒 GDPR · HIPAA · EU AI Act · SOC 2</div>
-          <div style={{ padding: "8px 14px", borderRadius: 6, background: C.accent + "10", border: `1px solid ${C.accent}22`, fontSize: 10, color: C.accent, fontWeight: 600 }}>📋 Full compliance report per delivery</div>
-        </div>
+      <div style={{ display: activeTab === 0 ? "block" : "none" }}>
+        {journey
+          ? <PipelineDemo type={journey} onBack={() => setJourney(null)} />
+          : <SyntheticHome hov={hov} setHov={setHov} setJourney={setJourney} />
+        }
+      </div>
+      <div style={{ display: activeTab === 1 ? "block" : "none" }}>
+        <HumanDataGen />
+      </div>
+      <div style={{ display: activeTab === 2 ? "block" : "none" }}>
+        <HumanDataCollect />
       </div>
     </div>
   );
