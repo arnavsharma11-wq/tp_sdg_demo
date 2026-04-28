@@ -1244,8 +1244,8 @@ function PodcastHDGDemo({ onBack }) {
                   </div>
                 </div>
               ))}
-              {allQADone && allQAPass && <button style={btn(C.green, false, { width:"100%", marginTop:4 })} onClick={() => advance(4)}>Publish Dataset →</button>}
-              {allQADone && !allQAPass && (
+              {/* Show re-record as soon as ANY item is flagged — don't wait for all 4 */}
+              {qaItems.some(q => qaChecks[q.key] === "flag") && (
                 <div style={{ marginTop:8 }}>
                   <div style={{ fontSize:13, color:C.red, marginBottom:10, padding:"8px 10px", borderRadius:6, background:C.red+"12", border:`1px solid ${C.red}33` }}>
                     ⚠ {qaItems.filter(q=>qaChecks[q.key]==="flag").length} item(s) flagged:<br/>
@@ -1258,6 +1258,14 @@ function PodcastHDGDemo({ onBack }) {
                     setQaChecks({ clarity:null, uniqueness:null, balance:null, confidence:null });
                     advance(1);
                   }}>↩ Re-record Flagged Sessions</button>
+                </div>
+              )}
+              {/* Publish only once all 4 are reviewed and all pass */}
+              {allQADone && allQAPass && <button style={btn(C.green, false, { width:"100%", marginTop:8 })} onClick={() => advance(4)}>Publish Dataset →</button>}
+              {/* Pending hint while some checks are still unreviewed */}
+              {!allQADone && !qaItems.some(q => qaChecks[q.key] === "flag") && Object.values(qaChecks).some(v => v !== null) && (
+                <div style={{ marginTop:8, fontSize:12, color:C.txt, textAlign:"center" }}>
+                  {qaItems.filter(q => qaChecks[q.key] === null).length} check{qaItems.filter(q=>qaChecks[q.key]===null).length!==1?"s":""} remaining
                 </div>
               )}
             </div>
