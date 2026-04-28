@@ -842,7 +842,8 @@ function PodcastHDGDemo({ onBack }) {
   const [qaChecks, setQaChecks] = useState({ clarity: null, uniqueness: null, balance: null, confidence: null });
   const [published, setPublished] = useState(false);
   const generatingRef = useRef(false);
-  const localeIdxRef  = useRef(0);    // which locale is currently being spoken
+  const localeIdxRef  = useRef(0);   // which locale is currently being spoken
+  const lineIdxRef    = useRef(0);   // which line within that locale
 
   const advance = n => { setStage(n); setMaxStage(m => Math.max(m, n)); };
   const STAGE_C = ["#F97316", "#8B5CF6", C.cyan, C.amber, C.green];
@@ -899,14 +900,17 @@ function PodcastHDGDemo({ onBack }) {
     };
 
     const localeCount = selectedLocales.length;
+    const totalLines  = lines.length * localeCount;
     localeIdxRef.current = 0;
+    lineIdxRef.current   = 0;
 
     // Play through every selected locale in sequence — each gets the full transcript
     const playLocale = (localeIdx) => {
       if (!generatingRef.current) return;
       localeIdxRef.current = localeIdx;
+      lineIdxRef.current   = 0;
       if (localeIdx >= localeCount) {
-        // All locales done
+        // All locales done — speech chain drives completion
         generatingRef.current = false;
         setGenerating(false); setGenDone(true); setGenProg(100);
         return;
@@ -917,6 +921,7 @@ function PodcastHDGDemo({ onBack }) {
 
       const speakLine = (lineIdx) => {
         if (!generatingRef.current) return;
+        lineIdxRef.current = lineIdx;
         if (lineIdx >= lines.length) {
           // Locale done — brief pause then next locale
           setTimeout(() => playLocale(localeIdx + 1), 700);
@@ -926,7 +931,6 @@ function PodcastHDGDemo({ onBack }) {
         const utt = new SpeechSynthesisUtterance(line.text);
         utt.lang   = lang;
         utt.voice  = line.spk === "A" ? voiceA : voiceB;
-        // Subtle, natural-sounding differences between speakers
         utt.pitch  = line.spk === "A" ? 1.05 : 0.92;
         utt.rate   = line.spk === "A" ? 0.88 : 0.93;
         utt.volume = 1.0;
@@ -939,18 +943,13 @@ function PodcastHDGDemo({ onBack }) {
       speakLine(0);
     };
 
-    // Progress bar: per-locale segment + smooth fill within each segment.
-    // Each locale gets an equal slice of 0–100. Within the slice we crawl
-    // at ~0.55/tick (200 ms) ≈ 2.75%/s, which fits a ~30 s transcript well.
-    const SEG = 100 / localeCount;
+    // Progress bar: derived from actual line position — no blind crawl.
+    // completedLines / totalLines gives exact fractional progress.
+    // Polls every 200 ms so the bar moves smoothly as each sentence plays.
     const pollProgress = () => {
       if (!generatingRef.current) return;
-      setGenProg(prev => {
-        const segStart = localeIdxRef.current * SEG;
-        const segEnd   = (localeIdxRef.current + 1) * SEG - 0.5;
-        // Crawl within current segment; don't overshoot into next locale's slice
-        return prev < segEnd ? Math.min(segEnd, prev + 0.55) : prev;
-      });
+      const completedLines = localeIdxRef.current * lines.length + lineIdxRef.current;
+      setGenProg(Math.min(99, (completedLines / totalLines) * 100));
       setTimeout(pollProgress, 200);
     };
     pollProgress();
