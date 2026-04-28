@@ -480,7 +480,533 @@ function TabBar({ activeTab, setActiveTab }) {
   );
 }
 
-// ===== STAGE LIST =====
+// ===== DEMO NAV (shared) =====
+function DemoNav({ stage, stageLabels, stageColors, maxStage, advance, label }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 3, marginBottom: 16 }}>
+      {stageLabels.map((l, i) => (
+        <div key={i} style={{ display: "flex", alignItems: "center" }}>
+          <div onClick={() => i <= maxStage && advance(i)} title={l} style={{ width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, cursor: i <= maxStage ? "pointer" : "default", background: stage === i ? stageColors[i] + "22" : i < stage ? C.green + "18" : C.card, border: `2px solid ${stage === i ? stageColors[i] : i < stage ? C.green : C.bdr}`, color: stage === i ? "#fff" : i < stage ? C.green : C.txt }}>
+            {i < stage ? "✓" : i + 1}
+          </div>
+          {i < stageLabels.length - 1 && <div style={{ width: 8, height: 2, background: i < stage ? C.green + "44" : C.bdr }} />}
+        </div>
+      ))}
+      <span style={{ marginLeft: 8, fontSize: 10, color: C.txt, fontWeight: 700, letterSpacing: "0.08em" }}>{label}</span>
+    </div>
+  );
+}
+
+// ===== CHIP SELECTOR (shared) =====
+function ChipGroup({ label, options, value, onChange, color }) {
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: C.hi, marginBottom: 5 }}>{label}</div>
+      <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+        {options.map(o => (
+          <button key={o} onClick={() => onChange(o)} style={{ padding: "4px 10px", borderRadius: 6, fontSize: 10, fontWeight: 600, border: `1px solid ${value === o ? color : C.bdr}`, background: value === o ? color + "20" : C.bg, color: value === o ? color : C.txt, cursor: "pointer", fontFamily: "'TP Sans','DM Sans',sans-serif" }}>{o}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ===== HDG: AUTHORED CONTENT =====
+const HDG_AUTHORED = {
+  "Customer Support": [
+    { role: "customer", text: "I placed an order three days ago and it still hasn't shipped. I need this for tomorrow.", sentiment: "frustrated", intent: "shipping_inquiry" },
+    { role: "agent", text: "I completely understand. Let me pull up your order right now.", sentiment: "empathetic", intent: "acknowledge" },
+    { role: "customer", text: "Order #FP-4872. I already paid for standard delivery.", sentiment: "urgent", intent: "provide_info" },
+    { role: "agent", text: "I see it — there was a carrier pickup delay. I'm escalating to priority shipping now.", sentiment: "proactive", intent: "resolve" },
+    { role: "customer", text: "Will it actually arrive tomorrow? I've heard this before.", sentiment: "skeptical", intent: "confirm" },
+    { role: "agent", text: "90% confidence with overnight courier. I'm also crediting 20% for the delay.", sentiment: "reassuring", intent: "offer_resolution" },
+  ],
+  "Healthcare Intake": [
+    { role: "customer", text: "I've had chest pressure since this morning — it radiates to my left arm.", sentiment: "worried", intent: "symptom_report" },
+    { role: "agent", text: "How long does each episode last? Does it happen at rest or only during activity?", sentiment: "clinical", intent: "assess" },
+    { role: "customer", text: "About 10 minutes each time. It happened once just sitting still.", sentiment: "concerned", intent: "provide_info" },
+    { role: "agent", text: "Left-arm radiation combined with rest-onset pressure requires immediate evaluation. Go to urgent care now.", sentiment: "urgent", intent: "escalate" },
+    { role: "customer", text: "Is it that serious? I thought I'd just wait and see.", sentiment: "hesitant", intent: "clarify" },
+    { role: "agent", text: "Yes. Please don't drive yourself. Call someone now or dial emergency services.", sentiment: "firm", intent: "confirm" },
+  ],
+  "Legal Q&A": [
+    { role: "customer", text: "A vendor took $120k upfront and delivered nothing. I have 40 emails proving it.", sentiment: "frustrated", intent: "complaint" },
+    { role: "agent", text: "Has the contract's dispute resolution clause been triggered in writing?", sentiment: "clinical", intent: "clarify" },
+    { role: "customer", text: "Yes — three certified letters sent over six months.", sentiment: "certain", intent: "confirm" },
+    { role: "agent", text: "That's clear material breach. You can pursue full recovery plus consequential damages.", sentiment: "confident", intent: "advise" },
+    { role: "customer", text: "Can they countersue me for anything?", sentiment: "anxious", intent: "risk_inquiry" },
+    { role: "agent", text: "Given your documentation, countersue risk is minimal. We file next week.", sentiment: "reassuring", intent: "close" },
+  ],
+  "Technical Support": [
+    { role: "customer", text: "My API integration keeps returning 401 on POST requests only, using the correct key.", sentiment: "confused", intent: "bug_report" },
+    { role: "agent", text: "Is Content-Type set to application/json on those POST requests?", sentiment: "focused", intent: "diagnose" },
+    { role: "customer", text: "No — I was using text/plain. Could that affect authentication?", sentiment: "curious", intent: "clarify" },
+    { role: "agent", text: "Yes. Some middleware rejects mismatched headers before auth runs. Switch to application/json.", sentiment: "helpful", intent: "resolve" },
+    { role: "customer", text: "That fixed it immediately. That's a terrible design choice.", sentiment: "relieved", intent: "feedback" },
+    { role: "agent", text: "Agreed. I'll add it to the known issues doc. Thanks for the clean repro case.", sentiment: "collegial", intent: "close" },
+  ],
+};
+const HDG_FLAGS = ["Off-policy", "Factual error", "Too short", "Unsafe content", "Unnatural phrasing"];
+const HDG_INTENT_TAGS = ["billing_dispute", "escalation", "de_escalation", "refund_request", "technical_issue", "clarification", "resolution"];
+const HDG_SENT_TAGS = ["frustrated", "empathetic", "urgent", "neutral", "relieved", "adversarial"];
+const HDG_DIFF_TAGS = ["baseline", "moderate", "edge_case", "adversarial"];
+
+// ===== HUMAN DATA GENERATION DEMO =====
+function HumanDataGenDemo() {
+  const [stage, setStage] = useState(0);
+  const [maxStage, setMaxStage] = useState(0);
+  const [domain, setDomain] = useState("Customer Support");
+  const [persona, setPersona] = useState("Frustrated User");
+  const [difficulty, setDifficulty] = useState("Moderate");
+  const [authoring, setAuthoring] = useState(false);
+  const [authorProg, setAuthorProg] = useState(0);
+  const [authorDone, setAuthorDone] = useState(false);
+  const [ratings, setRatings] = useState({});
+  const [flags, setFlags] = useState({});
+  const [qaApproved, setQaApproved] = useState(null);
+  const [appliedIntent, setAppliedIntent] = useState([]);
+  const [appliedSentiment, setAppliedSentiment] = useState([]);
+  const [appliedDiff, setAppliedDiff] = useState("");
+  const [labelsDone, setLabelsDone] = useState(false);
+  const [packed, setPacked] = useState(false);
+
+  const advance = (n) => { setStage(n); setMaxStage(m => Math.max(m, n)); };
+  const runAuthor = () => {
+    setAuthoring(true); setAuthorProg(0);
+    const st = Date.now();
+    const t = () => { const p = Math.min(100, ((Date.now() - st) / 2500) * 100); setAuthorProg(p); if (p < 100) requestAnimationFrame(t); else { setAuthoring(false); setAuthorDone(true); } };
+    requestAnimationFrame(t);
+  };
+  const reset = () => { setStage(0); setMaxStage(0); setAuthorDone(false); setAuthorProg(0); setAuthoring(false); setRatings({}); setFlags({}); setQaApproved(null); setAppliedIntent([]); setAppliedSentiment([]); setAppliedDiff(""); setLabelsDone(false); setPacked(false); };
+
+  const chat = HDG_AUTHORED[domain] || HDG_AUTHORED["Customer Support"];
+  const avgRating = Object.keys(ratings).length ? (Object.values(ratings).reduce((a, b) => a + b, 0) / Object.values(ratings).length).toFixed(1) : null;
+  const flagCount = Object.values(flags).filter(Boolean).length;
+  const STAGE_C = [C.accent, "#8B5CF6", C.amber, C.cyan, C.green];
+  const STAGE_L = ["Brief", "Author", "QA", "Label", "Package"];
+  const tc = C.accent;
+
+  return (
+    <div style={{ background: C.bg, color: C.txt, fontFamily: "'TP Sans','DM Sans',sans-serif", minHeight: "calc(100vh - 112px)", padding: "10px 24px" }}>
+      <DemoNav stage={stage} stageLabels={STAGE_L} stageColors={STAGE_C} maxStage={maxStage} advance={advance} label="HUMAN DATA GENERATION" />
+
+      {/* STAGE 0: BRIEF */}
+      {stage === 0 && (
+        <div style={{ display: "flex", gap: 16 }}>
+          <div style={{ flex: "0 0 320px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 12 }}><span style={{ color: C.accent }}>1.</span> Task Brief</div>
+              <ChipGroup label="Domain" options={["Customer Support","Healthcare Intake","Legal Q&A","Technical Support"]} value={domain} onChange={setDomain} color={C.accent} />
+              <ChipGroup label="Persona" options={["Frustrated User","Expert Professional","Confused Novice","Adversarial Actor"]} value={persona} onChange={setPersona} color={C.accent} />
+              <ChipGroup label="Difficulty" options={["Baseline","Moderate","Edge Case","Adversarial"]} value={difficulty} onChange={setDifficulty} color={C.accent} />
+              <button style={btn(C.accent, false, { width: "100%", marginTop: 8 })} onClick={() => advance(1)}>Commission Task →</button>
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.hi, marginBottom: 10 }}>Task Brief Preview</div>
+              <div style={{ padding: 14, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}`, fontFamily: "monospace", fontSize: 10, color: C.txt, lineHeight: 2 }}>
+                <div style={{ color: C.accent, fontWeight: 700, marginBottom: 4 }}>TASK-{Date.now().toString(36).toUpperCase().slice(-6)}</div>
+                {[["Domain", domain], ["Persona", persona], ["Difficulty", difficulty], ["Target turns", difficulty === "Baseline" ? "4–6" : difficulty === "Moderate" ? "6–8" : "8–12"], ["Language", "English (en-US)"], ["Format", "Chat conversation"]].map(([k, v]) => (
+                  <div key={k}><strong style={{ color: C.hi }}>{k}:</strong> {v}<br/></div>
+                ))}
+                <div style={{ marginTop: 6 }}><strong style={{ color: C.hi }}>Status:</strong> <span style={{ color: C.amber }}>⏳ Pending assignment</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STAGE 1: AUTHOR */}
+      {stage === 1 && (
+        <div style={{ display: "flex", gap: 16 }}>
+          <div style={{ flex: "0 0 280px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: "#8B5CF6" }}>2.</span> Authoring</div>
+              <div style={{ fontSize: 10, color: C.txt, marginBottom: 10 }}>Contributor receives the brief and writes the conversation.</div>
+              {!authoring && !authorDone && <button style={btn("#8B5CF6", false, { width: "100%" })} onClick={runAuthor}>✍️ Simulate Authoring</button>}
+              {authoring && <div><div style={{ fontSize: 10, color: "#8B5CF6", fontWeight: 600, marginBottom: 6 }}>Contributor writing...</div><div style={{ height: 5, borderRadius: 3, background: C.bdr, overflow: "hidden", marginBottom: 4 }}><div style={{ height: "100%", width: `${authorProg}%`, background: "#8B5CF6", transition: "width .05s" }} /></div><div style={{ fontSize: 9, color: C.txt }}>{Math.round(authorProg)}%</div></div>}
+              {authorDone && <div><div style={{ fontSize: 11, color: C.green, fontWeight: 600, marginBottom: 6 }}>✓ Submission received</div><div style={{ padding: 8, borderRadius: 6, background: C.green + "10", border: `1px solid ${C.green}22`, fontSize: 9, color: C.green, marginBottom: 10 }}>Contributor CTR-4471 · {chat.length} turns · 0m ago</div><button style={btn(C.accent, false, { width: "100%" })} onClick={() => advance(2)}>Send to QA →</button></div>}
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Authored Output — {domain}</div>
+              <div style={{ opacity: authorDone ? 1 : authoring ? 0.2 : 0.06, transition: "opacity .8s", padding: 10, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}` }}>
+                {chat.map((t, i) => <ChatBubble key={i} turn={t} labels={false} />)}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STAGE 2: QA */}
+      {stage === 2 && (
+        <div style={{ display: "flex", gap: 16 }}>
+          <div style={{ flex: "0 0 280px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}><span style={{ color: C.amber }}>3.</span> QA Review</div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: C.hi, marginBottom: 6 }}>Quality Flags</div>
+              {HDG_FLAGS.map(f => (
+                <label key={f} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 6px", borderRadius: 5, marginBottom: 3, background: flags[f] ? C.red + "10" : C.bg, border: `1px solid ${flags[f] ? C.red + "44" : C.bdr}`, cursor: "pointer" }}>
+                  <input type="checkbox" checked={!!flags[f]} onChange={e => setFlags(p => ({ ...p, [f]: e.target.checked }))} style={{ accentColor: C.red }} />
+                  <span style={{ fontSize: 10, color: C.hi }}>{f}</span>
+                </label>
+              ))}
+              <div style={{ marginTop: 10 }}>
+                {flagCount > 0 && <div style={{ fontSize: 9, color: C.red, marginBottom: 6 }}>⚠ {flagCount} flag(s) — resolve before approving</div>}
+                {avgRating && flagCount === 0 && !qaApproved && (
+                  <div style={{ display: "flex", gap: 5 }}>
+                    <button style={btn(C.green, false, { flex: 1, padding: "6px 10px", fontSize: 10 })} onClick={() => setQaApproved(true)}>✓ Approve</button>
+                    <button style={btn(C.red, true, { flex: 1, padding: "6px 10px", fontSize: 10 })} onClick={() => { setStage(1); setAuthorDone(false); setAuthorProg(0); setRatings({}); setFlags({}); }}>✗ Reject</button>
+                  </div>
+                )}
+                {!avgRating && !flagCount && <div style={{ fontSize: 9, color: C.txt }}>Rate all turns to enable approval</div>}
+                {qaApproved && <div><div style={{ fontSize: 11, color: C.green, fontWeight: 600, marginBottom: 6 }}>✓ QA Passed · Avg {avgRating}/5.0</div><button style={btn(C.cyan, false, { width: "100%" })} onClick={() => advance(3)}>Label →</button></div>}
+              </div>
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Rate Each Turn</div>
+              {chat.map((turn, i) => (
+                <div key={i} style={{ padding: 10, borderRadius: 8, background: C.bg, border: `1px solid ${ratings[i] ? C.bdr : C.bdr}`, marginBottom: 6 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: turn.role === "customer" ? C.red : C.green }}>{turn.role === "customer" ? "👤 User" : "🎧 Agent"} · Turn {i + 1}</span>
+                    <div style={{ display: "flex", gap: 2 }}>{[1,2,3,4,5].map(s => <span key={s} onClick={() => setRatings(r => ({ ...r, [i]: s }))} style={{ fontSize: 14, cursor: "pointer", filter: (ratings[i]||0) >= s ? "none" : "grayscale(1) opacity(0.18)" }}>⭐</span>)}</div>
+                  </div>
+                  <div style={{ fontSize: 10, color: C.hi, lineHeight: 1.4 }}>{turn.text}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STAGE 3: LABEL */}
+      {stage === 3 && (
+        <div style={{ display: "flex", gap: 16 }}>
+          <div style={{ flex: "0 0 300px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: C.cyan }}>4.</span> Metadata Labels</div>
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: C.hi, marginBottom: 5 }}>Intent Tags</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                  {HDG_INTENT_TAGS.map(t => <button key={t} onClick={() => setAppliedIntent(a => a.includes(t) ? a.filter(x => x !== t) : [...a, t])} style={{ padding: "3px 8px", borderRadius: 4, fontSize: 9, fontWeight: 600, border: `1px solid ${appliedIntent.includes(t) ? C.accent : C.bdr}`, background: appliedIntent.includes(t) ? C.accent + "20" : C.bg, color: appliedIntent.includes(t) ? C.accent : C.txt, cursor: "pointer", fontFamily: "'TP Sans','DM Sans',sans-serif" }}>{t}</button>)}
+                </div>
+              </div>
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: C.hi, marginBottom: 5 }}>Sentiment Tags</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                  {HDG_SENT_TAGS.map(t => <button key={t} onClick={() => setAppliedSentiment(a => a.includes(t) ? a.filter(x => x !== t) : [...a, t])} style={{ padding: "3px 8px", borderRadius: 4, fontSize: 9, fontWeight: 600, border: `1px solid ${appliedSentiment.includes(t) ? C.cyan : C.bdr}`, background: appliedSentiment.includes(t) ? C.cyan + "20" : C.bg, color: appliedSentiment.includes(t) ? C.cyan : C.txt, cursor: "pointer", fontFamily: "'TP Sans','DM Sans',sans-serif" }}>{t}</button>)}
+                </div>
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: C.hi, marginBottom: 5 }}>Difficulty</div>
+                <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                  {HDG_DIFF_TAGS.map(t => <button key={t} onClick={() => setAppliedDiff(t)} style={{ padding: "3px 8px", borderRadius: 4, fontSize: 9, fontWeight: 600, border: `1px solid ${appliedDiff === t ? C.amber : C.bdr}`, background: appliedDiff === t ? C.amber + "20" : C.bg, color: appliedDiff === t ? C.amber : C.txt, cursor: "pointer", fontFamily: "'TP Sans','DM Sans',sans-serif" }}>{t}</button>)}
+                </div>
+              </div>
+              {appliedIntent.length > 0 && appliedDiff && !labelsDone && <button style={btn(C.cyan, false, { width: "100%" })} onClick={() => setLabelsDone(true)}>✓ Confirm Labels</button>}
+              {labelsDone && <div><div style={{ fontSize: 11, color: C.green, fontWeight: 600, marginBottom: 6 }}>✓ Labels confirmed</div><button style={btn(C.green, false, { width: "100%" })} onClick={() => advance(4)}>Package →</button></div>}
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Annotated Record Preview</div>
+              <div style={{ maxHeight: 360, overflow: "auto" }}>
+                {chat.map((turn, i) => (
+                  <div key={i} style={{ padding: 8, borderRadius: 6, background: C.bg, border: `1px solid ${C.bdr}`, marginBottom: 5 }}>
+                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 4 }}>
+                      <span style={{ padding: "1px 5px", borderRadius: 3, fontSize: 7, fontWeight: 700, background: (turn.role === "customer" ? C.red : C.green) + "20", color: turn.role === "customer" ? C.red : C.green }}>{turn.role}</span>
+                      <span style={{ padding: "1px 5px", borderRadius: 3, fontSize: 7, background: C.accent + "18", color: C.accent }}>{turn.sentiment}</span>
+                      {appliedIntent[0] && <span style={{ padding: "1px 5px", borderRadius: 3, fontSize: 7, background: C.cyan + "18", color: C.cyan }}>{appliedIntent[0]}</span>}
+                      {appliedDiff && <span style={{ padding: "1px 5px", borderRadius: 3, fontSize: 7, background: C.amber + "18", color: C.amber }}>{appliedDiff}</span>}
+                    </div>
+                    <div style={{ fontSize: 10, color: C.hi, lineHeight: 1.4 }}>{turn.text}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STAGE 4: PACKAGE */}
+      {stage === 4 && (
+        <div style={{ display: "flex", gap: 16 }}>
+          <div style={{ flex: "0 0 300px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: C.green }}>5.</span> Package & Deliver</div>
+              {!packed && <button style={btn(C.green, false, { width: "100%" })} onClick={() => setTimeout(() => setPacked(true), 1000)}>📦 Package Record</button>}
+              {packed && <div><div style={{ fontSize: 12, color: C.green, fontWeight: 700, marginBottom: 10 }}>🎉 Delivered to corpus</div><button style={btn(C.accent, true, { width: "100%", fontSize: 10 })} onClick={reset}>New Task</button></div>}
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Provenance Record</div>
+              <div style={{ padding: 14, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}`, fontFamily: "monospace", fontSize: 10, color: C.txt, lineHeight: 2 }}>
+                <div style={{ color: C.green, fontWeight: 700, fontSize: 9, letterSpacing: 1, marginBottom: 6 }}>HDG-{Date.now().toString(36).toUpperCase().slice(-10)}</div>
+                {[["Domain", domain], ["Persona", persona], ["Difficulty", appliedDiff || difficulty], ["Contributor", "CTR-4471 (anonymized)"], ["Submitted", new Date().toISOString()], ["QA Score", avgRating + " / 5.0 ✓"], ["Turns", chat.length], ["Intent Tags", appliedIntent.join(", ") || "—"], ["Sentiment Tags", appliedSentiment.join(", ") || "—"], ["Format", "JSONL · UTF-8"], ["Pipeline", "TP.ai HDG v1.0"], ["Status", packed ? "✓ Delivered" : "⏳ Pending"]].map(([k, v], i) => (
+                  <div key={k}><strong style={{ color: C.hi }}>{k}:</strong> <span style={{ color: k === "Status" ? (packed ? C.green : C.amber) : k === "QA Score" ? C.green : "inherit" }}>{v}</span><br/></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ===== HDC: CLIP DATA =====
+const HDC_CLIPS = [
+  { id: "CLR-001", city: "Chennai",   gender: "F", age: 24, device: "Android", dur: 7.2,  snr: 18, asr: "Please confirm my appointment for next Tewsday afternoon.",       corrected: "Please confirm my appointment for next Tuesday afternoon." },
+  { id: "CLR-002", city: "Mumbai",    gender: "M", age: 38, device: "iPhone",  dur: 4.1,  snr: 5,  asr: "[inaudible — heavy background noise throughout]",                corrected: null },
+  { id: "CLR-003", city: "Bengaluru", gender: "F", age: 22, device: "iPhone",  dur: 8.4,  snr: 24, asr: "I need to cancle the subscription I signed up last month.",       corrected: "I need to cancel the subscription I signed up for last month." },
+  { id: "CLR-004", city: "Hyderabad", gender: "M", age: 45, device: "Android", dur: 2.8,  snr: 19, asr: "[clip truncated — too short]",                                    corrected: null },
+  { id: "CLR-005", city: "Delhi",     gender: "F", age: 31, device: "iPhone",  dur: 9.1,  snr: 21, asr: "What are the charges for international data roaming?",            corrected: "What are the charges for international data roaming?" },
+  { id: "CLR-006", city: "Pune",      gender: "M", age: 27, device: "Samsung", dur: 11.3, snr: 16, asr: "My internet has been slow since yestaday evening.",               corrected: "My internet has been slow since yesterday evening." },
+  { id: "CLR-007", city: "Kolkata",   gender: "F", age: 52, device: "Android", dur: 6.7,  snr: 7,  asr: "[background music detected — music-speech ratio 0.78]",          corrected: null },
+  { id: "CLR-008", city: "Ahmedabad", gender: "M", age: 29, device: "iPhone",  dur: 12.5, snr: 26, asr: "I would like to upgrade my plan to the premium tier.",            corrected: "I would like to upgrade my plan to the premium tier." },
+];
+
+// ===== HUMAN DATA COLLECTION DEMO =====
+function HumanDataCollectDemo() {
+  const [stage, setStage] = useState(0);
+  const [maxStage, setMaxStage] = useState(0);
+  const [dataType, setDataType] = useState("Voice Clips");
+  const [geography, setGeography] = useState("India");
+  const [target, setTarget] = useState("500 clips");
+  const [duration, setDuration] = useState("5–15s");
+  const [capturing, setCapturing] = useState(false);
+  const [capProg, setCapProg] = useState(0);
+  const [capDone, setCapDone] = useState(false);
+  const [minSNR, setMinSNR] = useState(10);
+  const [minDur, setMinDur] = useState(5);
+  const [annotations, setAnnotations] = useState({});
+  const [packed, setPacked] = useState(false);
+
+  const advance = (n) => { setStage(n); setMaxStage(m => Math.max(m, n)); };
+  const runCapture = () => {
+    setCapturing(true); setCapProg(0);
+    const st = Date.now();
+    const t = () => { const p = Math.min(100, ((Date.now() - st) / 3000) * 100); setCapProg(p); if (p < 100) requestAnimationFrame(t); else { setCapturing(false); setCapDone(true); } };
+    requestAnimationFrame(t);
+  };
+  const reset = () => { setStage(0); setMaxStage(0); setCapDone(false); setCapProg(0); setCapturing(false); setMinSNR(10); setMinDur(5); setAnnotations({}); setPacked(false); };
+
+  const filtered = HDC_CLIPS.filter(c => c.snr >= minSNR && c.dur >= minDur);
+  const passCount = filtered.length;
+  const annotateSet = filtered.slice(0, 5);
+  const annotationsDone = annotateSet.length > 0 && annotateSet.every(c => annotations[c.id]);
+  const approvedCount = Object.values(annotations).filter(v => v === "approved").length;
+  const correctedCount = Object.values(annotations).filter(v => v === "corrected").length;
+
+  const STAGE_C = [C.cyan, "#8B5CF6", C.amber, C.orange, C.green];
+  const STAGE_L = ["Campaign", "Capture", "Filter", "Annotate", "Package"];
+
+  return (
+    <div style={{ background: C.bg, color: C.txt, fontFamily: "'TP Sans','DM Sans',sans-serif", minHeight: "calc(100vh - 112px)", padding: "10px 24px" }}>
+      <DemoNav stage={stage} stageLabels={STAGE_L} stageColors={STAGE_C} maxStage={maxStage} advance={advance} label="HUMAN DATA COLLECTION" />
+
+      {/* STAGE 0: CAMPAIGN */}
+      {stage === 0 && (
+        <div style={{ display: "flex", gap: 16 }}>
+          <div style={{ flex: "0 0 320px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 12 }}><span style={{ color: C.cyan }}>1.</span> Campaign Design</div>
+              <ChipGroup label="Data Type" options={["Voice Clips","Screen Recordings","Form Responses","Photo Submissions"]} value={dataType} onChange={setDataType} color={C.cyan} />
+              <ChipGroup label="Geography" options={["India","Southeast Asia","LATAM","Europe"]} value={geography} onChange={setGeography} color={C.cyan} />
+              <ChipGroup label="Target Volume" options={["100 clips","500 clips","1,000 clips","5,000 clips"]} value={target} onChange={setTarget} color={C.cyan} />
+              <ChipGroup label="Clip Duration" options={["3–10s","5–15s","10–30s","30–60s"]} value={duration} onChange={setDuration} color={C.cyan} />
+              <button style={btn(C.cyan, false, { width: "100%", marginTop: 8 })} onClick={() => advance(1)}>Launch Campaign →</button>
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.hi, marginBottom: 10 }}>Campaign Brief</div>
+              <div style={{ padding: 14, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}`, fontFamily: "monospace", fontSize: 10, color: C.txt, lineHeight: 2 }}>
+                <div style={{ color: C.cyan, fontWeight: 700, marginBottom: 4 }}>HDC-{Date.now().toString(36).toUpperCase().slice(-6)}</div>
+                {[["Type", dataType], ["Geography", geography], ["Target", target], ["Duration", duration], ["Consent", "✓ GDPR + Regional"], ["Anonymization", "✓ Voice-print scrub on ingest"], ["Status", "⏳ Ready to launch"]].map(([k, v]) => (
+                  <div key={k}><strong style={{ color: C.hi }}>{k}:</strong> <span style={{ color: k === "Consent" || k === "Anonymization" ? C.green : k === "Status" ? C.amber : "inherit" }}>{v}</span><br/></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STAGE 1: CAPTURE */}
+      {stage === 1 && (
+        <div style={{ display: "flex", gap: 16 }}>
+          <div style={{ flex: "0 0 280px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: "#8B5CF6" }}>2.</span> Data Capture</div>
+              {!capturing && !capDone && <button style={btn("#8B5CF6", false, { width: "100%" })} onClick={runCapture}>📡 Simulate Ingestion</button>}
+              {capturing && <div><div style={{ fontSize: 10, color: "#8B5CF6", fontWeight: 600, marginBottom: 6 }}>Participants submitting...</div><div style={{ height: 5, borderRadius: 3, background: C.bdr, overflow: "hidden", marginBottom: 4 }}><div style={{ height: "100%", width: `${capProg}%`, background: "#8B5CF6", transition: "width .05s" }} /></div><div style={{ fontSize: 9, color: C.txt }}>{Math.round(capProg / 100 * HDC_CLIPS.length)} / {HDC_CLIPS.length} clips received</div></div>}
+              {capDone && <div><div style={{ fontSize: 11, color: C.green, fontWeight: 600, marginBottom: 6 }}>✓ {HDC_CLIPS.length} clips ingested</div><div style={{ padding: 8, borderRadius: 6, background: C.green + "10", border: `1px solid ${C.green}22`, fontSize: 9, color: C.green, marginBottom: 10 }}>Voice-print scrub complete · PII metadata stripped</div><button style={btn(C.amber, false, { width: "100%" })} onClick={() => advance(2)}>Apply QA Filters →</button></div>}
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Ingested Clips</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4, opacity: capDone ? 1 : capturing ? 0.35 : 0.07, transition: "opacity .6s" }}>
+                {HDC_CLIPS.map(clip => (
+                  <div key={clip.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 10px", borderRadius: 6, background: C.bg, border: `1px solid ${C.bdr}`, fontSize: 9 }}>
+                    <span style={{ fontFamily: "monospace", color: C.hi, minWidth: 62 }}>{clip.id}</span>
+                    <span style={{ color: C.txt, minWidth: 65 }}>{clip.city}</span>
+                    <span style={{ color: C.txt, minWidth: 40 }}>{clip.gender}/{clip.age}</span>
+                    <span style={{ color: C.txt, minWidth: 56 }}>{clip.device}</span>
+                    <span style={{ color: C.txt, minWidth: 32 }}>{clip.dur}s</span>
+                    <span style={{ color: clip.snr >= 10 ? C.green : C.red, minWidth: 62, fontFamily: "monospace" }}>SNR {clip.snr}dB</span>
+                    <div style={{ flex: 1, height: 3, background: C.bdr, borderRadius: 2 }}>
+                      <div style={{ width: `${Math.min(100, clip.snr * 3.2)}%`, height: "100%", background: clip.snr >= 10 ? C.green + "99" : C.red + "99", borderRadius: 2 }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STAGE 2: FILTER */}
+      {stage === 2 && (
+        <div style={{ display: "flex", gap: 16 }}>
+          <div style={{ flex: "0 0 280px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 12 }}><span style={{ color: C.amber }}>3.</span> QA Filters</div>
+              {[{ label: "Min SNR", val: minSNR, set: setMinSNR, min: 0, max: 30, unit: "dB", color: C.amber }, { label: "Min Duration", val: minDur, set: setMinDur, min: 1, max: 15, unit: "s", color: C.amber }].map(({ label, val, set, min, max, unit, color }) => (
+                <div key={label} style={{ marginBottom: 14 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: C.hi }}>{label}</span>
+                    <span style={{ fontSize: 10, color, fontFamily: "monospace" }}>{val}{unit}</span>
+                  </div>
+                  <input type="range" min={min} max={max} value={val} onChange={e => set(+e.target.value)} style={{ width: "100%", accentColor: color }} />
+                </div>
+              ))}
+              <div style={{ padding: 10, borderRadius: 6, background: C.bg, border: `1px solid ${C.bdr}`, marginBottom: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 6 }}>
+                  <span style={{ color: C.green, fontWeight: 700 }}>✓ Pass: {passCount}</span>
+                  <span style={{ color: C.red, fontWeight: 700 }}>✗ Fail: {HDC_CLIPS.length - passCount}</span>
+                </div>
+                <div style={{ height: 5, borderRadius: 3, background: C.bdr, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${(passCount / HDC_CLIPS.length) * 100}%`, background: C.green, transition: "width .3s" }} />
+                </div>
+              </div>
+              <button style={btn(C.orange, false, { width: "100%" })} onClick={() => advance(3)}>Apply → Annotate</button>
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Filter Results</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                {HDC_CLIPS.map(clip => {
+                  const pass = clip.snr >= minSNR && clip.dur >= minDur;
+                  const reason = !pass ? (clip.snr < minSNR ? `SNR ${clip.snr}dB < ${minSNR}dB` : `${clip.dur}s < ${minDur}s`) : null;
+                  return (
+                    <div key={clip.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 6, background: C.bg, border: `1px solid ${pass ? C.green + "44" : C.red + "33"}`, fontSize: 9, transition: "border-color .2s" }}>
+                      <span style={{ color: pass ? C.green : C.red, fontSize: 12, width: 14 }}>{pass ? "✓" : "✗"}</span>
+                      <span style={{ fontFamily: "monospace", color: C.hi, minWidth: 62 }}>{clip.id}</span>
+                      <span style={{ color: C.txt }}>{clip.city} · {clip.gender}/{clip.age} · {clip.device}</span>
+                      <span style={{ color: C.txt }}>{clip.dur}s · {clip.snr}dB</span>
+                      {reason && <span style={{ color: C.red, marginLeft: "auto", fontFamily: "monospace" }}>{reason}</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STAGE 3: ANNOTATE */}
+      {stage === 3 && (
+        <div style={{ display: "flex", gap: 16 }}>
+          <div style={{ flex: "0 0 280px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}><span style={{ color: C.orange }}>4.</span> Transcript Review</div>
+              <div style={{ padding: 8, borderRadius: 6, background: C.cyan + "10", border: `1px solid ${C.cyan}22`, fontSize: 9, color: C.cyan, marginBottom: 10 }}>
+                {passCount} clips passed · showing {annotateSet.length} for review
+              </div>
+              <div style={{ padding: 8, borderRadius: 6, background: C.bg, border: `1px solid ${C.bdr}`, fontSize: 9, color: C.txt, lineHeight: 1.8, marginBottom: 10 }}>
+                <div><strong style={{ color: C.green }}>✓ Approved:</strong> {approvedCount}</div>
+                <div><strong style={{ color: C.amber }}>✎ Corrected:</strong> {correctedCount}</div>
+                <div><strong style={{ color: C.txt }}>⏳ Pending:</strong> {annotateSet.length - approvedCount - correctedCount}</div>
+              </div>
+              {annotationsDone && <button style={btn(C.green, false, { width: "100%" })} onClick={() => advance(4)}>Package Dataset →</button>}
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.hi, marginBottom: 8 }}>ASR Transcript Review</div>
+              {annotateSet.map(clip => {
+                const ann = annotations[clip.id];
+                const hasError = clip.corrected && clip.corrected !== clip.asr;
+                return (
+                  <div key={clip.id} style={{ padding: 10, borderRadius: 8, background: C.bg, border: `1px solid ${ann ? (ann === "corrected" ? C.amber + "55" : C.green + "44") : C.bdr}`, marginBottom: 8 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <div>
+                        <span style={{ fontFamily: "monospace", fontSize: 9, fontWeight: 700, color: C.hi }}>{clip.id}</span>
+                        <span style={{ fontSize: 8, color: C.txt, marginLeft: 8 }}>{clip.city} · {clip.gender}/{clip.age} · {clip.dur}s · SNR {clip.snr}dB</span>
+                      </div>
+                      {!ann && (
+                        <div style={{ display: "flex", gap: 4 }}>
+                          <button onClick={() => setAnnotations(a => ({ ...a, [clip.id]: "approved" }))} style={{ padding: "3px 8px", borderRadius: 4, fontSize: 9, fontWeight: 700, background: C.green + "18", border: `1px solid ${C.green}33`, color: C.green, cursor: "pointer", fontFamily: "inherit" }}>✓ Approve</button>
+                          {hasError && <button onClick={() => setAnnotations(a => ({ ...a, [clip.id]: "corrected" }))} style={{ padding: "3px 8px", borderRadius: 4, fontSize: 9, fontWeight: 700, background: C.amber + "18", border: `1px solid ${C.amber}33`, color: C.amber, cursor: "pointer", fontFamily: "inherit" }}>✎ Correct</button>}
+                        </div>
+                      )}
+                      {ann && <span style={{ fontSize: 9, fontWeight: 700, color: ann === "corrected" ? C.amber : C.green }}>{ann === "corrected" ? "✎ Corrected" : "✓ Approved"}</span>}
+                    </div>
+                    <div style={{ fontSize: 10, color: ann === "corrected" ? C.txt + "88" : C.hi, lineHeight: 1.4, textDecoration: ann === "corrected" ? "line-through" : "none" }}>{clip.asr}</div>
+                    {ann === "corrected" && clip.corrected && <div style={{ fontSize: 10, color: C.amber, lineHeight: 1.4, marginTop: 4 }}>{clip.corrected}</div>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STAGE 4: PACKAGE */}
+      {stage === 4 && (
+        <div style={{ display: "flex", gap: 16 }}>
+          <div style={{ flex: "0 0 300px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: C.green }}>5.</span> Package Dataset</div>
+              {!packed && <button style={btn(C.green, false, { width: "100%" })} onClick={() => setTimeout(() => setPacked(true), 1200)}>📦 Package</button>}
+              {packed && (
+                <div>
+                  <div style={{ fontSize: 12, color: C.green, fontWeight: 700, marginBottom: 10 }}>🎉 Dataset ready</div>
+                  {[["Total ingested", HDC_CLIPS.length], ["Passed QA", passCount], ["Annotated", annotateSet.length], ["Approved", approvedCount], ["Corrected", correctedCount], ["Rejected", HDC_CLIPS.length - passCount]].map(([l, v]) => (
+                    <div key={l} style={{ display: "flex", justifyContent: "space-between", fontSize: 10, padding: "4px 0", borderBottom: `1px solid ${C.bdr}` }}>
+                      <span style={{ color: C.txt }}>{l}</span><span style={{ color: C.hi, fontWeight: 700 }}>{v}</span>
+                    </div>
+                  ))}
+                  <button style={btn(C.cyan, true, { width: "100%", fontSize: 10, marginTop: 10 })} onClick={reset}>New Campaign</button>
+                </div>
+              )}
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Dataset Manifest</div>
+              <div style={{ padding: 14, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}`, fontFamily: "monospace", fontSize: 10, color: C.txt, lineHeight: 2 }}>
+                <div style={{ color: C.cyan, fontWeight: 700, fontSize: 9, letterSpacing: 1, marginBottom: 6 }}>HDC-{Date.now().toString(36).toUpperCase().slice(-10)}</div>
+                {[["Campaign", `${dataType} · ${geography}`], ["Collected", new Date().toISOString().split("T")[0]], ["Pipeline", "TP.ai HDC v1.0"], ["Ingested", HDC_CLIPS.length + " clips"], ["QA filters", `SNR ≥ ${minSNR}dB · Duration ≥ ${minDur}s`], ["Passed QA", passCount + " clips"], ["Reviewed", Object.keys(annotations).length + " transcripts"], ["Anonymization", "✓ Voice-print scrub · Metadata stripped"], ["Consent", "✓ All participants consented"], ["Format", "WAV 16kHz mono + JSONL"], ["Status", packed ? "✓ Ready for delivery" : "⏳ Packaging..."]].map(([k, v]) => (
+                  <div key={k}><strong style={{ color: C.hi }}>{k}:</strong> <span style={{ color: k === "Anonymization" || k === "Consent" ? C.green : k === "Status" ? (packed ? C.green : C.amber) : "inherit" }}>{v}</span><br/></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ===== STAGE LIST (kept for backward compat) =====
 function StageList({ stages, color }) {
   return (
     <div>
@@ -730,10 +1256,10 @@ export default function App() {
         }
       </div>
       <div style={{ display: activeTab === 1 ? "block" : "none" }}>
-        <HumanDataGen />
+        <HumanDataGenDemo />
       </div>
       <div style={{ display: activeTab === 2 ? "block" : "none" }}>
-        <HumanDataCollect />
+        <HumanDataCollectDemo />
       </div>
       </div>
     </div>
