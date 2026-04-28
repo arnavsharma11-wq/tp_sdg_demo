@@ -1198,19 +1198,32 @@ function WarehouseIcon() {
 }
 function DrivingIcon() {
   return (
-    <div style={{ width: 80, height: 72, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      {[0, 1, 2].map(i => (
-        <div key={i} style={{ position: "absolute", width: 22 + i * 22, height: 22 + i * 22, borderRadius: "50%", border: `1.5px solid ${C.cyan}`, animation: `radarRing 2.4s ${i * 0.8}s ease-out infinite` }} />
+    <div style={{ width: 80, height: 72, position: "relative", overflow: "hidden" }}>
+      {/* Road surface */}
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 26, background: "#181820" }}/>
+      <div style={{ position: "absolute", bottom: 25, left: 0, right: 0, height: 1, background: C.cyan+"30" }}/>
+      {/* Scrolling centre dashes */}
+      <div style={{ position: "absolute", bottom: 11, left: -24, width: 260, display: "flex", gap: 10, animation: "roadScroll 0.9s linear infinite" }}>
+        {[...Array(11)].map((_, i) => <div key={i} style={{ width: 14, height: 2, background: C.cyan+"55", flexShrink: 0 }}/>)}
+      </div>
+      {/* Speed lines left of car */}
+      {[0,1,2].map(i => (
+        <div key={i} style={{ position: "absolute", height: 1.5, left: 2, width: 13 - i*3, top: 27 + i*7, background: `linear-gradient(90deg, transparent, ${C.cyan}55)`, transformOrigin: "left center", animation: `speedLine 0.7s ${i*0.1}s ease-in-out infinite` }}/>
       ))}
-      <svg width="34" height="46" viewBox="0 0 34 46" fill="none" style={{ position: "relative", zIndex: 1 }}>
-        <rect x="5" y="14" width="24" height="22" rx="4" fill={C.cyan+"22"} stroke={C.cyan} strokeWidth="1.5"/>
-        <rect x="8" y="8"  width="18" height="13" rx="3" fill={C.cyan+"15"} stroke={C.cyan} strokeWidth="1"/>
-        <rect x="10" y="9" width="14" height="8"  rx="2" fill={C.cyan+"20"} stroke={C.cyan+"50"} strokeWidth="0.75"/>
-        <rect x="4"  y="33" width="8" height="6" rx="1.5" fill={C.cyan+"30"} stroke={C.cyan+"80"} strokeWidth="1"/>
-        <rect x="22" y="33" width="8" height="6" rx="1.5" fill={C.cyan+"30"} stroke={C.cyan+"80"} strokeWidth="1"/>
-        <rect x="4"  y="7"  width="8" height="6" rx="1.5" fill={C.cyan+"30"} stroke={C.cyan+"80"} strokeWidth="1"/>
-        <rect x="22" y="7"  width="8" height="6" rx="1.5" fill={C.cyan+"30"} stroke={C.cyan+"80"} strokeWidth="1"/>
+      {/* Car side view */}
+      <svg width="54" height="36" viewBox="0 0 54 36" fill="none" style={{ position: "absolute", bottom: 14, left: 13 }}>
+        <rect x="3" y="13" width="48" height="14" rx="3" fill={C.cyan+"20"} stroke={C.cyan} strokeWidth="1.5"/>
+        <path d="M11 13 L15 3 L38 3 L44 13Z" fill={C.cyan+"15"} stroke={C.cyan} strokeWidth="1.5"/>
+        <path d="M16 12 L19 4 L35 4 L40 12Z" fill={C.cyan+"12"} stroke={C.cyan+"50"} strokeWidth="0.75"/>
+        <circle cx="41" cy="27" r="7" fill="#0d0d14" stroke={C.cyan} strokeWidth="1.5"/>
+        <circle cx="41" cy="27" r="2.5" fill={C.cyan+"35"}/>
+        <circle cx="13" cy="27" r="7" fill="#0d0d14" stroke={C.cyan} strokeWidth="1.5"/>
+        <circle cx="13" cy="27" r="2.5" fill={C.cyan+"35"}/>
+        <rect x="49" y="16" width="4" height="3" rx="1" fill={C.cyan}/>
+        <rect x="1"  y="16" width="3" height="3" rx="1" fill="#EF4444" opacity="0.85"/>
       </svg>
+      {/* Headlight beam */}
+      <div style={{ position: "absolute", right: 0, top: 27, height: 7, background: `linear-gradient(90deg, ${C.cyan}50, transparent)`, animation: "headGlow 1.6s ease-in-out infinite" }}/>
     </div>
   );
 }
