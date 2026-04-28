@@ -759,39 +759,86 @@ function HumanDataGenDemo() {
   );
 }
 
+// ===== PERSON CLIPARTS =====
+const PERSON_SVGS = [
+  // 0: Short straight hair, collared shirt
+  c => <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position:"absolute",inset:0,width:"100%",height:"100%" }} preserveAspectRatio="xMidYMax meet">
+    <rect x="8" y="62" width="64" height="38" rx="8" fill={c} opacity="0.55"/>
+    <path d="M32 62 L40 73 L48 62" stroke="white" strokeWidth="1.5" opacity="0.25" fill="none"/>
+    <rect x="33" y="47" width="14" height="18" rx="3" fill={c} opacity="0.72"/>
+    <ellipse cx="40" cy="32" rx="19" ry="21" fill={c} opacity="0.85"/>
+    <path d="M21 27 Q21 11 40 11 Q59 11 59 27 Q57 17 40 17 Q23 17 21 27Z" fill={c} opacity="1"/>
+    <ellipse cx="33" cy="26" rx="4" ry="3" fill="white" opacity="0.2"/>
+  </svg>,
+  // 1: Long flowing hair
+  c => <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position:"absolute",inset:0,width:"100%",height:"100%" }} preserveAspectRatio="xMidYMax meet">
+    <rect x="10" y="62" width="60" height="38" rx="8" fill={c} opacity="0.55"/>
+    <rect x="33" y="47" width="14" height="18" rx="3" fill={c} opacity="0.72"/>
+    <ellipse cx="40" cy="33" rx="18" ry="20" fill={c} opacity="0.85"/>
+    <path d="M22 28 Q17 52 22 68 Q16 62 16 40 Q16 12 40 11 Q64 12 64 40 Q64 62 58 68 Q63 52 58 28" fill={c} opacity="0.95"/>
+    <ellipse cx="33" cy="26" rx="4" ry="3" fill="white" opacity="0.2"/>
+  </svg>,
+  // 2: Curly / afro hair
+  c => <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position:"absolute",inset:0,width:"100%",height:"100%" }} preserveAspectRatio="xMidYMax meet">
+    <rect x="10" y="62" width="60" height="38" rx="8" fill={c} opacity="0.55"/>
+    <rect x="33" y="48" width="14" height="17" rx="3" fill={c} opacity="0.72"/>
+    <ellipse cx="40" cy="36" rx="17" ry="19" fill={c} opacity="0.85"/>
+    <ellipse cx="40" cy="23" rx="24" ry="20" fill={c} opacity="0.98"/>
+    <ellipse cx="33" cy="31" rx="4" ry="3" fill="white" opacity="0.2"/>
+  </svg>,
+  // 3: Hair bun on top
+  c => <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position:"absolute",inset:0,width:"100%",height:"100%" }} preserveAspectRatio="xMidYMax meet">
+    <rect x="10" y="62" width="60" height="38" rx="8" fill={c} opacity="0.55"/>
+    <path d="M26 62 Q40 56 54 62" stroke="white" strokeWidth="1.5" opacity="0.2" fill="none"/>
+    <rect x="33" y="48" width="14" height="17" rx="3" fill={c} opacity="0.72"/>
+    <ellipse cx="40" cy="35" rx="17" ry="19" fill={c} opacity="0.85"/>
+    <path d="M23 28 Q23 16 40 16 Q57 16 57 28 Q55 18 40 18 Q25 18 23 28Z" fill={c} opacity="0.98"/>
+    <circle cx="40" cy="11" r="9" fill={c} opacity="1"/>
+    <ellipse cx="33" cy="28" rx="4" ry="3" fill="white" opacity="0.2"/>
+  </svg>,
+  // 4: Buzzcut, wide shoulders / t-shirt
+  c => <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position:"absolute",inset:0,width:"100%",height:"100%" }} preserveAspectRatio="xMidYMax meet">
+    <path d="M4 100 L4 66 Q4 62 20 60 L60 60 Q76 62 76 66 L76 100Z" fill={c} opacity="0.55"/>
+    <rect x="33" y="48" width="14" height="15" rx="3" fill={c} opacity="0.72"/>
+    <path d="M22 36 Q22 14 40 14 Q58 14 58 36 Q58 52 40 53 Q22 52 22 36Z" fill={c} opacity="0.85"/>
+    <rect x="22" y="14" width="36" height="9" rx="4" fill={c} opacity="1"/>
+    <ellipse cx="33" cy="28" rx="4" ry="3" fill="white" opacity="0.2"/>
+  </svg>,
+  // 5: Side-swept hair + glasses
+  c => <svg viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position:"absolute",inset:0,width:"100%",height:"100%" }} preserveAspectRatio="xMidYMax meet">
+    <rect x="8" y="62" width="64" height="38" rx="8" fill={c} opacity="0.55"/>
+    <path d="M32 62 L26 74 L40 68 L54 74 L48 62" fill={c} opacity="0.7"/>
+    <rect x="33" y="47" width="14" height="18" rx="3" fill={c} opacity="0.72"/>
+    <ellipse cx="40" cy="33" rx="18" ry="20" fill={c} opacity="0.85"/>
+    <path d="M22 27 Q22 11 40 11 Q55 11 59 19 Q52 13 38 15 Q24 17 24 27Z" fill={c} opacity="1"/>
+    <rect x="27" y="30" width="10" height="7" rx="3" fill="none" stroke="white" strokeWidth="1.3" opacity="0.35"/>
+    <rect x="43" y="30" width="10" height="7" rx="3" fill="none" stroke="white" strokeWidth="1.3" opacity="0.35"/>
+    <line x1="37" y1="33" x2="43" y2="33" stroke="white" strokeWidth="1.3" opacity="0.35"/>
+    <ellipse cx="33" cy="26" rx="3.5" ry="2.5" fill="white" opacity="0.18"/>
+  </svg>,
+];
+
 // ===== PERSON TILE =====
-function PersonTile({ name, color, isSpeaking, captureRunning }) {
+function PersonTile({ name, color, index, isSpeaking, captureRunning }) {
   const WAVE_ANIMS = ["audioBar2","audioBar1","audioBar4","audioBar3","audioBar2","audioBar4","audioBar1","audioBar3","audioBar2"];
-  const WAVE_HEIGHTS = [6,10,14,18,14,10,6,10,14];
+  const WAVE_HEIGHTS = [5,9,13,18,13,9,5,9,13];
   return (
-    <div style={{ background: `radial-gradient(ellipse at 50% 65%, ${color}18 0%, #1A1A2E 55%, #0E0E1C 100%)`, borderRadius: 6, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", position: "relative", border: `2px solid ${isSpeaking ? color : "#ffffff0a"}`, transition: "border-color .35s, box-shadow .35s", boxShadow: isSpeaking ? `0 0 20px ${color}44` : "none", overflow: "hidden", padding: "0 6px 8px", minHeight: 0 }}>
-      {/* Subtle video-feed shimmer when recording */}
-      {captureRunning && <div style={{ position: "absolute", inset: 0, background: `linear-gradient(105deg, transparent 40%, ${color}08 50%, transparent 60%)`, backgroundSize: "200% 100%", animation: "videoShimmer 3s linear infinite", pointerEvents: "none" }} />}
-      {/* Person silhouette */}
-      <svg viewBox="0 0 60 70" style={{ width: "55%", maxWidth: 64, animation: isSpeaking ? "personFade 1.8s ease-in-out infinite" : "none", marginBottom: 4, flexShrink: 0 }}>
-        {/* Head */}
-        <circle cx="30" cy="22" r="13" fill={color} opacity={isSpeaking ? "0.75" : "0.38"} />
-        {/* Neck */}
-        <rect x="25" y="33" width="10" height="7" fill={color} opacity={isSpeaking ? "0.6" : "0.28"} rx="2"/>
-        {/* Shoulders */}
-        <path d="M6 70 Q6 50 30 48 Q54 50 54 70 Z" fill={color} opacity={isSpeaking ? "0.55" : "0.22"} />
-        {/* Face highlight */}
-        <circle cx="26" cy="19" r="3.5" fill="#ffffff" opacity={isSpeaking ? "0.18" : "0.07"} />
-      </svg>
-      {/* Audio waveform — only for active speaker */}
-      {isSpeaking && captureRunning ? (
-        <div style={{ display: "flex", alignItems: "center", gap: 2, height: 22, marginBottom: 4, flexShrink: 0 }}>
-          {WAVE_HEIGHTS.map((h, i) => (
-            <div key={i} style={{ width: 3, borderRadius: 2, background: color, height: h, animation: `${WAVE_ANIMS[i]} ${0.45 + (i % 3) * 0.12}s ${i * 0.06}s ease-in-out infinite` }} />
-          ))}
-        </div>
-      ) : (
-        <div style={{ height: 22, marginBottom: 4, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          {captureRunning && <span style={{ fontSize: 10, opacity: 0.25 }}>🔇</span>}
-        </div>
-      )}
-      {/* Name tag */}
-      <div style={{ background: "#00000066", borderRadius: 3, padding: "2px 6px", fontSize: 9, color: isSpeaking ? "#fff" : "#aaa", fontWeight: isSpeaking ? 700 : 400, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "90%", flexShrink: 0 }}>{name}</div>
+    <div style={{ position:"relative", background:`radial-gradient(ellipse at 50% 70%, ${color}22 0%, #16162A 55%, #0D0D1C 100%)`, borderRadius:6, overflow:"hidden", border:`2px solid ${isSpeaking ? color : "#ffffff0b"}`, transition:"border-color .35s, box-shadow .35s", boxShadow: isSpeaking ? `0 0 22px ${color}55` : "none", minHeight:0 }}>
+      {/* Clipart person — fills tile */}
+      {PERSON_SVGS[index % PERSON_SVGS.length](color)}
+      {/* Video shimmer overlay */}
+      {captureRunning && <div style={{ position:"absolute", inset:0, background:`linear-gradient(110deg, transparent 38%, ${color}09 50%, transparent 62%)`, backgroundSize:"200% 100%", animation:"videoShimmer 3.5s linear infinite", pointerEvents:"none" }} />}
+      {/* Bottom gradient + name + waveform */}
+      <div style={{ position:"absolute", bottom:0, left:0, right:0, background:"linear-gradient(to top, #000000BB 0%, #00000044 60%, transparent 100%)", padding:"18px 6px 5px", display:"flex", flexDirection:"column", alignItems:"center", gap:3 }}>
+        {isSpeaking && captureRunning && (
+          <div style={{ display:"flex", alignItems:"center", gap:2, height:20 }}>
+            {WAVE_HEIGHTS.map((h,i) => (
+              <div key={i} style={{ width:3, borderRadius:2, background:color, height:h, animation:`${WAVE_ANIMS[i]} ${0.42+(i%3)*0.13}s ${i*0.055}s ease-in-out infinite` }} />
+            ))}
+          </div>
+        )}
+        <div style={{ fontSize:12, fontWeight: isSpeaking ? 700 : 500, color: isSpeaking ? "#fff" : "#ccc", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", maxWidth:"95%", textShadow:"0 1px 4px #000" }}>{name}</div>
+      </div>
     </div>
   );
 }
@@ -830,7 +877,7 @@ function MeetingGrid({ participants, lang, captureRunning, captureDone, activeSp
       {/* Video grid */}
       <div style={{ flex: 1, display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 3, padding: 3, background: "#0A0A16", minHeight: 0 }}>
         {names.map((name, i) => (
-          <PersonTile key={i} name={name} color={COLORS[i % COLORS.length]} isSpeaking={i === speaking} captureRunning={captureRunning} />
+          <PersonTile key={i} name={name} color={COLORS[i % COLORS.length]} index={i} isSpeaking={i === speaking} captureRunning={captureRunning} />
         ))}
       </div>
       {/* Bottom toolbar */}
