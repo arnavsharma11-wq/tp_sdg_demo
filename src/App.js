@@ -1536,62 +1536,63 @@ function MeetingDataCollectDemo({ onBack }) {
   const [validations, setValidations] = useState({});
   const [delivered, setDelivered] = useState(false);
   const [activeSpeaker, setActiveSpeaker] = useState(0);
-  const audioCtxRef = useRef(null);
-  const audioNodesRef = useRef([]);
+
+  // Short meeting phrases — spoken on each speaker rotation
+  const MEETING_PHRASES = [
+    "I agree, let's move forward with that.",
+    "Can we revisit the timeline briefly?",
+    "I'd like to flag a concern on this.",
+    "Good point — let me add to that.",
+    "Who's taking ownership of this item?",
+    "Let's align on this before we close.",
+    "I think we have consensus here.",
+    "Can you clarify the scope a bit?",
+    "That works for me. Any objections?",
+    "Let's table this and follow up async.",
+    "I need two minutes on the next item.",
+    "Agreed — we'll action that by Friday.",
+  ];
+
+  // Cancel speech on unmount
+  useEffect(() => () => { window.speechSynthesis && window.speechSynthesis.cancel(); }, []);
 
   useEffect(() => {
     if (!captureRunning) return;
-    const iv = setInterval(() => setActiveSpeaker(s => s + 1), 1800);
-    return () => clearInterval(iv);
+    const iv = setInterval(() => setActiveSpeaker(s => s + 1), 2200);
+    return () => { clearInterval(iv); window.speechSynthesis.cancel(); };
   }, [captureRunning]);
 
-  // Audio playback — simulates speech when a speaker is active
+  // Speak a short phrase for whichever participant just became active
   useEffect(() => {
-    if (!captureRunning || !audioCtxRef.current) return;
-    const ctx = audioCtxRef.current;
-    // Stop any previous nodes
-    audioNodesRef.current.forEach(n => { try { n.stop(); } catch(e){} });
-    audioNodesRef.current = [];
+    if (!captureRunning) return;
+    const numPax = PAX[meetingType] || 5;
+    const spkIdx = activeSpeaker % numPax;
 
-    // Simulate speech: band-pass filtered noise with a slow amplitude LFO
-    const bufferSize = ctx.sampleRate * 0.5;
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    window.speechSynthesis.cancel();
+    const phrase = MEETING_PHRASES[activeSpeaker % MEETING_PHRASES.length];
 
-    const source = ctx.createBufferSource();
-    source.buffer = buffer;
-    source.loop = true;
+    const speak = () => {
+      const all = window.speechSynthesis.getVoices();
+      const pool = all.filter(v => v.lang.startsWith("en"));
+      const voices = pool.length > 0 ? pool : all;
 
-    const bpf = ctx.createBiquadFilter();
-    bpf.type = "bandpass";
-    bpf.frequency.value = 800 + Math.random() * 600;
-    bpf.Q.value = 0.8;
-
-    const gainNode = ctx.createGain();
-    gainNode.gain.value = 0;
-
-    // LFO modulates gain to mimic natural speech cadence
-    const lfo = ctx.createOscillator();
-    lfo.frequency.value = 3.5 + Math.random() * 2;
-    const lfoGain = ctx.createGain();
-    lfoGain.gain.value = 0.07;
-    lfo.connect(lfoGain);
-    lfoGain.connect(gainNode.gain);
-
-    gainNode.gain.setTargetAtTime(0.09, ctx.currentTime, 0.05);
-
-    source.connect(bpf);
-    bpf.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    lfo.start();
-    source.start();
-    audioNodesRef.current = [source, lfo];
-
-    return () => {
-      audioNodesRef.current.forEach(n => { try { n.stop(); } catch(e){} });
-      audioNodesRef.current = [];
+      const utt = new SpeechSynthesisUtterance(phrase);
+      // Each participant gets a distinct pitch so they sound like different people
+      utt.voice  = voices[spkIdx % voices.length] || null;
+      utt.pitch  = 0.82 + spkIdx * 0.10;   // 0.82–1.72 spread across up to 10 speakers
+      utt.rate   = 0.88 + (spkIdx % 3) * 0.06;
+      utt.volume = 1.0;
+      window.speechSynthesis.speak(utt);
     };
+
+    if (window.speechSynthesis.getVoices().length > 0) {
+      speak();
+    } else {
+      window.speechSynthesis.onvoiceschanged = speak;
+    }
+
+    return () => window.speechSynthesis.cancel();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSpeaker, captureRunning]);
 
   const LANGS = ["English","Portuguese","French","Italian","German","Spanish","Japanese","Korean"];
@@ -1614,12 +1615,6 @@ function MeetingDataCollectDemo({ onBack }) {
   }));
 
   const runCapture = () => {
-    // Initialize AudioContext inside user gesture to satisfy browser autoplay policy
-    if (!audioCtxRef.current) {
-      try { audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
-    } else if (audioCtxRef.current.state === "suspended") {
-      audioCtxRef.current.resume();
-    }
     setCaptureRunning(true);
     let i = 0;
     const tick = () => {
@@ -1747,7 +1742,14 @@ function MeetingDataCollectDemo({ onBack }) {
             </div>
             {/* Middle: meeting visual */}
             <div style={{ flex: 1, minWidth: 0 }}>
-              <MeetingGrid participants={displaySession?.participants || PAX[meetingType]} lang={displaySession?.lang || langList[0]} captureRunning={captureRunning} captureDone={captureDone} activeSpeaker={activeSpeaker} currentSession={displaySession} />
+              <MeetingGrid
+                participants={PAX[meetingType]}
+                lang={langList[0]}
+                captureRunning={captureRunning}
+                captureDone={captureDone}
+                activeSpeaker={activeSpeaker}
+                currentSession={displaySession}
+              />
             </div>
             {/* Right: session log */}
             <div style={{ flex: "0 0 240px" }}>
