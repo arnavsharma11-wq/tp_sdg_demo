@@ -837,7 +837,7 @@ function PersonTile({ name, color, index, isSpeaking, captureRunning }) {
             ))}
           </div>
         )}
-        <div style={{ fontSize:12, fontWeight: isSpeaking ? 700 : 500, color: isSpeaking ? "#fff" : "#ccc", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", maxWidth:"95%", textShadow:"0 1px 4px #000" }}>{name}</div>
+        <div style={{ fontSize:18, fontWeight: isSpeaking ? 700 : 500, color: isSpeaking ? "#fff" : "#ccc", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", maxWidth:"95%", textShadow:"0 1px 4px #000" }}>{name}</div>
       </div>
     </div>
   );
@@ -866,12 +866,12 @@ function MeetingGrid({ participants, lang, captureRunning, captureDone, activeSp
       <div style={{ background: "#07070F", padding: "6px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: captureRunning ? "#EF4444" : captureDone ? "#10B981" : "#333", boxShadow: captureRunning ? "0 0 7px #EF444499" : "none", transition: "background .3s" }} />
-          <span style={{ fontSize: 11, color: captureRunning ? "#EF4444" : captureDone ? "#10B981" : "#444", fontFamily: "monospace", fontWeight: 700 }}>{captureRunning ? "● REC" : captureDone ? "✓ CAPTURED" : "○ STANDBY"}</span>
-          {currentSession && <span style={{ fontSize: 10, color: "#444", marginLeft: 6 }}>{currentSession.id}</span>}
+          <span style={{ fontSize: 17, color: captureRunning ? "#EF4444" : captureDone ? "#10B981" : "#444", fontFamily: "monospace", fontWeight: 700 }}>{captureRunning ? "● REC" : captureDone ? "✓ CAPTURED" : "○ STANDBY"}</span>
+          {currentSession && <span style={{ fontSize: 15, color: "#444", marginLeft: 6 }}>{currentSession.id}</span>}
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <span style={{ fontSize: 10, color: "#666" }}>{lang} · {participants} participants</span>
-          {captureRunning && <span style={{ padding: "1px 6px", borderRadius: 3, background: "#EF444420", border: "1px solid #EF444455", fontSize: 9, color: "#EF4444", fontWeight: 700, letterSpacing: "0.05em" }}>LIVE</span>}
+          <span style={{ fontSize: 15, color: "#666" }}>{lang} · {participants} participants</span>
+          {captureRunning && <span style={{ padding: "1px 6px", borderRadius: 3, background: "#EF444420", border: "1px solid #EF444455", fontSize: 14, color: "#EF4444", fontWeight: 700, letterSpacing: "0.05em" }}>LIVE</span>}
         </div>
       </div>
       {/* Video grid */}
@@ -883,7 +883,7 @@ function MeetingGrid({ participants, lang, captureRunning, captureDone, activeSp
       {/* Bottom toolbar */}
       <div style={{ background: "#07070F", padding: "6px 14px", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flexShrink: 0 }}>
         {[["🎙️", captureRunning ? "Recording" : "Standby", captureRunning ? "#10B981" : "#EF4444"],["📝","Live Transcript","#7C3AED"],["🔒","E2E Encrypted","#06B6D4"],["📷","Cam Off","#555"]].map(([ic,lbl,col]) => (
-          <div key={lbl} style={{ padding: "2px 9px", borderRadius: 3, background: col+"18", border: `1px solid ${col}44`, fontSize: 9, color: col, display: "flex", gap: 4, alignItems: "center" }}><span>{ic}</span><span>{lbl}</span></div>
+          <div key={lbl} style={{ padding: "2px 9px", borderRadius: 3, background: col+"18", border: `1px solid ${col}44`, fontSize: 14, color: col, display: "flex", gap: 4, alignItems: "center" }}><span>{ic}</span><span>{lbl}</span></div>
         ))}
       </div>
     </div>
@@ -911,12 +911,63 @@ function MeetingDataCollectDemo({ onBack }) {
   const [validations, setValidations] = useState({});
   const [delivered, setDelivered] = useState(false);
   const [activeSpeaker, setActiveSpeaker] = useState(0);
+  const audioCtxRef = useRef(null);
+  const audioNodesRef = useRef([]);
 
   useEffect(() => {
     if (!captureRunning) return;
     const iv = setInterval(() => setActiveSpeaker(s => s + 1), 1800);
     return () => clearInterval(iv);
   }, [captureRunning]);
+
+  // Audio playback — simulates speech when a speaker is active
+  useEffect(() => {
+    if (!captureRunning || !audioCtxRef.current) return;
+    const ctx = audioCtxRef.current;
+    // Stop any previous nodes
+    audioNodesRef.current.forEach(n => { try { n.stop(); } catch(e){} });
+    audioNodesRef.current = [];
+
+    // Simulate speech: band-pass filtered noise with a slow amplitude LFO
+    const bufferSize = ctx.sampleRate * 0.5;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.loop = true;
+
+    const bpf = ctx.createBiquadFilter();
+    bpf.type = "bandpass";
+    bpf.frequency.value = 800 + Math.random() * 600;
+    bpf.Q.value = 0.8;
+
+    const gainNode = ctx.createGain();
+    gainNode.gain.value = 0;
+
+    // LFO modulates gain to mimic natural speech cadence
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 3.5 + Math.random() * 2;
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.value = 0.07;
+    lfo.connect(lfoGain);
+    lfoGain.connect(gainNode.gain);
+
+    gainNode.gain.setTargetAtTime(0.09, ctx.currentTime, 0.05);
+
+    source.connect(bpf);
+    bpf.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    lfo.start();
+    source.start();
+    audioNodesRef.current = [source, lfo];
+
+    return () => {
+      audioNodesRef.current.forEach(n => { try { n.stop(); } catch(e){} });
+      audioNodesRef.current = [];
+    };
+  }, [activeSpeaker, captureRunning]);
 
   const LANGS = ["English","Portuguese","French","Italian","German","Spanish","Japanese","Korean"];
   const FMT_LABELS = { agenda:"Agenda discussion", brainstorm:"Brainstorming", notes:"Note-taking", closure:"Meeting closure" };
@@ -938,6 +989,12 @@ function MeetingDataCollectDemo({ onBack }) {
   }));
 
   const runCapture = () => {
+    // Initialize AudioContext inside user gesture to satisfy browser autoplay policy
+    if (!audioCtxRef.current) {
+      try { audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+    } else if (audioCtxRef.current.state === "suspended") {
+      audioCtxRef.current.resume();
+    }
     setCaptureRunning(true);
     let i = 0;
     const tick = () => {
