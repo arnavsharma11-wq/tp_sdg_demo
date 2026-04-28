@@ -1,11 +1,3 @@
-@font-face {
-  font-family: 'TP Sans';
-  src: url('/TPSans-Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
 body {
   margin: 0;
   padding: 0;
