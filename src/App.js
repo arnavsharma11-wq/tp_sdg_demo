@@ -1185,8 +1185,8 @@ function SyntheticHome({ hov, setHov, setJourney }) {
   return (
     <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 112px)", padding: 32 }}>
       <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ position: "relative", zIndex: 2, display: "block", height: 26, width: "auto", objectFit: "contain", margin: "0 auto 0.5rem auto", opacity: 0.92 }} />
-      <span style={{ position: "relative", zIndex: 2, display: "block", fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "2.2rem", fontWeight: 700, letterSpacing: "0.32em", textTransform: "uppercase", color: "rgba(210,195,225,0.5)", marginBottom: "0.55rem", textAlign: "center" }}>Introducing</span>
-      <h1 style={{ position: "relative", zIndex: 2, fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "clamp(4.8rem, 10vw, 8rem)", fontWeight: 900, color: "#ffffff", lineHeight: 1.04, letterSpacing: "-0.025em", margin: "0 0 0.75rem 0", textShadow: "0 0 40px rgba(144,113,240,0.25), 0 2px 20px rgba(0,0,0,0.5)", textAlign: "center" }}>
+      <span style={{ position: "relative", zIndex: 2, display: "block", fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "1.1rem", fontWeight: 700, letterSpacing: "0.32em", textTransform: "uppercase", color: "rgba(210,195,225,0.5)", marginBottom: "0.55rem", textAlign: "center" }}>Introducing</span>
+      <h1 style={{ position: "relative", zIndex: 2, fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "clamp(2.4rem, 6.5vw, 5rem)", fontWeight: 900, color: "#ffffff", lineHeight: 1.04, letterSpacing: "-0.025em", margin: "0 0 0.75rem 0", textShadow: "0 0 40px rgba(144,113,240,0.25), 0 2px 20px rgba(0,0,0,0.5)", textAlign: "center" }}>
         TP.ai <span style={{ color: "#9071f0" }}>Data</span>Gen
       </h1>
       <p style={{ position: "relative", zIndex: 2, fontSize: 30, color: C.hi, textAlign: "center", maxWidth: 780, lineHeight: 1.6, marginBottom: 6 }}>
