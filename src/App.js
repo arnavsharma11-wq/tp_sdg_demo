@@ -759,6 +759,43 @@ function HumanDataGenDemo() {
   );
 }
 
+// ===== PERSON TILE =====
+function PersonTile({ name, color, isSpeaking, captureRunning }) {
+  const WAVE_ANIMS = ["audioBar2","audioBar1","audioBar4","audioBar3","audioBar2","audioBar4","audioBar1","audioBar3","audioBar2"];
+  const WAVE_HEIGHTS = [6,10,14,18,14,10,6,10,14];
+  return (
+    <div style={{ background: `radial-gradient(ellipse at 50% 65%, ${color}18 0%, #1A1A2E 55%, #0E0E1C 100%)`, borderRadius: 6, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", position: "relative", border: `2px solid ${isSpeaking ? color : "#ffffff0a"}`, transition: "border-color .35s, box-shadow .35s", boxShadow: isSpeaking ? `0 0 20px ${color}44` : "none", overflow: "hidden", padding: "0 6px 8px", minHeight: 0 }}>
+      {/* Subtle video-feed shimmer when recording */}
+      {captureRunning && <div style={{ position: "absolute", inset: 0, background: `linear-gradient(105deg, transparent 40%, ${color}08 50%, transparent 60%)`, backgroundSize: "200% 100%", animation: "videoShimmer 3s linear infinite", pointerEvents: "none" }} />}
+      {/* Person silhouette */}
+      <svg viewBox="0 0 60 70" style={{ width: "55%", maxWidth: 64, animation: isSpeaking ? "personFade 1.8s ease-in-out infinite" : "none", marginBottom: 4, flexShrink: 0 }}>
+        {/* Head */}
+        <circle cx="30" cy="22" r="13" fill={color} opacity={isSpeaking ? "0.75" : "0.38"} />
+        {/* Neck */}
+        <rect x="25" y="33" width="10" height="7" fill={color} opacity={isSpeaking ? "0.6" : "0.28"} rx="2"/>
+        {/* Shoulders */}
+        <path d="M6 70 Q6 50 30 48 Q54 50 54 70 Z" fill={color} opacity={isSpeaking ? "0.55" : "0.22"} />
+        {/* Face highlight */}
+        <circle cx="26" cy="19" r="3.5" fill="#ffffff" opacity={isSpeaking ? "0.18" : "0.07"} />
+      </svg>
+      {/* Audio waveform — only for active speaker */}
+      {isSpeaking && captureRunning ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 2, height: 22, marginBottom: 4, flexShrink: 0 }}>
+          {WAVE_HEIGHTS.map((h, i) => (
+            <div key={i} style={{ width: 3, borderRadius: 2, background: color, height: h, animation: `${WAVE_ANIMS[i]} ${0.45 + (i % 3) * 0.12}s ${i * 0.06}s ease-in-out infinite` }} />
+          ))}
+        </div>
+      ) : (
+        <div style={{ height: 22, marginBottom: 4, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {captureRunning && <span style={{ fontSize: 10, opacity: 0.25 }}>🔇</span>}
+        </div>
+      )}
+      {/* Name tag */}
+      <div style={{ background: "#00000066", borderRadius: 3, padding: "2px 6px", fontSize: 9, color: isSpeaking ? "#fff" : "#aaa", fontWeight: isSpeaking ? 700 : 400, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "90%", flexShrink: 0 }}>{name}</div>
+    </div>
+  );
+}
+
 // ===== MEETING GRID VISUAL =====
 function MeetingGrid({ participants, lang, captureRunning, captureDone, activeSpeaker, currentSession }) {
   const NAME_MAP = {
@@ -777,38 +814,29 @@ function MeetingGrid({ participants, lang, captureRunning, captureDone, activeSp
   const speaking = captureRunning ? activeSpeaker % participants : -1;
 
   return (
-    <div style={{ background: "#12121F", borderRadius: 10, overflow: "hidden", width: "100%", aspectRatio: "16/9", display: "flex", flexDirection: "column" }}>
+    <div style={{ background: "#0E0E1C", borderRadius: 10, overflow: "hidden", width: "100%", aspectRatio: "16/9", display: "flex", flexDirection: "column" }}>
       {/* Top bar */}
-      <div style={{ background: "#0A0A15", padding: "6px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+      <div style={{ background: "#07070F", padding: "6px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: captureRunning ? "#EF4444" : captureDone ? "#10B981" : "#555", boxShadow: captureRunning ? "0 0 6px #EF444488" : "none" }} />
-          <span style={{ fontSize: 11, color: captureRunning ? "#EF4444" : captureDone ? "#10B981" : "#555", fontFamily: "monospace", fontWeight: 700 }}>{captureRunning ? "● REC" : captureDone ? "✓ CAPTURED" : "○ STANDBY"}</span>
-          {currentSession && <span style={{ fontSize: 10, color: "#555", marginLeft: 4 }}>{currentSession.id}</span>}
+          <div style={{ width: 8, height: 8, borderRadius: "50%", background: captureRunning ? "#EF4444" : captureDone ? "#10B981" : "#333", boxShadow: captureRunning ? "0 0 7px #EF444499" : "none", transition: "background .3s" }} />
+          <span style={{ fontSize: 11, color: captureRunning ? "#EF4444" : captureDone ? "#10B981" : "#444", fontFamily: "monospace", fontWeight: 700 }}>{captureRunning ? "● REC" : captureDone ? "✓ CAPTURED" : "○ STANDBY"}</span>
+          {currentSession && <span style={{ fontSize: 10, color: "#444", marginLeft: 6 }}>{currentSession.id}</span>}
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <span style={{ fontSize: 10, color: "#888" }}>{lang} · {participants} participants</span>
-          {captureRunning && <span style={{ padding: "1px 6px", borderRadius: 3, background: "#EF444420", border: "1px solid #EF444455", fontSize: 10, color: "#EF4444", fontWeight: 700 }}>LIVE</span>}
+          <span style={{ fontSize: 10, color: "#666" }}>{lang} · {participants} participants</span>
+          {captureRunning && <span style={{ padding: "1px 6px", borderRadius: 3, background: "#EF444420", border: "1px solid #EF444455", fontSize: 9, color: "#EF4444", fontWeight: 700, letterSpacing: "0.05em" }}>LIVE</span>}
         </div>
       </div>
       {/* Video grid */}
-      <div style={{ flex: 1, display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 2, padding: 2, background: "#0C0C18", minHeight: 0 }}>
-        {names.map((name, i) => {
-          const color = COLORS[i % COLORS.length];
-          const isSpeaking = i === speaking;
-          return (
-            <div key={i} style={{ background: "#1C1C30", borderRadius: 5, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", border: `2px solid ${isSpeaking ? color : "transparent"}`, transition: "border-color .4s", boxShadow: isSpeaking ? `0 0 14px ${color}55` : "none", overflow: "hidden" }}>
-              <div style={{ width: 38, height: 38, borderRadius: "50%", background: color+"28", border: `2px solid ${color}66`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color, marginBottom: 5, flexShrink: 0 }}>{name.split(" ").map(w=>w[0]).join("").slice(0,2)}</div>
-              <div style={{ fontSize: 9, color: "#bbb", textAlign: "center", padding: "0 4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "92%" }}>{name}</div>
-              {isSpeaking && <div style={{ position: "absolute", bottom: 4, right: 4, width: 16, height: 16, borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9 }}>🎤</div>}
-              {!isSpeaking && captureRunning && <div style={{ position: "absolute", bottom: 4, right: 4, fontSize: 9, opacity: 0.3 }}>🔇</div>}
-            </div>
-          );
-        })}
+      <div style={{ flex: 1, display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 3, padding: 3, background: "#0A0A16", minHeight: 0 }}>
+        {names.map((name, i) => (
+          <PersonTile key={i} name={name} color={COLORS[i % COLORS.length]} isSpeaking={i === speaking} captureRunning={captureRunning} />
+        ))}
       </div>
       {/* Bottom toolbar */}
-      <div style={{ background: "#0A0A15", padding: "6px 14px", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flexShrink: 0 }}>
-        {[["📷","Cam Off","#EF4444"],["🎙️", captureRunning ? "Recording" : "Standby", captureRunning ? "#10B981" : "#EF4444"],["📝","Transcript On","#7C3AED"],["🔒","E2E Encrypted","#555"]].map(([ic,lbl,col]) => (
-          <div key={lbl} style={{ padding: "2px 8px", borderRadius: 3, background: col+"18", border: `1px solid ${col}44`, fontSize: 9, color: col, display: "flex", gap: 4, alignItems: "center" }}><span>{ic}</span><span>{lbl}</span></div>
+      <div style={{ background: "#07070F", padding: "6px 14px", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flexShrink: 0 }}>
+        {[["🎙️", captureRunning ? "Recording" : "Standby", captureRunning ? "#10B981" : "#EF4444"],["📝","Live Transcript","#7C3AED"],["🔒","E2E Encrypted","#06B6D4"],["📷","Cam Off","#555"]].map(([ic,lbl,col]) => (
+          <div key={lbl} style={{ padding: "2px 9px", borderRadius: 3, background: col+"18", border: `1px solid ${col}44`, fontSize: 9, color: col, display: "flex", gap: 4, alignItems: "center" }}><span>{ic}</span><span>{lbl}</span></div>
         ))}
       </div>
     </div>
