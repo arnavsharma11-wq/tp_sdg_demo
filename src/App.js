@@ -841,8 +841,7 @@ function PodcastHDGDemo({ onBack }) {
   const [accuracy, setAccuracy] = useState(85);
   const [qaChecks, setQaChecks] = useState({ clarity: null, uniqueness: null, balance: null, confidence: null });
   const [published, setPublished] = useState(false);
-  const podAudioCtxRef = useRef(null);
-  const podAudioNodesRef = useRef([]);
+  const generatingRef = useRef(false);
 
   const advance = n => { setStage(n); setMaxStage(m => Math.max(m, n)); };
   const STAGE_C = ["#F97316", "#8B5CF6", C.cyan, C.amber, C.green];
@@ -854,35 +853,8 @@ function PodcastHDGDemo({ onBack }) {
   const transcript = PODCAST_TRANSCRIPTS[selectedTopic] || PODCAST_TRANSCRIPTS.Travel;
   const activeTranscript = numSpeakers === 1 ? transcript.filter(l => l.spk === "A") : transcript;
 
-  useEffect(() => {
-    if (!generating) return;
-    const iv = setInterval(() => setActiveSpeaker(s => (s + 1) % numSpeakers), 1600);
-    return () => clearInterval(iv);
-  }, [generating, numSpeakers]);
-
-  useEffect(() => {
-    if (!generating || !podAudioCtxRef.current) return;
-    const ctx = podAudioCtxRef.current;
-    podAudioNodesRef.current.forEach(n => { try { n.stop(); } catch(e){} });
-    podAudioNodesRef.current = [];
-    const bufferSize = ctx.sampleRate * 0.5;
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-    const source = ctx.createBufferSource();
-    source.buffer = buffer; source.loop = true;
-    const bpf = ctx.createBiquadFilter();
-    bpf.type = "bandpass"; bpf.frequency.value = 850 + activeSpeaker * 280 + Math.random() * 180; bpf.Q.value = 1.1;
-    const gainNode = ctx.createGain(); gainNode.gain.value = 0;
-    const lfo = ctx.createOscillator(); lfo.frequency.value = 3.8 + Math.random() * 2;
-    const lfoGain = ctx.createGain(); lfoGain.gain.value = 0.065;
-    lfo.connect(lfoGain); lfoGain.connect(gainNode.gain);
-    gainNode.gain.setTargetAtTime(0.08, ctx.currentTime, 0.05);
-    source.connect(bpf); bpf.connect(gainNode); gainNode.connect(ctx.destination);
-    lfo.start(); source.start();
-    podAudioNodesRef.current = [source, lfo];
-    return () => { podAudioNodesRef.current.forEach(n => { try { n.stop(); } catch(e){} }); podAudioNodesRef.current = []; };
-  }, [activeSpeaker, generating]);
+  // Cancel speech when component unmounts
+  useEffect(() => () => { window.speechSynthesis && window.speechSynthesis.cancel(); }, []);
 
   useEffect(() => {
     const edits = Object.keys(transcriptEdits).length + Object.keys(speakerEdits).length;
@@ -890,18 +862,58 @@ function PodcastHDGDemo({ onBack }) {
   }, [transcriptEdits, speakerEdits]);
 
   const runGenerate = () => {
-    if (!podAudioCtxRef.current) {
-      try { podAudioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
-    } else if (podAudioCtxRef.current.state === "suspended") { podAudioCtxRef.current.resume(); }
+    generatingRef.current = true;
     setGenerating(true); setGenProg(0);
-    const st = Date.now();
-    const t = () => {
-      const p = Math.min(100, ((Date.now() - st) / 4000) * 100);
-      setGenProg(p);
-      if (p < 100) requestAnimationFrame(t);
-      else { setGenerating(false); setGenDone(true); podAudioNodesRef.current.forEach(n => { try { n.stop(); } catch(e){} }); }
+
+    // ── Speech synthesis: speak transcript lines, alternating voices per speaker ──
+    window.speechSynthesis.cancel();
+    const lines = numSpeakers === 1
+      ? (PODCAST_TRANSCRIPTS[selectedTopic] || PODCAST_TRANSCRIPTS.Travel).filter(l => l.spk === "A")
+      : (PODCAST_TRANSCRIPTS[selectedTopic] || PODCAST_TRANSCRIPTS.Travel);
+
+    const pickVoices = () => {
+      const all = window.speechSynthesis.getVoices();
+      // Prefer English voices; fall back to whatever is available
+      const en = all.filter(v => v.lang.startsWith("en"));
+      const pool = en.length >= 2 ? en : all;
+      return [pool[0] || null, pool[Math.min(1, pool.length - 1)] || null];
     };
-    requestAnimationFrame(t);
+
+    const speakLine = (idx) => {
+      if (!generatingRef.current || idx >= lines.length) return;
+      const line = lines[idx];
+      const utt = new SpeechSynthesisUtterance(line.text);
+      const [voiceA, voiceB] = pickVoices();
+      utt.voice  = line.spk === "A" ? voiceA : voiceB;
+      utt.pitch  = line.spk === "A" ? 1.15 : 0.80;   // distinct pitches per speaker
+      utt.rate   = line.spk === "A" ? 0.92 : 1.00;
+      utt.volume = 1.0;
+      setActiveSpeaker(line.spk === "A" ? 0 : 1);
+      utt.onend = () => speakLine(idx + 1);
+      window.speechSynthesis.speak(utt);
+    };
+
+    // Voices may not be ready on first call — wait if needed
+    if (window.speechSynthesis.getVoices().length > 0) {
+      speakLine(0);
+    } else {
+      window.speechSynthesis.onvoiceschanged = () => { speakLine(0); };
+    }
+
+    // Progress bar runs independently over 16 s (long enough to cover the full transcript)
+    const st = Date.now();
+    const DURATION = 16000;
+    const tick = () => {
+      const p = Math.min(100, ((Date.now() - st) / DURATION) * 100);
+      setGenProg(p);
+      if (p < 100) requestAnimationFrame(tick);
+      else {
+        generatingRef.current = false;
+        window.speechSynthesis.cancel();
+        setGenerating(false); setGenDone(true);
+      }
+    };
+    requestAnimationFrame(tick);
   };
 
   const qaItems = [
