@@ -1180,6 +1180,54 @@ function HumanDataCollect() {
   );
 }
 
+// ===== CARD ICONS =====
+function WarehouseIcon() {
+  return (
+    <div style={{ width: 80, height: 72, position: "relative" }}>
+      <svg width="80" height="72" viewBox="0 0 80 72" fill="none">
+        <rect x="10" y="24" width="60" height="44" rx="2" fill={C.amber+"12"} stroke={C.amber} strokeWidth="1.5"/>
+        <polygon points="6,24 40,7 74,24" fill="none" stroke={C.amber} strokeWidth="1.5"/>
+        <rect x="30" y="44" width="20" height="24" rx="1" fill={C.amber+"20"} stroke={C.amber+"70"} strokeWidth="1"/>
+        <rect x="13" y="31" width="13" height="10" rx="1" fill={C.amber+"12"} stroke={C.amber+"55"} strokeWidth="1"/>
+        <rect x="54" y="31" width="13" height="10" rx="1" fill={C.amber+"12"} stroke={C.amber+"55"} strokeWidth="1"/>
+      </svg>
+      <div style={{ position: "absolute", left: 10, right: 10, height: 2, background: `linear-gradient(90deg, transparent, ${C.amber}CC, transparent)`, animation: "scanDown 2.5s ease-in-out infinite" }} />
+      <div style={{ position: "absolute", top: 0, right: 0, width: 20, height: 20, borderRadius: "50%", background: C.amber, fontSize: 12, fontWeight: 900, color: "#000", display: "flex", alignItems: "center", justifyContent: "center", animation: "alertPulse 1.8s ease-in-out infinite" }}>!</div>
+    </div>
+  );
+}
+function DrivingIcon() {
+  return (
+    <div style={{ width: 80, height: 72, position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      {[0, 1, 2].map(i => (
+        <div key={i} style={{ position: "absolute", width: 22 + i * 22, height: 22 + i * 22, borderRadius: "50%", border: `1.5px solid ${C.cyan}`, animation: `radarRing 2.4s ${i * 0.8}s ease-out infinite` }} />
+      ))}
+      <svg width="34" height="46" viewBox="0 0 34 46" fill="none" style={{ position: "relative", zIndex: 1 }}>
+        <rect x="5" y="14" width="24" height="22" rx="4" fill={C.cyan+"22"} stroke={C.cyan} strokeWidth="1.5"/>
+        <rect x="8" y="8"  width="18" height="13" rx="3" fill={C.cyan+"15"} stroke={C.cyan} strokeWidth="1"/>
+        <rect x="10" y="9" width="14" height="8"  rx="2" fill={C.cyan+"20"} stroke={C.cyan+"50"} strokeWidth="0.75"/>
+        <rect x="4"  y="33" width="8" height="6" rx="1.5" fill={C.cyan+"30"} stroke={C.cyan+"80"} strokeWidth="1"/>
+        <rect x="22" y="33" width="8" height="6" rx="1.5" fill={C.cyan+"30"} stroke={C.cyan+"80"} strokeWidth="1"/>
+        <rect x="4"  y="7"  width="8" height="6" rx="1.5" fill={C.cyan+"30"} stroke={C.cyan+"80"} strokeWidth="1"/>
+        <rect x="22" y="7"  width="8" height="6" rx="1.5" fill={C.cyan+"30"} stroke={C.cyan+"80"} strokeWidth="1"/>
+      </svg>
+    </div>
+  );
+}
+function SupportIcon() {
+  return (
+    <div style={{ width: 80, height: 72, position: "relative" }}>
+      <div style={{ position: "absolute", top: 2, left: 0, width: 54, height: 30, borderRadius: "10px 10px 10px 2px", background: C.red+"18", border: `1.5px solid ${C.red}`, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, animation: "chatFadeA 3s ease-in-out infinite" }}>
+        {[0, 1, 2].map(i => <div key={i} style={{ width: 5, height: 5, borderRadius: "50%", background: C.red, animation: `dotBounce 1s ${i * 0.18}s ease-in-out infinite` }} />)}
+      </div>
+      <div style={{ position: "absolute", bottom: 2, right: 0, width: 54, height: 30, borderRadius: "10px 10px 2px 10px", background: C.green+"18", border: `1.5px solid ${C.green}`, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, animation: "chatFadeB 3s ease-in-out infinite" }}>
+        {[0, 1, 2].map(i => <div key={i} style={{ width: 5, height: 5, borderRadius: "50%", background: C.green, animation: `dotBounce 1s ${0.5 + i * 0.18}s ease-in-out infinite` }} />)}
+      </div>
+    </div>
+  );
+}
+const CARD_ICONS = { warehouse: <WarehouseIcon />, driving: <DrivingIcon />, support: <SupportIcon /> };
+
 // ===== SYNTHETIC HOME =====
 function SyntheticHome({ hov, setHov, setJourney }) {
   return (
@@ -1206,7 +1254,7 @@ function SyntheticHome({ hov, setHov, setJourney }) {
             onMouseEnter={() => setHov(j.k)} onMouseLeave={() => setHov(null)}
             onClick={() => setJourney(j.k)}
             style={{ width: 380, padding: "28px 24px", borderRadius: 14, cursor: "pointer", transition: "all .35s cubic-bezier(.17,.67,.35,1.15)", border: `1px solid ${hov === j.k ? j.color + "66" : C.bdr}`, background: hov === j.k ? j.color + "08" : C.card, transform: hov === j.k ? "translateY(-4px)" : "none", boxShadow: hov === j.k ? `0 14px 40px ${j.color}18` : "none" }}>
-            <div style={{ fontSize: 64, marginBottom: 10 }}>{j.icon}</div>
+            <div style={{ marginBottom: 14 }}>{CARD_ICONS[j.k]}</div>
             <div style={{ fontSize: 28, fontWeight: 700, color: j.color, marginBottom: 4 }}>{j.title}</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: j.color, letterSpacing: 1, opacity: 0.7, marginBottom: 10 }}>{j.sub}</div>
             <div style={{ fontSize: 18, color: C.txt, lineHeight: 1.5, marginBottom: 14 }}>{j.desc}</div>
