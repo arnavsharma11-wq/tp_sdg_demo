@@ -462,14 +462,14 @@ function TabBar({ activeTab, setActiveTab }) {
   const TABS = ["Synthetic Data Generation", "Human Data Generation", "Human Data Collection"];
   return (
     <div style={{ background: "hsl(0,0%,6%)", borderBottom: `1px solid ${C.bdr}` }}>
-      <div style={{ display: "flex", padding: "0 24px" }}>
+      <div style={{ display: "flex", justifyContent: "center" }}>
         {TABS.map((label, i) => (
           <button key={i} onClick={() => setActiveTab(i)} style={{
             background: "none", border: "none", borderBottom: `2px solid ${activeTab === i ? C.accent : "transparent"}`,
             color: activeTab === i ? "#fff" : C.txt,
-            cursor: "pointer", fontSize: 12, fontWeight: activeTab === i ? 700 : 500,
+            cursor: "pointer", fontSize: 15, fontWeight: activeTab === i ? 700 : 500,
             fontFamily: "'TP Sans', 'DM Sans', sans-serif",
-            padding: "12px 20px", letterSpacing: "0.01em", whiteSpace: "nowrap",
+            padding: "14px 32px", letterSpacing: "0.01em", whiteSpace: "nowrap",
             transition: "color .15s, border-color .15s",
           }}>
             {label}
