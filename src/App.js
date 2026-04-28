@@ -1295,9 +1295,10 @@ export default function App() {
     <div style={{ minHeight: "100vh", background: C.bg, color: C.txt, fontFamily: "'TP Sans', 'DM Sans', sans-serif" }}>
       {/* Animated aurora orbs */}
       <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", overflow: "hidden" }}>
-        <div style={{ position: "absolute", width: 700, height: 700, borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.13) 0%, transparent 70%)", top: "5%", left: "10%", animation: "orbDrift1 30s ease-in-out infinite" }} />
-        <div style={{ position: "absolute", width: 550, height: 550, borderRadius: "50%", background: "radial-gradient(circle, rgba(6,182,212,0.10) 0%, transparent 70%)", bottom: "15%", right: "8%", animation: "orbDrift2 38s ease-in-out infinite" }} />
-        <div style={{ position: "absolute", width: 480, height: 480, borderRadius: "50%", background: "radial-gradient(circle, rgba(79,70,229,0.09) 0%, transparent 70%)", top: "45%", left: "48%", animation: "orbDrift3 26s ease-in-out infinite" }} />
+        <div style={{ position: "absolute", width: 800, height: 800, borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.38) 0%, rgba(124,58,237,0.12) 40%, transparent 70%)", top: "0%", left: "5%", animation: "orbDrift1 18s ease-in-out infinite" }} />
+        <div style={{ position: "absolute", width: 650, height: 650, borderRadius: "50%", background: "radial-gradient(circle, rgba(6,182,212,0.30) 0%, rgba(6,182,212,0.10) 40%, transparent 70%)", bottom: "5%", right: "2%", animation: "orbDrift2 22s ease-in-out infinite" }} />
+        <div style={{ position: "absolute", width: 560, height: 560, borderRadius: "50%", background: "radial-gradient(circle, rgba(167,51,255,0.28) 0%, rgba(79,70,229,0.10) 40%, transparent 70%)", top: "35%", left: "42%", animation: "orbDrift3 16s ease-in-out infinite" }} />
+        <div style={{ position: "absolute", width: 420, height: 420, borderRadius: "50%", background: "radial-gradient(circle, rgba(236,72,153,0.22) 0%, transparent 65%)", top: "60%", left: "15%", animation: "orbDrift2 20s 4s ease-in-out infinite" }} />
       </div>
       {/* Blurred GIF strip — fixed at bottom across all tabs */}
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 220, zIndex: 0, pointerEvents: "none", overflow: "hidden" }}>
