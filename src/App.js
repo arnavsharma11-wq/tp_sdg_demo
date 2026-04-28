@@ -1185,7 +1185,21 @@ function PodcastHDGDemo({ onBack }) {
                 </div>
               ))}
               {allQADone && allQAPass && <button style={btn(C.green, false, { width:"100%", marginTop:4 })} onClick={() => advance(4)}>Publish Dataset →</button>}
-              {allQADone && !allQAPass && <div style={{ fontSize:13, color:C.red, marginTop:8, textAlign:"center" }}>⚠ {qaItems.filter(q=>qaChecks[q.key]==="flag").length} item(s) flagged — re-record required.</div>}
+              {allQADone && !allQAPass && (
+                <div style={{ marginTop:8 }}>
+                  <div style={{ fontSize:13, color:C.red, marginBottom:10, padding:"8px 10px", borderRadius:6, background:C.red+"12", border:`1px solid ${C.red}33` }}>
+                    ⚠ {qaItems.filter(q=>qaChecks[q.key]==="flag").length} item(s) flagged:<br/>
+                    <span style={{ color:C.hi }}>
+                      {qaItems.filter(q=>qaChecks[q.key]==="flag").map(q=>q.label).join(", ")}
+                    </span>
+                  </div>
+                  <button style={btn(C.amber, false, { width:"100%" })} onClick={() => {
+                    setGenerating(false); setGenDone(false); setGenProg(0);
+                    setQaChecks({ clarity:null, uniqueness:null, balance:null, confidence:null });
+                    advance(1);
+                  }}>↩ Re-record Flagged Sessions</button>
+                </div>
+              )}
             </div>
           </div>
 
