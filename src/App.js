@@ -759,6 +759,347 @@ function HumanDataGenDemo() {
   );
 }
 
+// ===== MEETING DATA COLLECTION DEMO =====
+function MeetingDataCollectDemo({ onBack }) {
+  const [stage, setStage] = useState(0);
+  const [maxStage, setMaxStage] = useState(0);
+  const [meetingType, setMeetingType] = useState("5-person");
+  const [selectedLangs, setSelectedLangs] = useState(["English", "French"]);
+  const [sessionCount, setSessionCount] = useState(12);
+  const [formats, setFormats] = useState({ agenda: true, brainstorm: false, notes: true, closure: false });
+  const [sessionStatuses, setSessionStatuses] = useState({});
+  const [captureRunning, setCaptureRunning] = useState(false);
+  const [captureDone, setCaptureDone] = useState(false);
+  const [autoQC, setAutoQC] = useState(false);
+  const [humanReview, setHumanReview] = useState(false);
+  const [qcRunning, setQcRunning] = useState(false);
+  const [qcDone, setQcDone] = useState(false);
+  const [qcPass, setQcPass] = useState(0);
+  const [qcFail, setQcFail] = useState(0);
+  const [selectedSess, setSelectedSess] = useState(null);
+  const [validations, setValidations] = useState({});
+  const [delivered, setDelivered] = useState(false);
+
+  const LANGS = ["English","Portuguese","French","Italian","German","Spanish","Japanese","Korean"];
+  const FMT_LABELS = { agenda:"Agenda discussion", brainstorm:"Brainstorming", notes:"Note-taking", closure:"Meeting closure" };
+  const PAX = { "1:1":2, "3-person":3, "5-person":5, "10-person":10 };
+  const DURS = [58,62,47,71,55,63,49,68,52,60,57,64,46,73,51,66];
+  const STAGE_C = [C.cyan,"#8B5CF6",C.amber,C.orange,C.green];
+  const STAGE_L = ["Setup","Capture","QC","Docs","Deliver"];
+
+  const advance = n => { setStage(n); setMaxStage(m => Math.max(m, n)); };
+  const langList = selectedLangs.length > 0 ? selectedLangs : ["English"];
+  const activeFmts = Object.entries(formats).filter(([,v])=>v).map(([k])=>FMT_LABELS[k]);
+  const sessionList = Array.from({ length: Math.min(sessionCount, 16) }, (_, i) => ({
+    id: `MTG-${String(i+1).padStart(3,"0")}`,
+    lang: langList[i % langList.length],
+    participants: PAX[meetingType],
+    dur: `${DURS[i % DURS.length]}m`,
+    format: activeFmts.length > 0 ? activeFmts[i % activeFmts.length] : "Agenda discussion",
+    issue: i === 2 ? "⚠️ Audio quality" : i === 7 ? "⚠️ Agenda adherence" : null
+  }));
+
+  const runCapture = () => {
+    setCaptureRunning(true);
+    let i = 0;
+    const tick = () => {
+      if (i >= sessionList.length) { setCaptureRunning(false); setCaptureDone(true); return; }
+      const id = sessionList[i].id;
+      setSessionStatuses(s => ({ ...s, [id]: "recording" }));
+      setTimeout(() => { setSessionStatuses(s => ({ ...s, [id]: "completed" })); i++; setTimeout(tick, 60); }, 320);
+    };
+    tick();
+  };
+
+  const runQC = () => {
+    setQcRunning(true); setQcPass(0); setQcFail(0);
+    const total = sessionList.length;
+    const failTarget = Math.max(1, Math.round(total * 0.04));
+    const passTarget = total - failTarget;
+    let p = 0, f = 0;
+    const tick = () => {
+      if (p + f >= total) { setQcRunning(false); setQcDone(true); return; }
+      if (p < passTarget) { p++; setQcPass(p); }
+      else { f++; setQcFail(f); }
+      setTimeout(tick, 90);
+    };
+    tick();
+  };
+
+  const NOTES = ["Q2 roadmap aligned. Budget approved. Headcount tabled for next quarter.","Brainstorm yielded 9 feature concepts. Customer onboarding pain points identified.","1:1 feedback shared. Performance targets reviewed. L&D plan drafted.","APAC localization strategy confirmed. Translation vendor shortlisted.","Sprint retro complete. 3 process blockers identified and assigned."];
+  const AGENDAS = ["1. Q2 Planning → 2. Budget Review → 3. Headcount → 4. AOB","Open ideation — AI features · UX gaps · Integration wishlist","Performance check-in · Goal alignment · Dev plan","Market entry: APAC · Vendor review · Timeline","Sprint retro · Blockers · Shoutouts"];
+  const ACTIONS_ARR = [["Maria: Share roadmap by EOW","Tom: Send budget delta to Finance","All: Review headcount doc before Thu"],["Ana: Compile ideas in Confluence","Dev lead: Score feasibility Fri"],["Manager: Send L&D plan to HR","Report: Complete self-assessment form"],["PM: Issue RFQ to 3 vendors","Legal: Review localization contracts"],["Scrum master: Update Jira backlog","Team: Add retro items to shared doc"]];
+  const getArtifact = id => { const i = (parseInt(id.replace("MTG-",""))-1) % NOTES.length; return { notes: NOTES[i], agenda: AGENDAS[i], actions: ACTIONS_ARR[i] }; };
+
+  const completedList = sessionList.filter(s => sessionStatuses[s.id] === "completed");
+  const reviewSet = completedList.slice(0, 8);
+  const allValidated = reviewSet.length > 0 && reviewSet.every(s => validations[s.id]);
+  const uniqueLangs = [...new Set(sessionList.map(s => s.lang))];
+
+  return (
+    <div style={{ background: C.bg, color: C.txt, fontFamily: "'TP Sans','DM Sans',sans-serif", minHeight: "calc(100vh - 112px)", padding: "10px 24px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, borderBottom: `1px solid ${C.bdr}`, paddingBottom: 8 }}>
+        <button style={btn(C.txt, true, { padding: "4px 10px", fontSize: 13 })} onClick={onBack}>← Use Cases</button>
+        <span style={{ fontSize: 12, fontWeight: 700, color: C.txt, letterSpacing: "0.1em", textTransform: "uppercase" }}>Multilingual Online Meeting Data Collection</span>
+      </div>
+      <DemoNav stage={stage} stageLabels={STAGE_L} stageColors={STAGE_C} maxStage={maxStage} advance={advance} label="" />
+
+      {/* STAGE 0 — SETUP */}
+      {stage === 0 && (
+        <div style={{ display: "flex", gap: 16 }}>
+          <div style={{ flex: "0 0 320px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 12 }}><span style={{ color: C.cyan }}>1.</span> Collection Setup</div>
+              <ChipGroup label="Meeting Type" options={["1:1","3-person","5-person","10-person"]} value={meetingType} onChange={setMeetingType} color={C.cyan} />
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: C.hi, marginBottom: 5 }}>Languages</div>
+                <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                  {LANGS.map(l => (
+                    <button key={l} onClick={() => setSelectedLangs(prev => prev.includes(l) ? prev.filter(x=>x!==l) : [...prev, l])}
+                      style={{ padding: "4px 10px", borderRadius: 6, fontSize: 12, fontWeight: 600, border: `1px solid ${selectedLangs.includes(l) ? C.cyan : C.bdr}`, background: selectedLangs.includes(l) ? C.cyan+"20" : C.bg, color: selectedLangs.includes(l) ? C.cyan : C.txt, cursor: "pointer", fontFamily: "inherit" }}>{l}</button>
+                  ))}
+                </div>
+              </div>
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: C.hi }}>Sessions</span>
+                  <span style={{ fontSize: 13, color: C.cyan, fontFamily: "monospace" }}>{sessionCount}</span>
+                </div>
+                <input type="range" min={5} max={50} value={sessionCount} onChange={e => setSessionCount(+e.target.value)} style={{ width: "100%", accentColor: C.cyan }} />
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: C.hi, marginBottom: 6 }}>Meeting Formats</div>
+                {Object.entries(FMT_LABELS).map(([k, label]) => (
+                  <label key={k} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5, cursor: "pointer", fontSize: 13, color: formats[k] ? C.hi : C.txt }}>
+                    <input type="checkbox" checked={formats[k]} onChange={() => setFormats(f => ({...f, [k]: !f[k]}))} style={{ accentColor: C.cyan }} />
+                    {label}
+                  </label>
+                ))}
+              </div>
+              <button style={btn(C.cyan, false, { width: "100%" })} onClick={() => advance(1)}>Launch Collection Campaign →</button>
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: C.hi, marginBottom: 10 }}>Campaign Brief</div>
+              <div style={{ padding: 14, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}`, fontFamily: "monospace", fontSize: 13, color: C.txt, lineHeight: 2 }}>
+                <div style={{ color: C.cyan, fontWeight: 700, marginBottom: 4 }}>MTGDC-{Date.now().toString(36).toUpperCase().slice(-6)}</div>
+                {[["Type","Online Meeting Recording"],["Meeting size",meetingType],["Languages",langList.join(", ")],["Sessions",sessionCount],["Formats",activeFmts.length>0?activeFmts.join(", "):"—"],["Consent","✓ GDPR + Regional"],["Transcription","✓ Auto-transcribe on ingest"],["PII","✓ Speaker de-identification"],["Status","⏳ Ready to launch"]].map(([k,v]) => (
+                  <div key={k}><strong style={{ color: C.hi }}>{k}:</strong> <span style={{ color: k==="Consent"||k==="Transcription"||k==="PII" ? C.green : k==="Status" ? C.amber : "inherit" }}>{v}</span><br/></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STAGE 1 — CAPTURE */}
+      {stage === 1 && (
+        <div style={{ display: "flex", gap: 16 }}>
+          <div style={{ flex: "0 0 280px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: "#8B5CF6" }}>2.</span> Live Capture</div>
+              {!captureRunning && !captureDone && <button style={btn("#8B5CF6", false, { width: "100%" })} onClick={runCapture}>▶ Start Recording Sessions</button>}
+              {captureRunning && (
+                <div>
+                  <div style={{ fontSize: 13, color: "#8B5CF6", fontWeight: 600, marginBottom: 6 }}>Sessions recording...</div>
+                  <div style={{ height: 4, borderRadius: 3, background: C.bdr, overflow: "hidden", marginBottom: 6 }}>
+                    <div style={{ height: "100%", width: `${(completedList.length / sessionList.length) * 100}%`, background: "#8B5CF6", transition: "width .2s" }} />
+                  </div>
+                  <div style={{ fontSize: 12, color: C.txt }}>{completedList.length} / {sessionList.length} completed</div>
+                </div>
+              )}
+              {captureDone && (
+                <div>
+                  <div style={{ fontSize: 13, color: C.green, fontWeight: 700, marginBottom: 6 }}>✓ {sessionList.length} sessions captured</div>
+                  <div style={{ padding: 8, borderRadius: 6, background: C.green+"10", border: `1px solid ${C.green}22`, fontSize: 12, color: C.green, marginBottom: 6 }}>Speaker IDs de-identified · Transcripts generated</div>
+                  {sessionList.filter(s=>s.issue).length > 0 && <div style={{ padding: 8, borderRadius: 6, background: C.amber+"10", border: `1px solid ${C.amber}22`, fontSize: 12, color: C.amber, marginBottom: 8 }}>{sessionList.filter(s=>s.issue).length} sessions flagged for review</div>}
+                  <button style={btn(C.amber, false, { width: "100%" })} onClick={() => advance(2)}>Run QC →</button>
+                </div>
+              )}
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Session Log</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3, maxHeight: 420, overflowY: "auto" }}>
+                {sessionList.map(s => {
+                  const status = sessionStatuses[s.id] || "scheduled";
+                  const statusColor = status==="completed" ? C.green : status==="recording" ? "#8B5CF6" : C.txt+"66";
+                  const statusLabel = status==="completed" ? "● Completed" : status==="recording" ? "◉ Recording" : "○ Scheduled";
+                  return (
+                    <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 10px", borderRadius: 6, background: C.bg, border: `1px solid ${status==="completed"&&s.issue ? C.amber+"44" : C.bdr}`, fontSize: 12, transition: "border-color .3s" }}>
+                      <span style={{ fontFamily: "monospace", color: C.hi, minWidth: 54 }}>{s.id}</span>
+                      <span style={{ color: C.cyan, minWidth: 70 }}>{s.lang}</span>
+                      <span style={{ color: C.txt, minWidth: 22 }}>{s.participants}p</span>
+                      <span style={{ color: C.txt, minWidth: 28 }}>{s.dur}</span>
+                      <span style={{ color: C.txt, flex: 1, fontSize: 11 }}>{s.format}</span>
+                      {s.issue && status==="completed" && <span style={{ color: C.amber, fontSize: 11 }}>{s.issue}</span>}
+                      <span style={{ color: statusColor, fontWeight: 600, minWidth: 88, textAlign: "right" }}>{statusLabel}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STAGE 2 — QC */}
+      {stage === 2 && (
+        <div style={{ display: "flex", gap: 16 }}>
+          <div style={{ flex: "0 0 280px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 12 }}><span style={{ color: C.amber }}>3.</span> Quality Control</div>
+              {[["autoQC",autoQC,setAutoQC,"Automated QC","Speech quality · Agenda completeness · Duration"],["humanReview",humanReview,setHumanReview,"Human Review","Spot-check flagged sessions"]].map(([key,val,set,label,desc]) => (
+                <label key={key} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 10, cursor: "pointer" }}>
+                  <input type="checkbox" checked={val} onChange={() => set(v=>!v)} style={{ marginTop: 2, accentColor: C.amber }} />
+                  <div><div style={{ fontSize: 13, fontWeight: 700, color: val ? C.hi : C.txt }}>{label}</div><div style={{ fontSize: 11, color: C.txt }}>{desc}</div></div>
+                </label>
+              ))}
+              {!qcRunning && !qcDone && <button style={btn(C.amber, false, { width: "100%", opacity: (!autoQC && !humanReview) ? 0.4 : 1 })} onClick={runQC} disabled={!autoQC && !humanReview}>Run QC →</button>}
+              {(qcRunning || qcDone) && (
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                    <span style={{ color: C.green, fontWeight: 700, fontSize: 14 }}>✓ Pass: {qcPass}</span>
+                    <span style={{ color: C.red, fontWeight: 700, fontSize: 14 }}>✗ Fail: {qcFail}</span>
+                  </div>
+                  <div style={{ height: 4, borderRadius: 3, background: C.bdr, overflow: "hidden", marginBottom: 6 }}>
+                    <div style={{ height: "100%", width: `${((qcPass+qcFail)/sessionList.length)*100}%`, background: C.amber, transition: "width .15s" }} />
+                  </div>
+                  {qcDone && <div><div style={{ fontSize: 11, color: C.green, marginBottom: 8 }}>Re-work rate: {((qcFail/sessionList.length)*100).toFixed(1)}% &lt; 5% ✓</div><button style={btn(C.orange, false, { width: "100%" })} onClick={() => advance(3)}>Review Docs →</button></div>}
+                </div>
+              )}
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: C.hi, marginBottom: 8 }}>QC Results</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3, maxHeight: 420, overflowY: "auto" }}>
+                {sessionList.map((s, idx) => {
+                  const failCount = Math.max(1, Math.round(sessionList.length*0.04));
+                  const passed = qcDone ? idx < sessionList.length - failCount : null;
+                  return (
+                    <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 10px", borderRadius: 6, background: C.bg, border: `1px solid ${passed===null ? C.bdr : passed ? C.green+"33" : C.red+"33"}`, fontSize: 12 }}>
+                      <span style={{ color: passed===null ? C.txt+"44" : passed ? C.green : C.red, width: 12 }}>{passed===null ? "○" : passed ? "✓" : "✗"}</span>
+                      <span style={{ fontFamily: "monospace", color: C.hi, minWidth: 54 }}>{s.id}</span>
+                      <span style={{ color: C.cyan, minWidth: 70 }}>{s.lang}</span>
+                      <span style={{ color: C.txt, flex: 1 }}>{s.format}</span>
+                      {s.issue && <span style={{ color: C.amber, fontSize: 11 }}>{s.issue}</span>}
+                      {qcDone && !passed && <span style={{ color: C.red, fontSize: 11, fontFamily: "monospace" }}>→ Re-record</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STAGE 3 — DOCS */}
+      {stage === 3 && (
+        <div style={{ display: "flex", gap: 16 }}>
+          <div style={{ flex: "0 0 260px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}><span style={{ color: C.orange }}>4.</span> Meeting Docs</div>
+              <div style={{ fontSize: 11, color: C.txt, marginBottom: 8 }}>Click a session to review its artifacts</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 3, maxHeight: 300, overflowY: "auto", marginBottom: 10 }}>
+                {reviewSet.map(s => {
+                  const v = validations[s.id];
+                  return (
+                    <button key={s.id} onClick={() => setSelectedSess(s.id)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 10px", borderRadius: 6, background: selectedSess===s.id ? C.orange+"15" : C.bg, border: `1px solid ${selectedSess===s.id ? C.orange : v ? C.green+"44" : C.bdr}`, cursor: "pointer", fontSize: 12, textAlign: "left", color: C.hi, fontFamily: "inherit" }}>
+                      <span>{s.id} · {s.lang}</span>
+                      {v && <span style={{ color: v==="approved" ? C.green : C.amber, fontSize: 11 }}>{v==="approved" ? "✓" : "✎"}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+              <div style={{ fontSize: 11, color: C.txt, marginBottom: 8 }}>Validated: {Object.keys(validations).length} / {reviewSet.length}</div>
+              {allValidated && <button style={btn(C.green, false, { width: "100%" })} onClick={() => advance(4)}>Package Dataset →</button>}
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            {selectedSess ? (() => {
+              const art = getArtifact(selectedSess);
+              const v = validations[selectedSess];
+              const sess = sessionList.find(s => s.id === selectedSess);
+              return (
+                <div style={cardS}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                    <div><span style={{ fontFamily: "monospace", fontSize: 14, fontWeight: 700, color: C.hi }}>{selectedSess}</span><span style={{ fontSize: 12, color: C.txt, marginLeft: 8 }}>{sess?.lang} · {sess?.participants}p · {sess?.dur}</span></div>
+                    {!v && (
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button onClick={() => setValidations(a => ({...a, [selectedSess]: "approved"}))} style={{ padding: "4px 12px", borderRadius: 5, fontSize: 12, fontWeight: 700, background: C.green+"18", border: `1px solid ${C.green}44`, color: C.green, cursor: "pointer", fontFamily: "inherit" }}>✓ Approve</button>
+                        <button onClick={() => setValidations(a => ({...a, [selectedSess]: "edited"}))} style={{ padding: "4px 12px", borderRadius: 5, fontSize: 12, fontWeight: 700, background: C.amber+"18", border: `1px solid ${C.amber}44`, color: C.amber, cursor: "pointer", fontFamily: "inherit" }}>✎ Request Edit</button>
+                      </div>
+                    )}
+                    {v && <span style={{ fontSize: 12, fontWeight: 700, color: v==="approved" ? C.green : C.amber }}>{v==="approved" ? "✓ Approved" : "✎ Edit Requested"}</span>}
+                  </div>
+                  {[["Meeting Notes", art.notes, C.hi], ["Agenda Summary", art.agenda, C.txt]].map(([title, content, col]) => (
+                    <div key={title} style={{ padding: 10, borderRadius: 6, background: C.bg, border: `1px solid ${C.bdr}`, marginBottom: 8 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: C.txt, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>{title}</div>
+                      <div style={{ fontSize: 13, color: col, lineHeight: 1.5 }}>{content}</div>
+                    </div>
+                  ))}
+                  <div style={{ padding: 10, borderRadius: 6, background: C.bg, border: `1px solid ${C.bdr}`, marginBottom: 8 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: C.txt, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>Action Items</div>
+                    {art.actions.map((a, i) => (
+                      <div key={i} style={{ display: "flex", gap: 6, marginBottom: 4, fontSize: 13, color: C.hi }}>
+                        <span style={{ color: C.orange, fontWeight: 700, flexShrink: 0 }}>{i+1}.</span><span>{a}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ padding: 8, borderRadius: 6, background: C.accent+"10", border: `1px solid ${C.accent}22`, fontSize: 11, color: C.accent, fontWeight: 600 }}>
+                    Content Writer Validation — Review notes and action items for accuracy before approval
+                  </div>
+                </div>
+              );
+            })() : (
+              <div style={{ ...cardS, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 200, color: C.txt, fontSize: 13 }}>
+                ← Select a session to view its artifacts
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* STAGE 4 — DELIVER */}
+      {stage === 4 && (
+        <div style={{ display: "flex", gap: 16 }}>
+          <div style={{ flex: "0 0 300px" }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: C.green }}>5.</span> Final Delivery</div>
+              {!delivered && <button style={btn(C.green, false, { width: "100%" })} onClick={() => setTimeout(() => setDelivered(true), 800)}>📦 Finalize Dataset Delivery</button>}
+              {delivered && (
+                <div>
+                  <div style={{ fontSize: 16, color: C.green, fontWeight: 700, marginBottom: 10 }}>✓ Dataset Delivery Ready</div>
+                  {[["Total sessions",sessionList.length],["Languages covered",uniqueLangs.length],["QC pass rate",`${(100-parseFloat(((qcFail/sessionList.length)*100).toFixed(1)))}%`],["Flagged & resolved",sessionList.filter(s=>s.issue).length],["Docs validated",Object.keys(validations).length],["Delivery format","MP4 + JSONL + PDF"],["Status","✓ Delivery-ready"]].map(([l,v]) => (
+                    <div key={l} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "5px 0", borderBottom: `1px solid ${C.bdr}` }}>
+                      <span style={{ color: C.txt }}>{l}</span><span style={{ color: l==="Status" ? C.green : C.hi, fontWeight: 700 }}>{v}</span>
+                    </div>
+                  ))}
+                  <button style={btn(C.cyan, true, { width: "100%", marginTop: 10 })} onClick={() => { setStage(0); setMaxStage(0); setSessionStatuses({}); setCaptureRunning(false); setCaptureDone(false); setAutoQC(false); setHumanReview(false); setQcRunning(false); setQcDone(false); setQcPass(0); setQcFail(0); setSelectedSess(null); setValidations({}); setDelivered(false); }}>New Campaign</button>
+                </div>
+              )}
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={cardS}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: C.hi, marginBottom: 10 }}>Delivery Manifest</div>
+              <div style={{ padding: 14, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}`, fontFamily: "monospace", fontSize: 12, color: C.txt, lineHeight: 2 }}>
+                <div style={{ color: C.cyan, fontWeight: 700, marginBottom: 4 }}>MTGDC-{Date.now().toString(36).toUpperCase().slice(-10)}</div>
+                {[["Campaign","Multilingual Online Meeting Data Collection"],["Languages",uniqueLangs.join(", ")],["Meeting type",meetingType],["Sessions delivered",sessionList.length],["Total duration (est.)",`${Math.round(sessionList.reduce((a,s)=>a+parseInt(s.dur),0)/60)}h`],["Formats",activeFmts.join(", ")||"Agenda discussion"],["QC method",[autoQC&&"Automated",humanReview&&"Human Review"].filter(Boolean).join(" + ")||"—"],["Transcription","✓ Multi-language ASR"],["PII scrub","✓ Speaker de-identification"],["Consent","✓ GDPR + Regional"],["Pipeline","TP.ai MTGDC v1.0"],["Status",delivered?"✓ Delivery-ready":"⏳ Packaging..."]].map(([k,v]) => (
+                  <div key={k}><strong style={{color:C.hi}}>{k}:</strong> <span style={{color:k==="Status"?(delivered?C.green:C.amber):k==="Transcription"||k==="PII scrub"||k==="Consent"?C.green:"inherit"}}>{v}</span><br/></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ===== HDC: CLIP DATA =====
 const HDC_CLIPS = [
   { id: "CLR-001", city: "Chennai",   gender: "F", age: 24, device: "Android", dur: 7.2,  snr: 18, asr: "Please confirm my appointment for next Tewsday afternoon.",       corrected: "Please confirm my appointment for next Tuesday afternoon." },
@@ -773,6 +1114,34 @@ const HDC_CLIPS = [
 
 // ===== HUMAN DATA COLLECTION DEMO =====
 function HumanDataCollectDemo() {
+  const [useCase, setUseCase] = useState(null);
+  if (useCase === "voice") return <VoiceClipHDC onBack={() => setUseCase(null)} />;
+  if (useCase === "meeting") return <MeetingDataCollectDemo onBack={() => setUseCase(null)} />;
+  return (
+    <div style={{ background: C.bg, color: C.txt, fontFamily: "'TP Sans','DM Sans',sans-serif", minHeight: "calc(100vh - 112px)", padding: "32px 24px" }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: C.txt, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6 }}>Human Data Collection</div>
+      <div style={{ fontSize: 22, fontWeight: 800, color: C.hi, marginBottom: 24 }}>Select a use case</div>
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+        {[
+          { key: "voice", icon: "📡", label: "Voice Clip Collection", color: C.cyan, desc: "Crowdsourced short voice recordings from mobile contributors across India. ASR transcription, SNR filtering, and transcript annotation.", tag: "5 stages · HDC v1.0" },
+          { key: "meeting", icon: "🌐", label: "Multilingual Online Meeting Data Collection", color: C.accent, desc: "Remote corporate meeting recordings across 8 languages and 4 meeting formats. QC, artifact generation, and content writer validation.", tag: "5 stages · MTGDC v1.0" },
+        ].map(({ key, icon, label, color, desc, tag }) => (
+          <div key={key} onClick={() => setUseCase(key)}
+            style={{ flex: "1 1 320px", maxWidth: 420, padding: "24px 22px", borderRadius: 14, cursor: "pointer", border: `1px solid ${color}44`, background: C.card, transition: "border-color .2s, box-shadow .2s" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = color; e.currentTarget.style.boxShadow = `0 8px 32px ${color}18`; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = color+"44"; e.currentTarget.style.boxShadow = "none"; }}>
+            <div style={{ fontSize: 28, marginBottom: 10 }}>{icon}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color, marginBottom: 6 }}>{label}</div>
+            <div style={{ fontSize: 13, color: C.txt, lineHeight: 1.6, marginBottom: 10 }}>{desc}</div>
+            <div style={{ fontSize: 11, color, fontWeight: 600 }}>{tag}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function VoiceClipHDC({ onBack }) {
   const [stage, setStage] = useState(0);
   const [maxStage, setMaxStage] = useState(0);
   const [dataType, setDataType] = useState("Voice Clips");
@@ -808,7 +1177,11 @@ function HumanDataCollectDemo() {
 
   return (
     <div style={{ background: C.bg, color: C.txt, fontFamily: "'TP Sans','DM Sans',sans-serif", minHeight: "calc(100vh - 112px)", padding: "10px 24px" }}>
-      <DemoNav stage={stage} stageLabels={STAGE_L} stageColors={STAGE_C} maxStage={maxStage} advance={advance} label="HUMAN DATA COLLECTION" />
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, borderBottom: `1px solid ${C.bdr}`, paddingBottom: 8 }}>
+        <button style={btn(C.txt, true, { padding: "4px 10px", fontSize: 13 })} onClick={onBack}>← Use Cases</button>
+        <span style={{ fontSize: 12, fontWeight: 700, color: C.txt, letterSpacing: "0.1em", textTransform: "uppercase" }}>Voice Clip Collection</span>
+      </div>
+      <DemoNav stage={stage} stageLabels={STAGE_L} stageColors={STAGE_C} maxStage={maxStage} advance={advance} label="" />
 
       {/* STAGE 0: CAMPAIGN */}
       {stage === 0 && (
