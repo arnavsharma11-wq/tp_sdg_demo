@@ -842,6 +842,7 @@ function PodcastHDGDemo({ onBack }) {
   const [qaChecks, setQaChecks] = useState({ clarity: null, uniqueness: null, balance: null, confidence: null });
   const [published, setPublished] = useState(false);
   const generatingRef = useRef(false);
+  const localeIdxRef  = useRef(0);    // which locale is currently being spoken
 
   const advance = n => { setStage(n); setMaxStage(m => Math.max(m, n)); };
   const STAGE_C = ["#F97316", "#8B5CF6", C.cyan, C.amber, C.green];
@@ -863,57 +864,104 @@ function PodcastHDGDemo({ onBack }) {
 
   const runGenerate = () => {
     generatingRef.current = true;
-    setGenerating(true); setGenProg(0);
-
-    // ── Speech synthesis: speak transcript lines, alternating voices per speaker ──
+    setGenerating(true); setGenProg(0); setActiveSpeaker(0);
     window.speechSynthesis.cancel();
+
     const lines = numSpeakers === 1
       ? (PODCAST_TRANSCRIPTS[selectedTopic] || PODCAST_TRANSCRIPTS.Travel).filter(l => l.spk === "A")
       : (PODCAST_TRANSCRIPTS[selectedTopic] || PODCAST_TRANSCRIPTS.Travel);
 
-    const pickVoices = () => {
+    // Map each locale to a BCP-47 language tag so the browser picks the right voice
+    const LOCALE_LANG = {
+      "mandarin":   "zh-CN",
+      "japanese":   "ja-JP",
+      "english-ea": "en-GB",
+      "hindi":      "hi-IN",
+    };
+
+    // Pick the best two voices for a locale: prefer Google/Premium/Neural, then lang match, then any en
+    const getVoicesForLocale = (localeKey) => {
       const all = window.speechSynthesis.getVoices();
-      // Prefer English voices; fall back to whatever is available
-      const en = all.filter(v => v.lang.startsWith("en"));
-      const pool = en.length >= 2 ? en : all;
+      const lang = LOCALE_LANG[localeKey] || "en-US";
+      const prefix = lang.split("-")[0];
+      // Score: neural/Google voices score highest
+      const scored = all
+        .filter(v => v.lang.startsWith(prefix))
+        .map(v => ({ v, score: (v.name.includes("Google") ? 4 : 0) + (v.name.includes("Premium") ? 3 : 0) + (v.name.includes("Neural") ? 2 : 0) + (v.lang === lang ? 1 : 0) }))
+        .sort((a, b) => b.score - a.score)
+        .map(x => x.v);
+      // Fall back to English if no locale voices exist
+      const pool = scored.length >= 2 ? scored : all.filter(v => v.lang.startsWith("en")).sort((a, b) =>
+        ((b.name.includes("Google")?4:0)+(b.name.includes("Premium")?3:0)) -
+        ((a.name.includes("Google")?4:0)+(a.name.includes("Premium")?3:0))
+      );
       return [pool[0] || null, pool[Math.min(1, pool.length - 1)] || null];
     };
 
-    const speakLine = (idx) => {
-      if (!generatingRef.current || idx >= lines.length) return;
-      const line = lines[idx];
-      const utt = new SpeechSynthesisUtterance(line.text);
-      const [voiceA, voiceB] = pickVoices();
-      utt.voice  = line.spk === "A" ? voiceA : voiceB;
-      utt.pitch  = line.spk === "A" ? 1.15 : 0.80;   // distinct pitches per speaker
-      utt.rate   = line.spk === "A" ? 0.92 : 1.00;
-      utt.volume = 1.0;
-      setActiveSpeaker(line.spk === "A" ? 0 : 1);
-      utt.onend = () => speakLine(idx + 1);
-      window.speechSynthesis.speak(utt);
-    };
+    const localeCount = selectedLocales.length;
+    localeIdxRef.current = 0;
 
-    // Voices may not be ready on first call — wait if needed
-    if (window.speechSynthesis.getVoices().length > 0) {
-      speakLine(0);
-    } else {
-      window.speechSynthesis.onvoiceschanged = () => { speakLine(0); };
-    }
-
-    // Progress bar runs independently over 16 s (long enough to cover the full transcript)
-    const st = Date.now();
-    const DURATION = 16000;
-    const tick = () => {
-      const p = Math.min(100, ((Date.now() - st) / DURATION) * 100);
-      setGenProg(p);
-      if (p < 100) requestAnimationFrame(tick);
-      else {
+    // Play through every selected locale in sequence — each gets the full transcript
+    const playLocale = (localeIdx) => {
+      if (!generatingRef.current) return;
+      localeIdxRef.current = localeIdx;
+      if (localeIdx >= localeCount) {
+        // All locales done
         generatingRef.current = false;
-        window.speechSynthesis.cancel();
-        setGenerating(false); setGenDone(true);
+        setGenerating(false); setGenDone(true); setGenProg(100);
+        return;
       }
+      const localeKey = selectedLocales[localeIdx];
+      const lang = LOCALE_LANG[localeKey] || "en-US";
+      const [voiceA, voiceB] = getVoicesForLocale(localeKey);
+
+      const speakLine = (lineIdx) => {
+        if (!generatingRef.current) return;
+        if (lineIdx >= lines.length) {
+          // Locale done — brief pause then next locale
+          setTimeout(() => playLocale(localeIdx + 1), 700);
+          return;
+        }
+        const line = lines[lineIdx];
+        const utt = new SpeechSynthesisUtterance(line.text);
+        utt.lang   = lang;
+        utt.voice  = line.spk === "A" ? voiceA : voiceB;
+        // Subtle, natural-sounding differences between speakers
+        utt.pitch  = line.spk === "A" ? 1.05 : 0.92;
+        utt.rate   = line.spk === "A" ? 0.88 : 0.93;
+        utt.volume = 1.0;
+        setActiveSpeaker(line.spk === "A" ? 0 : 1);
+        utt.onend  = () => setTimeout(() => speakLine(lineIdx + 1), 320);
+        utt.onerror = () => setTimeout(() => speakLine(lineIdx + 1), 100);
+        window.speechSynthesis.speak(utt);
+      };
+
+      speakLine(0);
     };
-    requestAnimationFrame(tick);
+
+    // Progress bar: per-locale segment + smooth fill within each segment.
+    // Each locale gets an equal slice of 0–100. Within the slice we crawl
+    // at ~0.55/tick (200 ms) ≈ 2.75%/s, which fits a ~30 s transcript well.
+    const SEG = 100 / localeCount;
+    const pollProgress = () => {
+      if (!generatingRef.current) return;
+      setGenProg(prev => {
+        const segStart = localeIdxRef.current * SEG;
+        const segEnd   = (localeIdxRef.current + 1) * SEG - 0.5;
+        // Crawl within current segment; don't overshoot into next locale's slice
+        return prev < segEnd ? Math.min(segEnd, prev + 0.55) : prev;
+      });
+      setTimeout(pollProgress, 200);
+    };
+    pollProgress();
+
+    // Start speaking — wait for voices if not yet loaded
+    const startSpeech = () => playLocale(0);
+    if (window.speechSynthesis.getVoices().length > 0) {
+      startSpeech();
+    } else {
+      window.speechSynthesis.onvoiceschanged = startSpeech;
+    }
   };
 
   const qaItems = [
