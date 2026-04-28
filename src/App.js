@@ -1264,7 +1264,7 @@ function SyntheticHome({ hov, setHov, setJourney }) {
 
       {/* Cards + badges */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "16px 32px 24px" }}>
-      <div style={{ position: "relative", zIndex: 2, display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center", marginBottom: 16 }}>
+      <div style={{ position: "relative", zIndex: 2, display: "flex", gap: 12, flexWrap: "nowrap", justifyContent: "center", marginBottom: 16, width: "100%", maxWidth: 1020 }}>
         {[
           { k: "warehouse", icon: "🏭", title: "Warehouse Safety", sub: "Image SDG", desc: "Generate synthetic warehouse images with workers, forklifts, safety violations, and edge cases from a single seed photo.", color: C.amber, brief: "Logistics client · 500 annotated images" },
           { k: "driving", icon: "🚗", title: "Self-Driving Car", sub: "Video SDG", desc: "Generate dashcam video clips with pedestrians, rain, night driving, and construction zones for perception training.", color: C.cyan, brief: "AV OEM · 200 video clips · 30fps" },
@@ -1273,20 +1273,20 @@ function SyntheticHome({ hov, setHov, setJourney }) {
           <div key={j.k}
             onMouseEnter={() => setHov(j.k)} onMouseLeave={() => setHov(null)}
             onClick={() => setJourney(j.k)}
-            style={{ width: 360, padding: "14px 20px", borderRadius: 14, cursor: "pointer", transition: "all .35s cubic-bezier(.17,.67,.35,1.15)", border: `1px solid ${hov === j.k ? j.color + "66" : C.bdr}`, background: hov === j.k ? j.color + "08" : C.card, transform: hov === j.k ? "translateY(-4px)" : "none", boxShadow: hov === j.k ? `0 14px 40px ${j.color}18` : "none" }}>
-            <div style={{ marginBottom: 8 }}>{CARD_ICONS[j.k]}</div>
-            <div style={{ fontSize: 28, fontWeight: 700, color: j.color, marginBottom: 4 }}>{j.title}</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: j.color, letterSpacing: 1, opacity: 0.7, marginBottom: 6 }}>{j.sub}</div>
-            <div style={{ fontSize: 18, color: C.txt, lineHeight: 1.4, marginBottom: 8 }}>{j.desc}</div>
-            <div style={{ padding: "6px 14px", borderRadius: 6, background: j.color + "12", border: `1px solid ${j.color}22`, fontSize: 16, color: j.color, fontWeight: 600, display: "inline-block" }}>{j.brief}</div>
+            style={{ flex: "1 1 0", minWidth: 0, padding: "14px 16px", borderRadius: 14, cursor: "pointer", transition: "all .35s cubic-bezier(.17,.67,.35,1.15)", border: `1px solid ${hov === j.k ? j.color + "66" : C.bdr}`, background: hov === j.k ? j.color + "08" : C.card, transform: hov === j.k ? "translateY(-4px)" : "none", boxShadow: hov === j.k ? `0 14px 40px ${j.color}18` : "none" }}>
+            <div style={{ marginBottom: 6 }}>{CARD_ICONS[j.k]}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: j.color, marginBottom: 3 }}>{j.title}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: j.color, letterSpacing: 1, opacity: 0.7, marginBottom: 6 }}>{j.sub}</div>
+            <div style={{ fontSize: 13, color: C.txt, lineHeight: 1.5, marginBottom: 8 }}>{j.desc}</div>
+            <div style={{ padding: "5px 12px", borderRadius: 6, background: j.color + "12", border: `1px solid ${j.color}22`, fontSize: 12, color: j.color, fontWeight: 600, display: "inline-block" }}>{j.brief}</div>
           </div>
         ))}
       </div>
 
       <div style={{ position: "relative", zIndex: 2, display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
-        <div style={{ padding: "8px 16px", borderRadius: 6, background: C.red + "10", border: `1px solid ${C.red}22`, fontSize: 18, color: C.red, fontWeight: 600 }}><HT s={11} /> Human-in-the-loop at every stage</div>
-        <div style={{ padding: "8px 16px", borderRadius: 6, background: C.green + "10", border: `1px solid ${C.green}22`, fontSize: 18, color: C.green, fontWeight: 600 }}>🔒 GDPR · HIPAA · EU AI Act · SOC 2</div>
-        <div style={{ padding: "8px 16px", borderRadius: 6, background: C.accent + "10", border: `1px solid ${C.accent}22`, fontSize: 18, color: C.accent, fontWeight: 600 }}>📋 Full compliance report per delivery</div>
+        <div style={{ padding: "7px 14px", borderRadius: 6, background: C.red + "10", border: `1px solid ${C.red}22`, fontSize: 14, color: C.red, fontWeight: 600 }}><HT s={9} /> Human-in-the-loop at every stage</div>
+        <div style={{ padding: "7px 14px", borderRadius: 6, background: C.green + "10", border: `1px solid ${C.green}22`, fontSize: 14, color: C.green, fontWeight: 600 }}>🔒 GDPR · HIPAA · EU AI Act · SOC 2</div>
+        <div style={{ padding: "7px 14px", borderRadius: 6, background: C.accent + "10", border: `1px solid ${C.accent}22`, fontSize: 14, color: C.accent, fontWeight: 600 }}>📋 Full compliance report per delivery</div>
       </div>
       </div>
     </div>
