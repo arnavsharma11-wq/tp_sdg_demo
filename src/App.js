@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 
 // ===== SHARED STYLES =====
-const C = { bg: "#131313", card: "#1A1A1A", bdr: "#222222", txt: "#9E9E9E", hi: "#E5E0DB", accent: "#7C3AED", green: "#10B981", amber: "#F59E0B", red: "#EF4444", cyan: "#06B6D4", orange: "#F97316" };
+const DARK_C  = { bg: "#131313", card: "#1A1A1A", bdr: "#222222", txt: "#9E9E9E", hi: "#E5E0DB", accent: "#7C3AED", green: "#10B981", amber: "#F59E0B", red: "#EF4444", cyan: "#06B6D4", orange: "#F97316" };
+const LIGHT_C = { bg: "#F4F4F7", card: "#FFFFFF",  bdr: "#E2E2E8", txt: "#6B7280", hi: "#111111",  accent: "#7C3AED", green: "#10B981", amber: "#F59E0B", red: "#EF4444", cyan: "#06B6D4", orange: "#F97316" };
+let C = { ...DARK_C };
 const btn = (c, o, x = {}) => ({ padding: "10px 22px", borderRadius: 8, border: o ? `1.5px solid ${c}` : "none", background: o ? "transparent" : c, color: o ? c : "#000", fontSize: 15, fontWeight: 700, cursor: "pointer", ...x });
-const cardS = { background: C.card, borderRadius: 12, border: `1px solid ${C.bdr}`, padding: 20 };
-const imgS = { width: "100%", borderRadius: 8, border: `1px solid ${C.bdr}` };
+let cardS = { background: C.card, borderRadius: 12, border: `1px solid ${C.bdr}`, padding: 20 };
+let imgS = { width: "100%", borderRadius: 8, border: `1px solid ${C.bdr}` };
 function HT({ s = 9 }) { return <span style={{ display: "inline-block", width: 0, height: 0, borderLeft: `${s/2}px solid transparent`, borderRight: `${s/2}px solid transparent`, borderBottom: `${s}px solid ${C.red}`, marginLeft: 4, verticalAlign: "middle" }} />; }
 const stageC = [C.accent, "#8B5CF6", C.red, C.cyan, C.orange, C.green];
 const stageL = ["Seed", "Generate", "Critique", "Curate", "Comply", "Package"];
@@ -2508,6 +2510,25 @@ export default function App() {
   const [activeTab, setActiveTab] = useState(0);
   const [journey, setJourney] = useState(null);
   const [hov, setHov] = useState(null);
+  const [theme, setTheme] = useState("dark");
+
+  // Listen for theme changes posted from the outer homepage nav
+  useEffect(() => {
+    function handleMessage(e) {
+      if (e.data && e.data.type === "tp-theme") {
+        setTheme(e.data.theme);
+      }
+    }
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
+  // Mutate shared C, cardS, imgS in-place so all child components pick up
+  // the updated values on re-render without requiring prop drilling
+  const palette = theme === "light" ? LIGHT_C : DARK_C;
+  Object.assign(C, palette);
+  Object.assign(cardS, { background: C.card, border: `1px solid ${C.bdr}` });
+  Object.assign(imgS, { border: `1px solid ${C.bdr}` });
 
   return (
     <div style={{ minHeight: "100vh", background: C.bg, color: C.txt, fontFamily: "'TP Sans', 'DM Sans', sans-serif" }}>
@@ -2525,23 +2546,20 @@ export default function App() {
       </div>
 
       <div>
-        <div style={{ padding: "0 3rem", height: 56, background: "hsl(0,0%,5%)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ padding: "0 3rem", height: 56, background: C.card, display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${C.bdr}` }}>
           <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ height: 20, width: "auto", objectFit: "contain", objectPosition: "left center" }} />
           <div style={{ display: "flex", alignItems: "stretch", gap: 0, height: "100%" }}>
             {["Synthetic Data Generation", "Human Data Generation", "Human Data Collection"].map((label, i) => (
               <button key={i} onClick={() => setActiveTab(i)} style={{
                 background: "none", border: "none",
                 borderBottom: `2px solid ${activeTab === i ? C.accent : "transparent"}`,
-                color: activeTab === i ? "#fff" : C.txt,
+                color: activeTab === i ? C.hi : C.txt,
                 cursor: "pointer", fontSize: 17.5, fontWeight: activeTab === i ? 700 : 500,
                 fontFamily: "'TP Sans', 'DM Sans', sans-serif",
                 padding: "0 24px", letterSpacing: "0.01em", whiteSpace: "nowrap",
                 transition: "color .15s, border-color .15s",
               }}>{label}</button>
             ))}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", paddingRight: "1.5rem" }}>
-            <img src="/TP-logo.png" alt="TP" style={{ height: 26, width: "auto", objectFit: "contain" }} />
           </div>
         </div>
         <div style={{ height: 2, background: "linear-gradient(90deg, #5b21b6 0%, #9071f0 100%)" }} />
