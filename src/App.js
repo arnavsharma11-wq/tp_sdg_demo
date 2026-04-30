@@ -854,6 +854,8 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
   const [qaChecks, setQaChecks] = useState({ clarity: null, uniqueness: null, balance: null, confidence: null });
   const [published, setPublished] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [spokenCount, setSpokenCount] = useState(0);     // lines completed in current locale
+  const [currentLineIdx, setCurrentLineIdx] = useState(-1); // line actively being spoken
   const generatingRef = useRef(false);
   const pausedRef     = useRef(false);
   const localeIdxRef  = useRef(0);   // which locale is currently being spoken
@@ -863,8 +865,8 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
   const resumeFnRef   = useRef(null);// cancel+restart: stores continuation set by speakLine
 
   const advance = n => { setStage(n); setMaxStage(m => Math.max(m, n)); };
-  const STAGE_C = ["#F97316", "#8B5CF6", C.cyan, C.amber, C.green];
-  const STAGE_L = ["Design", "Generate", "Transcribe", "QA", "Publish"];
+  const STAGE_C = ["#F97316", "#8B5CF6", C.amber, C.green];
+  const STAGE_L = ["Design", "Record & Transcribe", "QA", "Publish"];
   const SPEAKER_COLORS = ["#7C3AED","#06B6D4","#F97316","#10B981"];
   const SPK_LABELS = numSpeakers === 1 ? ["Host"] : ["Host","Guest"];
   const WAVE_ANIMS = ["audioBar1","audioBar2","audioBar3","audioBar4","audioBar2","audioBar1","audioBar3","audioBar4","audioBar2","audioBar1","audioBar3","audioBar4"];
@@ -919,7 +921,7 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
     pausedRef.current = false;
     resumeFnRef.current = null;
     setPaused(false);
-    setGenerating(true); setGenProg(0); setActiveSpeaker(0);
+    setGenerating(true); setGenProg(0); setActiveSpeaker(0); setSpokenCount(0); setCurrentLineIdx(-1);
     window.speechSynthesis.cancel();
 
     const lines = numSpeakers === 1
@@ -964,11 +966,14 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
       localeIdxRef.current = localeIdx;
       lineIdxRef.current   = 0;
       if (localeIdx >= localeCount) {
-        // All locales done — speech chain drives completion
+        // All locales done — keep transcript visible, just clear the "speaking" cursor
+        setCurrentLineIdx(-1);
         generatingRef.current = false;
         setGenerating(false); setGenDone(true); setGenProg(100);
         return;
       }
+      // Reset transcript for each new locale (re-record of same script in new language)
+      setSpokenCount(0); setCurrentLineIdx(-1);
       const localeKey = selectedLocales[localeIdx];
       const lang = LOCALE_LANG[localeKey] || "en-US";
       const [voiceA, voiceB] = getVoicesForLocale(localeKey);
@@ -978,6 +983,7 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
         lineIdxRef.current = lineIdx;
         // Always keep resumeFnRef pointed at the current line so pause/tab-switch can restart here
         resumeFnRef.current = () => speakLine(lineIdx);
+        setCurrentLineIdx(lineIdx);
         if (lineIdx >= lines.length) {
           // Locale done — brief pause then next locale
           setActiveSpeaker(-1);
@@ -999,6 +1005,7 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
         utt.onend  = () => {
           lineStartRef.current = 0;
           setActiveSpeaker(-1); // clear wave between speakers
+          setSpokenCount(lineIdx + 1); setCurrentLineIdx(-1); // reveal this line in transcript
           setTimeout(() => speakLine(lineIdx + 1), 200);
         };
         // onerror fires when cancel() is called for pause — don't advance the line
@@ -1164,7 +1171,9 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
                   <div style={{ padding:"6px 10px", borderRadius:6, background:C.green+"10", border:`1px solid ${C.green}33`, fontSize:13, color:C.green, marginBottom:12, lineHeight:1.6 }}>
                     {selectedLocales.length} locale{selectedLocales.length!==1?"s":""} · {numSpeakers} speaker{numSpeakers!==1?"s":""} · {recFormat}
                   </div>
-                  <button style={btn(C.accent, false, { width:"100%" })} onClick={() => advance(2)}>Send to Transcription →</button>
+                  {accuracy >= 98
+                    ? <button style={btn(C.accent, false, { width:"100%" })} onClick={() => advance(2)}>Confirm Transcript →</button>
+                    : <div style={{ padding:"8px 10px", borderRadius:6, background:C.cyan+"12", border:`1px solid ${C.cyan}30`, fontSize:12, color:C.cyan, lineHeight:1.5 }}>💡 Fix {Math.max(1, Math.ceil((98-accuracy)/3.5))} more word{Math.max(1, Math.ceil((98-accuracy)/3.5))!==1?"s":""} in the transcript below to confirm</div>}
                 </div>
               )}
 
@@ -1186,11 +1195,27 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
                   );
                 })}
               </div>
+
+              {/* Accuracy meter — visible once recording starts */}
+              {(generating || genDone) && (
+                <div style={{ marginTop:14, padding:"10px 12px", borderRadius:8, background:C.bg, border:`1px solid ${C.bdr}` }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
+                    <span style={{ fontSize:12, fontWeight:700, color:C.hi }}>Transcript Accuracy</span>
+                    <span style={{ fontSize:15, fontWeight:800, color:accuracy>=98?C.green:C.amber, fontFamily:"monospace" }}>{Math.round(accuracy)}%</span>
+                  </div>
+                  <div style={{ height:5, borderRadius:3, background:C.bdr }}>
+                    <div style={{ height:"100%", borderRadius:3, width:`${accuracy}%`, background:accuracy>=98?C.green:`linear-gradient(90deg,${C.amber},#F97316)`, transition:"width .5s" }} />
+                  </div>
+                  <div style={{ fontSize:11, color:C.txt, marginTop:4 }}>
+                    {Object.keys(transcriptEdits).length+Object.keys(speakerEdits).length} correction{(Object.keys(transcriptEdits).length+Object.keys(speakerEdits).length)!==1?"s":""} applied · target 98%
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Studio monitor */}
-          <div style={{ flex:1 }}>
+          {/* Studio monitor + Live Transcript */}
+          <div style={{ flex:1, display:"flex", flexDirection:"column", gap:14 }}>
             <div style={cardS()}>
               <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
                 <div style={{ fontSize:17, fontWeight:700, color:C.hi }}>Studio Monitor</div>
@@ -1241,83 +1266,88 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* ── STAGE 2: TRANSCRIBE ── */}
-      {stage === 2 && (
-        <div style={{ display:"flex", gap:16 }}>
-          <div style={{ flex:"0 0 260px" }}>
-            <div style={cardS()}>
-              <div style={{ fontSize:26, fontWeight:800, color:C.hi, marginBottom:10 }}><span style={{ color:C.cyan }}>3.</span> Transcription</div>
-              <div style={{ fontSize:13, color:C.txt, marginBottom:12, lineHeight:1.6 }}>Auto-transcription generated. Click any <strong style={{ color:C.hi }}>word</strong> to correct it. Click a <strong style={{ color:C.hi }}>speaker badge</strong> to swap attribution.</div>
-              <div style={{ padding:"10px 12px", borderRadius:8, background:C.bg, border:`1px solid ${C.bdr}`, marginBottom:14 }}>
-                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
-                  <span style={{ fontSize:13, fontWeight:700, color:C.hi }}>Word Accuracy</span>
-                  <span style={{ fontSize:18, fontWeight:800, color:accuracy>=98?C.green:C.amber, fontFamily:"monospace" }}>{Math.round(accuracy)}%</span>
+            {/* ── LIVE TRANSCRIPT (appears as lines are spoken) ── */}
+            {(spokenCount > 0 || (currentLineIdx >= 0 && generating)) && (
+              <div style={cardS()}>
+                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
+                  <div style={{ fontSize:15, fontWeight:700, color:C.hi }}>Live Transcript — {selectedTopic}</div>
+                  {generating && !paused && (
+                    <div style={{ display:"flex", alignItems:"center", gap:5, padding:"2px 9px", borderRadius:20, background:"#8B5CF620", border:"1px solid #8B5CF640" }}>
+                      <div style={{ width:6, height:6, borderRadius:"50%", background:"#8B5CF6", boxShadow:"0 0 6px #8B5CF6" }} />
+                      <span style={{ fontSize:11, fontWeight:700, color:"#8B5CF6", letterSpacing:"0.05em" }}>LIVE</span>
+                    </div>
+                  )}
+                  {genDone && <span style={{ fontSize:12, color:C.green, marginLeft:"auto" }}>✓ {spokenCount} line{spokenCount!==1?"s":""} · click any word to correct</span>}
                 </div>
-                <div style={{ height:8, borderRadius:4, background:C.bdr }}>
-                  <div style={{ height:"100%", borderRadius:4, width:`${accuracy}%`, background:accuracy>=98?C.green:`linear-gradient(90deg,${C.amber},#F97316)`, transition:"width .5s, background .5s" }} />
-                </div>
-                <div style={{ fontSize:11, color:C.txt, marginTop:5 }}>Target: 98–99% · {Object.keys(transcriptEdits).length+Object.keys(speakerEdits).length} correction{(Object.keys(transcriptEdits).length+Object.keys(speakerEdits).length)!==1?"s":""} applied</div>
-              </div>
-              <div style={{ padding:"8px 10px", borderRadius:6, background:"#06B6D412", border:"1px solid #06B6D430", fontSize:12, color:C.cyan, lineHeight:1.6, marginBottom:14 }}>
-                💡 Make corrections to push accuracy to 98%+
-              </div>
-              {accuracy >= 98 && <button style={btn(C.cyan, false, { width:"100%" })} onClick={() => advance(3)}>Confirm Transcript →</button>}
-            </div>
-          </div>
 
-          <div style={{ flex:1 }}>
-            <div style={cardS()}>
-              <div style={{ fontSize:15, fontWeight:700, color:C.hi, marginBottom:12 }}>Interactive Transcript — {selectedTopic}</div>
-              <div style={{ maxHeight:420, overflowY:"auto" }}>
-                {activeTranscript.map((line, li) => {
-                  const spkColor = line.spk==="A" ? SPEAKER_COLORS[0] : SPEAKER_COLORS[1];
-                  const curLabel = speakerEdits[li] || (line.spk==="A" ? SPK_LABELS[0] : SPK_LABELS[1]);
-                  const words = (transcriptEdits[li] || line.text).split(" ");
-                  return (
-                    <div key={li} style={{ padding:"10px 12px", borderRadius:8, background:C.bg, border:`1px solid ${C.bdr}`, marginBottom:8 }}>
-                      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:7 }}>
-                        <button onClick={() => setSpeakerEdits(e => ({ ...e, [li]: curLabel===SPK_LABELS[0] ? (SPK_LABELS[1]||SPK_LABELS[0]) : SPK_LABELS[0] }))}
-                          style={{ padding:"2px 8px", borderRadius:4, fontSize:12, fontWeight:700, border:`1px solid ${spkColor}44`, background:spkColor+"18", color:spkColor, cursor:"pointer", fontFamily:"inherit" }}>{curLabel}</button>
-                        <span style={{ fontSize:11, color:"#555", fontFamily:"monospace" }}>{line.ts}</span>
-                        {speakerEdits[li] && <span style={{ fontSize:11, color:C.amber }}>✎ reassigned</span>}
+                <div style={{ maxHeight:260, overflowY:"auto", display:"flex", flexDirection:"column", gap:6 }}>
+                  {/* Completed lines — editable */}
+                  {activeTranscript.slice(0, spokenCount).map((line, li) => {
+                    const spkColor = line.spk==="A" ? SPEAKER_COLORS[0] : SPEAKER_COLORS[1];
+                    const curLabel = speakerEdits[li] || (line.spk==="A" ? SPK_LABELS[0] : SPK_LABELS[1]);
+                    const words = (transcriptEdits[li] || line.text).split(" ");
+                    return (
+                      <div key={li} style={{ padding:"8px 10px", borderRadius:7, background:C.bg, border:`1px solid ${C.bdr}` }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:5 }}>
+                          <button onClick={() => setSpeakerEdits(e => ({ ...e, [li]: curLabel===SPK_LABELS[0] ? (SPK_LABELS[1]||SPK_LABELS[0]) : SPK_LABELS[0] }))}
+                            style={{ padding:"2px 7px", borderRadius:4, fontSize:11, fontWeight:700, border:`1px solid ${spkColor}44`, background:spkColor+"18", color:spkColor, cursor:"pointer", fontFamily:"inherit" }}>{curLabel}</button>
+                          <span style={{ fontSize:10, color:"#555", fontFamily:"monospace" }}>{line.ts}</span>
+                          {speakerEdits[li] && <span style={{ fontSize:10, color:C.amber }}>✎ reassigned</span>}
+                        </div>
+                        <div style={{ fontSize:13, color:C.hi, lineHeight:1.7, display:"flex", flexWrap:"wrap", gap:3 }}>
+                          {words.map((word,wi) => {
+                            const isEditing = editingWord?.li===li && editingWord?.wi===wi;
+                            return isEditing ? (
+                              <input key={wi} autoFocus value={editValue} onChange={e => setEditValue(e.target.value)}
+                                onBlur={() => { if(editValue.trim()){ const nw=[...words]; nw[wi]=editValue.trim(); setTranscriptEdits(e=>({...e,[li]:nw.join(" ")})); } setEditingWord(null); setEditValue(""); }}
+                                onKeyDown={e => { if(e.key==="Enter"||e.key==="Escape") e.target.blur(); }}
+                                style={{ width:Math.max(60,editValue.length*9), fontSize:13, fontFamily:"inherit", background:"#7C3AED22", border:"1px solid #7C3AED", borderRadius:3, color:"#fff", padding:"0 4px", outline:"none" }} />
+                            ) : (
+                              <span key={wi} onClick={() => { setEditingWord({li,wi}); setEditValue(word); }}
+                                style={{ cursor:"pointer", borderRadius:3, padding:"1px 3px", background:transcriptEdits[li]?"#7C3AED0E":"transparent", borderBottom:"1px dashed #ffffff18", color:transcriptEdits[li]?C.accent:C.hi, transition:"background .12s" }}
+                                onMouseEnter={e=>e.currentTarget.style.background="#7C3AED22"}
+                                onMouseLeave={e=>e.currentTarget.style.background=transcriptEdits[li]?"#7C3AED0E":"transparent"}>
+                                {word}
+                              </span>
+                            );
+                          })}
+                        </div>
                       </div>
-                      <div style={{ fontSize:14, color:C.hi, lineHeight:1.8, display:"flex", flexWrap:"wrap", gap:3 }}>
-                        {words.map((word,wi) => {
-                          const isEditing = editingWord?.li===li && editingWord?.wi===wi;
-                          return isEditing ? (
-                            <input key={wi} autoFocus value={editValue} onChange={e => setEditValue(e.target.value)}
-                              onBlur={() => { if(editValue.trim()){ const nw=[...words]; nw[wi]=editValue.trim(); setTranscriptEdits(e=>({...e,[li]:nw.join(" ")})); } setEditingWord(null); setEditValue(""); }}
-                              onKeyDown={e => { if(e.key==="Enter"||e.key==="Escape") e.target.blur(); }}
-                              style={{ width:Math.max(60,editValue.length*9), fontSize:14, fontFamily:"inherit", background:"#7C3AED22", border:"1px solid #7C3AED", borderRadius:3, color:"#fff", padding:"0 4px", outline:"none" }} />
-                          ) : (
-                            <span key={wi} onClick={() => { setEditingWord({li,wi}); setEditValue(word); }}
-                              style={{ cursor:"pointer", borderRadius:3, padding:"1px 3px", background:transcriptEdits[li]?"#7C3AED0E":"transparent", borderBottom:"1px dashed #ffffff18", color:transcriptEdits[li]?C.accent:C.hi, transition:"background .12s" }}
-                              onMouseEnter={e=>e.currentTarget.style.background="#7C3AED22"}
-                              onMouseLeave={e=>e.currentTarget.style.background=transcriptEdits[li]?"#7C3AED0E":"transparent"}>
-                              {word}
-                            </span>
-                          );
-                        })}
+                    );
+                  })}
+
+                  {/* Currently speaking line — highlighted, not yet editable */}
+                  {currentLineIdx >= 0 && currentLineIdx < activeTranscript.length && (
+                    <div style={{ padding:"8px 10px", borderRadius:7, background:"#8B5CF608", border:`1px solid ${paused?"#F9731644":"#8B5CF644"}`, opacity: paused ? 0.75 : 1, transition:"opacity .3s, border-color .3s" }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:5 }}>
+                        <span style={{ padding:"2px 7px", borderRadius:4, fontSize:11, fontWeight:700,
+                          border:`1px solid ${SPEAKER_COLORS[activeTranscript[currentLineIdx].spk==="A"?0:1]}44`,
+                          background:SPEAKER_COLORS[activeTranscript[currentLineIdx].spk==="A"?0:1]+"18",
+                          color:SPEAKER_COLORS[activeTranscript[currentLineIdx].spk==="A"?0:1] }}>
+                          {activeTranscript[currentLineIdx].spk==="A" ? SPK_LABELS[0] : SPK_LABELS[1]}
+                        </span>
+                        <span style={{ fontSize:10, color:"#555", fontFamily:"monospace" }}>{activeTranscript[currentLineIdx].ts}</span>
+                        <span style={{ fontSize:10, color: paused?"#F97316":"#8B5CF6", fontFamily:"monospace" }}>{paused?"⏸ paused":"● speaking…"}</span>
+                      </div>
+                      <div style={{ fontSize:13, color: paused?"#F97316":"#8B5CF6", lineHeight:1.7, fontStyle:"italic" }}>
+                        {activeTranscript[currentLineIdx].text}
                       </div>
                     </div>
-                  );
-                })}
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* ── STAGE 3: QA ── */}
-      {stage === 3 && (
+      {/* ── STAGE 2: QA ── */}
+      {stage === 2 && (
         <div style={{ display:"flex", gap:16 }}>
           <div style={{ flex:"0 0 300px" }}>
             <div style={cardS()}>
-              <div style={{ fontSize:26, fontWeight:800, color:C.hi, marginBottom:10 }}><span style={{ color:C.amber }}>4.</span> Quality Assurance</div>
+              <div style={{ fontSize:26, fontWeight:800, color:C.hi, marginBottom:10 }}><span style={{ color:C.amber }}>3.</span> Quality Assurance</div>
               <div style={{ fontSize:13, color:C.txt, marginBottom:14, lineHeight:1.6 }}>Review each check and approve or flag for re-record.</div>
               {qaItems.map(({ key, label, desc }) => (
                 <div key={key} style={{ padding:"10px 12px", borderRadius:8, background:C.bg, border:`1px solid ${qaChecks[key]==="approve"?C.green+"55":qaChecks[key]==="flag"?C.red+"55":C.bdr}`, marginBottom:8, transition:"border-color .2s" }}>
@@ -1341,12 +1371,14 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
                   <button style={btn(C.amber, false, { width:"100%" })} onClick={() => {
                     setGenerating(false); setGenDone(false); setGenProg(0);
                     setQaChecks({ clarity:null, uniqueness:null, balance:null, confidence:null });
+                    setTranscriptEdits({}); setSpeakerEdits({}); setAccuracy(85);
+                    setSpokenCount(0); setCurrentLineIdx(-1);
                     advance(1);
                   }}>↩ Re-record Flagged Sessions</button>
                 </div>
               )}
               {/* Publish only once all 4 are reviewed and all pass */}
-              {allQADone && allQAPass && <button style={btn(C.green, false, { width:"100%", marginTop:8 })} onClick={() => advance(4)}>Publish Dataset →</button>}
+              {allQADone && allQAPass && <button style={btn(C.green, false, { width:"100%", marginTop:8 })} onClick={() => advance(3)}>Publish Dataset →</button>}
               {/* Pending hint while some checks are still unreviewed */}
               {!allQADone && !qaItems.some(q => qaChecks[q.key] === "flag") && Object.values(qaChecks).some(v => v !== null) && (
                 <div style={{ marginTop:8, fontSize:12, color:C.txt, textAlign:"center" }}>
@@ -1385,12 +1417,12 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
         </div>
       )}
 
-      {/* ── STAGE 4: PUBLISH ── */}
-      {stage === 4 && (
+      {/* ── STAGE 3: PUBLISH ── */}
+      {stage === 3 && (
         <div style={{ display:"flex", gap:16 }}>
           <div style={{ flex:"0 0 280px" }}>
             <div style={cardS()}>
-              <div style={{ fontSize:26, fontWeight:800, color:C.hi, marginBottom:10 }}><span style={{ color:C.green }}>5.</span> Dataset Complete</div>
+              <div style={{ fontSize:26, fontWeight:800, color:C.hi, marginBottom:10 }}><span style={{ color:C.green }}>4.</span> Dataset Complete</div>
               {!published ? (
                 <>
                   <div style={{ fontSize:13, color:C.txt, marginBottom:16, lineHeight:1.6 }}>All QA checks passed. Audio + transcripts ready for training corpus ingestion.</div>
@@ -1402,7 +1434,7 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
                   <div style={{ padding:"8px 12px", borderRadius:6, background:C.green+"12", border:`1px solid ${C.green}33`, fontSize:13, color:C.green, marginBottom:14, lineHeight:1.7 }}>
                     Dataset added to corpus.<br/>Available for training pipeline ingestion.
                   </div>
-                  <button style={btn("#F97316", true, { width:"100%", fontSize:13 })} onClick={() => { setStage(0); setMaxStage(0); setGenerating(false); setGenDone(false); setGenProg(0); setTranscriptEdits({}); setSpeakerEdits({}); setQaChecks({clarity:null,uniqueness:null,balance:null,confidence:null}); setPublished(false); setAccuracy(85); }}>↺ New Session</button>
+                  <button style={btn("#F97316", true, { width:"100%", fontSize:13 })} onClick={() => { setStage(0); setMaxStage(0); setGenerating(false); setGenDone(false); setGenProg(0); setTranscriptEdits({}); setSpeakerEdits({}); setQaChecks({clarity:null,uniqueness:null,balance:null,confidence:null}); setPublished(false); setAccuracy(85); setSpokenCount(0); setCurrentLineIdx(-1); }}>↺ New Session</button>
                 </div>
               )}
             </div>
@@ -1460,7 +1492,7 @@ function HumanDataGenDemo({ isActive = true }) {
       <div style={{ display:"flex", gap:20, flexWrap:"wrap", justifyContent:"center", width:"100%", maxWidth:900 }}>
         {[
           { key:"chat",    icon:"💬", label:"Conversation Data Generation",          color:C.accent,  desc:"Human-authored chat conversations across domains. QA-reviewed, intent-labelled, and packaged for LLM alignment training.",                                        tag:"5 stages · HDG v1.0" },
-          { key:"podcast", icon:"🎙️", label:"Podcast-Style Human Audio Generation", color:"#F97316", desc:"Human-recorded podcast audio across locales and topics. Transcribed, diarized, QA-checked, and published to the training corpus.", tag:"5 stages · PODCAST-HDG v1.0" },
+          { key:"podcast", icon:"🎙️", label:"Podcast-Style Human Audio Generation", color:"#F97316", desc:"Human-recorded podcast audio across locales and topics. Transcribed, diarized, QA-checked, and published to the training corpus.", tag:"4 stages · PODCAST-HDG v1.0" },
         ].map(({ key, icon, label, color, desc, tag }) => (
           <div key={key} onClick={() => setUseCase(key)}
             style={{ flex:"1 1 340px", maxWidth:420, padding:"32px 28px", borderRadius:16, cursor:"pointer", border:`1px solid ${color}44`, background:C.card, transition:"border-color .2s, box-shadow .2s, transform .2s" }}
