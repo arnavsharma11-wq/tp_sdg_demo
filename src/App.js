@@ -1689,6 +1689,7 @@ function MeetingDataCollectDemo({ onBack }) {
   const [validations, setValidations] = useState({});
   const [delivered, setDelivered] = useState(false);
   const [activeSpeaker, setActiveSpeaker] = useState(0);
+  const captureActiveRef = useRef(false);   // guards stale tick() callbacks
 
   // Short meeting phrases — spoken on each speaker rotation
   const MEETING_PHRASES = [
@@ -1755,7 +1756,19 @@ function MeetingDataCollectDemo({ onBack }) {
   const STAGE_C = [C.cyan,"#8B5CF6",C.amber,C.orange,C.green];
   const STAGE_L = ["Setup","Capture","QC","Docs","Deliver"];
 
-  const advance = n => { setStage(n); setMaxStage(m => Math.max(m, n)); };
+  const advance = n => {
+    // Going back from Capture (1) to Setup (0) — restart recording sessions
+    if (n < stage && stage === 1) {
+      captureActiveRef.current = false;
+      window.speechSynthesis && window.speechSynthesis.cancel();
+      setCaptureRunning(false);
+      setCaptureDone(false);
+      setSessionStatuses({});
+      setActiveSpeaker(0);
+    }
+    setStage(n);
+    setMaxStage(m => Math.max(m, n));
+  };
   const langList = selectedLangs.length > 0 ? selectedLangs : ["English"];
   const activeFmts = Object.entries(formats).filter(([,v])=>v).map(([k])=>FMT_LABELS[k]);
   const sessionList = Array.from({ length: Math.min(sessionCount, 16) }, (_, i) => ({
@@ -1768,13 +1781,18 @@ function MeetingDataCollectDemo({ onBack }) {
   }));
 
   const runCapture = () => {
+    captureActiveRef.current = true;
     setCaptureRunning(true);
     let i = 0;
     const tick = () => {
+      if (!captureActiveRef.current) return;  // cancelled (user navigated back)
       if (i >= sessionList.length) { setCaptureRunning(false); setCaptureDone(true); return; }
       const id = sessionList[i].id;
       setSessionStatuses(s => ({ ...s, [id]: "recording" }));
-      setTimeout(() => { setSessionStatuses(s => ({ ...s, [id]: "completed" })); i++; setTimeout(tick, 60); }, 320);
+      setTimeout(() => {
+        if (!captureActiveRef.current) return;  // cancelled mid-session
+        setSessionStatuses(s => ({ ...s, [id]: "completed" })); i++; setTimeout(tick, 60);
+      }, 320);
     };
     tick();
   };
