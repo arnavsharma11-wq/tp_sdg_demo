@@ -498,7 +498,7 @@ function DemoNav({ stage, stageLabels, stageColors, maxStage, advance, label }) 
     <div style={{ display: "flex", alignItems: "center", gap: 3, marginBottom: 16 }}>
       {stageLabels.map((l, i) => (
         <div key={i} style={{ display: "flex", alignItems: "center" }}>
-          <div onClick={() => i <= maxStage && advance(i)} title={l} style={{ width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 700, cursor: i <= maxStage ? "pointer" : "default", background: stage === i ? stageColors[i] + "22" : i < stage ? C.green + "18" : C.card, border: `2px solid ${stage === i ? stageColors[i] : i < stage ? C.green : C.bdr}`, color: stage === i ? "#fff" : i < stage ? C.green : C.txt }}>
+          <div onClick={() => i <= maxStage && advance(i)} title={l} style={{ width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, cursor: i <= maxStage ? "pointer" : "default", background: stage === i ? stageColors[i] + "22" : i < stage ? C.green + "18" : C.card, border: `2px solid ${stage === i ? stageColors[i] : i < stage ? C.green : C.bdr}`, color: stage === i ? "#fff" : i < stage ? C.green : C.txt }}>
             {i < stage ? "✓" : i + 1}
           </div>
           {i < stageLabels.length - 1 && <div style={{ width: 8, height: 2, background: i < stage ? C.green + "44" : C.bdr }} />}
@@ -513,10 +513,10 @@ function DemoNav({ stage, stageLabels, stageColors, maxStage, advance, label }) 
 function ChipGroup({ label, options, value, onChange, color }) {
   return (
     <div style={{ marginBottom: 10 }}>
-      <div style={{ fontSize: 20, fontWeight: 700, color: C.hi, marginBottom: 5 }}>{label}</div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: C.hi, marginBottom: 5 }}>{label}</div>
       <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
         {options.map(o => (
-          <button key={o} onClick={() => onChange(o)} style={{ padding: "4px 10px", borderRadius: 6, fontSize: 20, fontWeight: 600, border: `1px solid ${value === o ? color : C.bdr}`, background: value === o ? color + "20" : C.bg, color: value === o ? color : C.txt, cursor: "pointer", fontFamily: "'TP Sans','DM Sans',sans-serif" }}>{o}</button>
+          <button key={o} onClick={() => onChange(o)} style={{ padding: "4px 10px", borderRadius: 6, fontSize: 13, fontWeight: 600, border: `1px solid ${value === o ? color : C.bdr}`, background: value === o ? color + "20" : C.bg, color: value === o ? color : C.txt, cursor: "pointer", fontFamily: "'TP Sans','DM Sans',sans-serif" }}>{o}</button>
         ))}
       </div>
     </div>
@@ -835,7 +835,7 @@ const PODCAST_TRANSCRIPTS = {
 };
 
 // ===== PODCAST HDG DEMO =====
-function PodcastHDGDemo({ onBack }) {
+function PodcastHDGDemo({ onBack, isActive = true }) {
   const [stage, setStage] = useState(0);
   const [maxStage, setMaxStage] = useState(0);
   const [selectedLocales, setSelectedLocales] = useState(["english-ea"]);
@@ -845,6 +845,7 @@ function PodcastHDGDemo({ onBack }) {
   const [generating, setGenerating] = useState(false);
   const [genProg, setGenProg] = useState(0);
   const [genDone, setGenDone] = useState(false);
+  const [paused, setPaused] = useState(false);
   const [activeSpeaker, setActiveSpeaker] = useState(0);
   const [transcriptEdits, setTranscriptEdits] = useState({});
   const [speakerEdits, setSpeakerEdits] = useState({});
@@ -854,8 +855,11 @@ function PodcastHDGDemo({ onBack }) {
   const [qaChecks, setQaChecks] = useState({ clarity: null, uniqueness: null, balance: null, confidence: null });
   const [published, setPublished] = useState(false);
   const generatingRef = useRef(false);
+  const pausedRef     = useRef(false);
   const localeIdxRef  = useRef(0);   // which locale is currently being spoken
   const lineIdxRef    = useRef(0);   // which line within that locale
+  const lineStartRef  = useRef(0);   // Date.now() when current line began
+  const lineEstDurRef = useRef(1000);// estimated ms duration of current line
 
   const advance = n => { setStage(n); setMaxStage(m => Math.max(m, n)); };
   const STAGE_C = ["#F97316", "#8B5CF6", C.cyan, C.amber, C.green];
@@ -870,13 +874,41 @@ function PodcastHDGDemo({ onBack }) {
   // Cancel speech when component unmounts
   useEffect(() => () => { window.speechSynthesis && window.speechSynthesis.cancel(); }, []);
 
+  // Pause / resume when the outer nav tab changes
+  useEffect(() => {
+    if (!generatingRef.current) return;
+    if (!isActive) {
+      window.speechSynthesis && window.speechSynthesis.pause();
+      pausedRef.current = true;
+      setPaused(true);
+    } else if (pausedRef.current) {
+      window.speechSynthesis && window.speechSynthesis.resume();
+      pausedRef.current = false;
+      setPaused(false);
+    }
+  }, [isActive]);
+
   useEffect(() => {
     const edits = Object.keys(transcriptEdits).length + Object.keys(speakerEdits).length;
     setAccuracy(Math.min(99, 85 + edits * 3.5));
   }, [transcriptEdits, speakerEdits]);
 
+  const pauseRecording = () => {
+    window.speechSynthesis && window.speechSynthesis.pause();
+    pausedRef.current = true;
+    setPaused(true);
+  };
+
+  const resumeRecording = () => {
+    window.speechSynthesis && window.speechSynthesis.resume();
+    pausedRef.current = false;
+    setPaused(false);
+  };
+
   const runGenerate = () => {
     generatingRef.current = true;
+    pausedRef.current = false;
+    setPaused(false);
     setGenerating(true); setGenProg(0); setActiveSpeaker(0);
     window.speechSynthesis.cancel();
 
@@ -940,6 +972,10 @@ function PodcastHDGDemo({ onBack }) {
           return;
         }
         const line = lines[lineIdx];
+        // Track when this line starts so pollProgress can interpolate within it
+        lineStartRef.current = Date.now();
+        // ~65 ms per character at rate 0.9 (empirically reasonable)
+        lineEstDurRef.current = Math.max(800, line.text.length * 65);
         const utt = new SpeechSynthesisUtterance(line.text);
         utt.lang   = lang;
         utt.voice  = line.spk === "A" ? voiceA : voiceB;
@@ -947,22 +983,24 @@ function PodcastHDGDemo({ onBack }) {
         utt.rate   = line.spk === "A" ? 0.88 : 0.93;
         utt.volume = 1.0;
         setActiveSpeaker(line.spk === "A" ? 0 : 1);
-        utt.onend  = () => setTimeout(() => speakLine(lineIdx + 1), 320);
-        utt.onerror = () => setTimeout(() => speakLine(lineIdx + 1), 100);
+        utt.onend  = () => { lineStartRef.current = 0; setTimeout(() => speakLine(lineIdx + 1), 320); };
+        utt.onerror = () => { lineStartRef.current = 0; setTimeout(() => speakLine(lineIdx + 1), 100); };
         window.speechSynthesis.speak(utt);
       };
 
       speakLine(0);
     };
 
-    // Progress bar: derived from actual line position — no blind crawl.
-    // completedLines / totalLines gives exact fractional progress.
-    // Polls every 200 ms so the bar moves smoothly as each sentence plays.
+    // Progress bar: completed lines + fractional progress through the current line.
+    // lineStartRef / lineEstDurRef give smooth interpolation while a sentence plays.
+    // Polls every 80 ms so the bar moves visibly as each word is spoken.
     const pollProgress = () => {
       if (!generatingRef.current) return;
       const completedLines = localeIdxRef.current * lines.length + lineIdxRef.current;
-      setGenProg(Math.min(99, (completedLines / totalLines) * 100));
-      setTimeout(pollProgress, 200);
+      const lineElapsed = lineStartRef.current > 0 ? Date.now() - lineStartRef.current : 0;
+      const lineFrac = Math.min(0.95, lineElapsed / Math.max(1, lineEstDurRef.current));
+      setGenProg(Math.min(99, ((completedLines + lineFrac) / totalLines) * 100));
+      setTimeout(pollProgress, 80);
     };
     pollProgress();
 
@@ -998,7 +1036,7 @@ function PodcastHDGDemo({ onBack }) {
         <div style={{ display:"flex", gap:16 }}>
           <div style={{ flex:"0 0 320px" }}>
             <div style={cardS()}>
-              <div style={{ fontSize:26, fontWeight:800, color:"#fff", marginBottom:14 }}><span style={{ color:"#F97316" }}>1.</span> Generation Design</div>
+              <div style={{ fontSize:26, fontWeight:800, color:C.hi, marginBottom:14 }}><span style={{ color:"#F97316" }}>1.</span> Generation Design</div>
 
               {/* Locale multi-select */}
               <div style={{ marginBottom:12 }}>
@@ -1074,14 +1112,23 @@ function PodcastHDGDemo({ onBack }) {
         <div style={{ display:"flex", gap:16 }}>
           <div style={{ flex:"0 0 240px" }}>
             <div style={cardS()}>
-              <div style={{ fontSize:26, fontWeight:800, color:"#fff", marginBottom:10 }}><span style={{ color:"#8B5CF6" }}>2.</span> Recording</div>
+              <div style={{ fontSize:26, fontWeight:800, color:C.hi, marginBottom:10 }}><span style={{ color:"#8B5CF6" }}>2.</span> Recording</div>
               <div style={{ fontSize:13, color:C.txt, marginBottom:14, lineHeight:1.6 }}>Contributors record the podcast live. Each locale is a separate session.</div>
               {!generating && !genDone && <button style={btn("#8B5CF6", false, { width:"100%" })} onClick={runGenerate}>▶ Start Recording Session</button>}
               {generating && (
                 <div>
-                  <div style={{ fontSize:13, color:"#8B5CF6", fontWeight:700, marginBottom:8 }}>Recording in progress…</div>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
+                    <div style={{ fontSize:13, color: paused ? C.amber : "#8B5CF6", fontWeight:700 }}>
+                      {paused ? "⏸ Paused" : "● Recording in progress…"}
+                    </div>
+                    <button
+                      onClick={paused ? resumeRecording : pauseRecording}
+                      style={{ fontSize:12, fontWeight:700, padding:"3px 10px", borderRadius:6, border:`1px solid ${paused ? C.amber : "#8B5CF644"}`, background: paused ? C.amber+"20" : "#8B5CF610", color: paused ? C.amber : "#8B5CF6", cursor:"pointer", fontFamily:"inherit" }}>
+                      {paused ? "▶ Resume" : "⏸ Pause"}
+                    </button>
+                  </div>
                   <div style={{ height:5, borderRadius:3, background:C.bdr, overflow:"hidden", marginBottom:6 }}>
-                    <div style={{ height:"100%", width:`${genProg}%`, background:"#8B5CF6", transition:"width .05s" }} />
+                    <div style={{ height:"100%", width:`${genProg}%`, background: paused ? C.amber : "#8B5CF6", transition:"width .08s" }} />
                   </div>
                   <div style={{ fontSize:12, color:C.txt, marginBottom:12 }}>{Math.round(genProg)}%</div>
                 </div>
@@ -1122,9 +1169,9 @@ function PodcastHDGDemo({ onBack }) {
             <div style={cardS()}>
               <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
                 <div style={{ fontSize:17, fontWeight:700, color:C.hi }}>Studio Monitor</div>
-                <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:20, background:generating?"#EF444420":genDone?"#10B98120":"#33333330", border:`1px solid ${generating?"#EF444455":genDone?"#10B98155":"#333"}` }}>
-                  <div style={{ width:7, height:7, borderRadius:"50%", background:generating?"#EF4444":genDone?"#10B981":"#555", boxShadow:generating?"0 0 8px #EF4444":"none" }} />
-                  <span style={{ fontSize:12, fontWeight:700, color:generating?"#EF4444":genDone?"#10B981":"#555" }}>{generating?"● REC":genDone?"✓ CAPTURED":"○ READY"}</span>
+                <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:20, background:paused?C.amber+"20":generating?"#EF444420":genDone?"#10B98120":"#33333330", border:`1px solid ${paused?C.amber+"55":generating?"#EF444455":genDone?"#10B98155":"#333"}` }}>
+                  <div style={{ width:7, height:7, borderRadius:"50%", background:paused?C.amber:generating?"#EF4444":genDone?"#10B981":"#555", boxShadow:generating&&!paused?"0 0 8px #EF4444":"none" }} />
+                  <span style={{ fontSize:12, fontWeight:700, color:paused?C.amber:generating?"#EF4444":genDone?"#10B981":"#555" }}>{paused?"⏸ PAUSED":generating?"● REC":genDone?"✓ CAPTURED":"○ READY"}</span>
                 </div>
               </div>
 
@@ -1176,7 +1223,7 @@ function PodcastHDGDemo({ onBack }) {
         <div style={{ display:"flex", gap:16 }}>
           <div style={{ flex:"0 0 260px" }}>
             <div style={cardS()}>
-              <div style={{ fontSize:26, fontWeight:800, color:"#fff", marginBottom:10 }}><span style={{ color:C.cyan }}>3.</span> Transcription</div>
+              <div style={{ fontSize:26, fontWeight:800, color:C.hi, marginBottom:10 }}><span style={{ color:C.cyan }}>3.</span> Transcription</div>
               <div style={{ fontSize:13, color:C.txt, marginBottom:12, lineHeight:1.6 }}>Auto-transcription generated. Click any <strong style={{ color:C.hi }}>word</strong> to correct it. Click a <strong style={{ color:C.hi }}>speaker badge</strong> to swap attribution.</div>
               <div style={{ padding:"10px 12px", borderRadius:8, background:C.bg, border:`1px solid ${C.bdr}`, marginBottom:14 }}>
                 <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
@@ -1243,7 +1290,7 @@ function PodcastHDGDemo({ onBack }) {
         <div style={{ display:"flex", gap:16 }}>
           <div style={{ flex:"0 0 300px" }}>
             <div style={cardS()}>
-              <div style={{ fontSize:26, fontWeight:800, color:"#fff", marginBottom:10 }}><span style={{ color:C.amber }}>4.</span> Quality Assurance</div>
+              <div style={{ fontSize:26, fontWeight:800, color:C.hi, marginBottom:10 }}><span style={{ color:C.amber }}>4.</span> Quality Assurance</div>
               <div style={{ fontSize:13, color:C.txt, marginBottom:14, lineHeight:1.6 }}>Review each check and approve or flag for re-record.</div>
               {qaItems.map(({ key, label, desc }) => (
                 <div key={key} style={{ padding:"10px 12px", borderRadius:8, background:C.bg, border:`1px solid ${qaChecks[key]==="approve"?C.green+"55":qaChecks[key]==="flag"?C.red+"55":C.bdr}`, marginBottom:8, transition:"border-color .2s" }}>
@@ -1316,7 +1363,7 @@ function PodcastHDGDemo({ onBack }) {
         <div style={{ display:"flex", gap:16 }}>
           <div style={{ flex:"0 0 280px" }}>
             <div style={cardS()}>
-              <div style={{ fontSize:26, fontWeight:800, color:"#fff", marginBottom:10 }}><span style={{ color:C.green }}>5.</span> Dataset Complete</div>
+              <div style={{ fontSize:26, fontWeight:800, color:C.hi, marginBottom:10 }}><span style={{ color:C.green }}>5.</span> Dataset Complete</div>
               {!published ? (
                 <>
                   <div style={{ fontSize:13, color:C.txt, marginBottom:16, lineHeight:1.6 }}>All QA checks passed. Audio + transcripts ready for training corpus ingestion.</div>
@@ -1375,10 +1422,10 @@ function PodcastHDGDemo({ onBack }) {
 }
 
 // ===== HUMAN DATA GENERATION — USE CASE SELECTOR =====
-function HumanDataGenDemo() {
+function HumanDataGenDemo({ isActive = true }) {
   const [useCase, setUseCase] = useState(null);
   if (useCase === "chat")    return <ChatHDGDemo    onBack={() => setUseCase(null)} />;
-  if (useCase === "podcast") return <PodcastHDGDemo onBack={() => setUseCase(null)} />;
+  if (useCase === "podcast") return <PodcastHDGDemo onBack={() => setUseCase(null)} isActive={isActive} />;
   return (
     <div style={{ background:C.bg, color:C.txt, fontFamily:"'TP Sans','DM Sans',sans-serif", minHeight:"calc(100vh - 112px)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"32px 24px" }}>
       <div style={{ fontSize:12, fontWeight:700, color:C.txt, letterSpacing:"0.14em", textTransform:"uppercase", marginBottom:8, textAlign:"center" }}>Human Data Generation</div>
@@ -2606,7 +2653,7 @@ export default function App() {
         }
       </div>
       <div style={{ display: activeTab === 1 ? "block" : "none" }}>
-        <HumanDataGenDemo />
+        <HumanDataGenDemo isActive={activeTab === 1} />
       </div>
       <div style={{ display: activeTab === 2 ? "block" : "none" }}>
         <HumanDataCollectDemo />
