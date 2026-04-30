@@ -1,12 +1,22 @@
-import React, { useState, useRef, useEffect } from "react";
+﻿import React, { useState, useRef, useEffect } from "react";
 
 // ===== SHARED STYLES =====
-const DARK_C  = { bg: "#131313", card: "#1A1A1A", bdr: "#222222", txt: "#9E9E9E", hi: "#E5E0DB", accent: "#7C3AED", green: "#10B981", amber: "#F59E0B", red: "#EF4444", cyan: "#06B6D4", orange: "#F97316" };
-const LIGHT_C = { bg: "#F4F4F7", card: "#FFFFFF",  bdr: "#E2E2E8", txt: "#6B7280", hi: "#111111",  accent: "#7C3AED", green: "#10B981", amber: "#F59E0B", red: "#EF4444", cyan: "#06B6D4", orange: "#F97316" };
-let C = { ...DARK_C };
+const DARK_C  = { bg:"#131313",  card:"#1A1A1A", bdr:"#252525", txt:"#9E9E9E", hi:"#E5E0DB", accent:"#7C3AED", green:"#10B981", amber:"#F59E0B", red:"#EF4444", cyan:"#06B6D4", orange:"#F97316", nav:"#0D0D0D" };
+const LIGHT_C = { bg:"#F3F0FF",  card:"#FFFFFF",  bdr:"#DDD6FE", txt:"#6D5D8A", hi:"#1A0F2E", accent:"#7C3AED", green:"#059669", amber:"#B45309", red:"#DC2626", cyan:"#0284C7", orange:"#EA580C", nav:"#1A0F2E" };
+let C = DARK_C;
+const detectLight = () => {
+  try {
+    const el = document.documentElement;
+    if (window.matchMedia("(prefers-color-scheme: light)").matches) return true;
+    if (el.classList.contains("light") || el.classList.contains("light-mode") || el.classList.contains("theme-light")) return true;
+    if (el.dataset.theme === "light" || el.dataset.colorScheme === "light") return true;
+    if (document.body.classList.contains("light") || document.body.classList.contains("light-mode")) return true;
+  } catch(e) {}
+  return false;
+};
 const btn = (c, o, x = {}) => ({ padding: "10px 22px", borderRadius: 8, border: o ? `1.5px solid ${c}` : "none", background: o ? "transparent" : c, color: o ? c : "#000", fontSize: 15, fontWeight: 700, cursor: "pointer", ...x });
-let cardS = { background: C.card, borderRadius: 12, border: `1px solid ${C.bdr}`, padding: 20 };
-let imgS = { width: "100%", borderRadius: 8, border: `1px solid ${C.bdr}` };
+const cardS = () => ({ background: C.card, borderRadius: 12, border: `1px solid ${C.bdr}`, padding: 20 });
+const imgS = () => ({ width: "100%", borderRadius: 8, border: `1px solid ${C.bdr}` });
 function HT({ s = 9 }) { return <span style={{ display: "inline-block", width: 0, height: 0, borderLeft: `${s/2}px solid transparent`, borderRight: `${s/2}px solid transparent`, borderBottom: `${s}px solid ${C.red}`, marginLeft: 4, verticalAlign: "middle" }} />; }
 const stageC = [C.accent, "#8B5CF6", C.red, C.cyan, C.orange, C.green];
 const stageL = ["Seed", "Generate", "Critique", "Curate", "Comply", "Package"];
@@ -157,7 +167,7 @@ function ComplianceReport({ type, onClose }) {
   }[type];
   const piiData = type === "support" ? "4,291 PII entities: Names (1,847), Emails (623), Addresses (412), Order IDs (891), Financial (518)" : type === "driving" ? "847 faces replaced (RetinaFace+ArcFace), 312 plates masked, metadata scrubbed" : "847 face instances replaced (synthetic replacement, not blur), EXIF/GPS scrubbed";
   return (
-    <div style={{ ...cardS, borderColor: C.orange + "44" }}>
+    <div style={{ ...cardS(), borderColor: C.orange + "44" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
         <div style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>📋 TP.ai Compliance Report</div>
         <button onClick={onClose} style={{ background: "none", border: "none", color: C.txt, cursor: "pointer", fontSize: 16 }}>✕</button>
@@ -236,11 +246,11 @@ function PipelineDemo({ type, onBack }) {
         {stage === 0 && (
           <div style={{ display: "flex", gap: 16 }}>
             <div style={{ flex: "0 0 340px" }}>
-              <div style={cardS}>
+              <div style={cardS()}>
                 <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}><span style={{ color: C.accent }}>1.</span> Seed & Configure</div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: C.hi, marginBottom: 6, display: "flex", alignItems: "center" }}>📁 Seed Data <HT /> <span style={{ fontSize: 12, color: C.amber, marginLeft: 4 }}>Domain Experts</span></div>
-                {type === "warehouse" && <WH_Seed style={{ ...imgS, marginBottom: 8 }} />}
-                {type === "driving" && <DC_Seed style={{ ...imgS, marginBottom: 8 }} />}
+                {type === "warehouse" && <WH_Seed style={{ ...imgS(), marginBottom: 8 }} />}
+                {type === "driving" && <DC_Seed style={{ ...imgS(), marginBottom: 8 }} />}
                 {type === "support" && (
                   <div style={{ padding: 10, borderRadius: 8, background: C.bg, border: `1px solid ${C.red}33`, marginBottom: 8, maxHeight: 140, overflow: "auto" }}>
                     {SEED_CHAT.map((t, i) => <ChatBubble key={i} turn={t} labels={false} />)}
@@ -251,7 +261,7 @@ function PipelineDemo({ type, onBack }) {
               </div>
             </div>
             <div style={{ flex: 1 }}>
-              <div style={cardS}>
+              <div style={cardS()}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: C.hi, marginBottom: 4, display: "flex", alignItems: "center" }}>✏️ Prompt Templates <HT /> <span style={{ fontSize: 12, color: C.amber, marginLeft: 4 }}>Prompt Engineers</span></div>
                 {conf.prompts.map((p, i) => (
                   <div key={i} style={{ padding: 10, borderRadius: 8, background: C.bg, border: `1px solid ${i < 3 ? tc + "44" : C.bdr}`, marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
@@ -269,7 +279,7 @@ function PipelineDemo({ type, onBack }) {
         {stage === 1 && (
           <div style={{ display: "flex", gap: 16 }}>
             <div style={{ flex: "0 0 280px" }}>
-              <div style={cardS}>
+              <div style={cardS()}>
                 <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: "#8B5CF6" }}>2.</span> Generate</div>
                 {!genOn && !genDone && <button style={btn("#8B5CF6", false, { width: "100%" })} onClick={runGen}>🧠 Generate {conf.genLabel}</button>}
                 {genOn && <div><div style={{ height: 5, borderRadius: 3, background: C.bdr, overflow: "hidden", marginBottom: 6 }}><div style={{ height: "100%", width: `${genProg}%`, background: "#8B5CF6", borderRadius: 3, transition: "width .05s" }} /></div><div style={{ fontSize: 13, color: "#8B5CF6", fontWeight: 600 }}>{Math.round(genProg)}%</div></div>}
@@ -277,11 +287,11 @@ function PipelineDemo({ type, onBack }) {
               </div>
             </div>
             <div style={{ flex: 1 }}>
-              <div style={cardS}>
+              <div style={cardS()}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Generated Output</div>
                 <div style={{ opacity: genDone ? 1 : genOn ? 0.3 : 0.12, transition: "opacity 1s" }}>
-                  {type === "warehouse" && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}><WH_Gen1 style={imgS} /><WH_Gen2 style={imgS} /><WH_Gen3 style={imgS} /><WH_Gen4 style={imgS} /></div>}
-                  {type === "driving" && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}><DC_Gen1 style={imgS} /><DC_Gen2 style={imgS} /><DC_Gen3 style={imgS} /><DC_Gen4 style={imgS} /></div>}
+                  {type === "warehouse" && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}><WH_Gen1 style={imgS()} /><WH_Gen2 style={imgS()} /><WH_Gen3 style={imgS()} /><WH_Gen4 style={imgS()} /></div>}
+                  {type === "driving" && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}><DC_Gen1 style={imgS()} /><DC_Gen2 style={imgS()} /><DC_Gen3 style={imgS()} /><DC_Gen4 style={imgS()} /></div>}
                   {type === "support" && <div style={{ padding: 10, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}`, maxHeight: 280, overflow: "auto" }}>{GEN_CHAT.map((t, i) => <ChatBubble key={i} turn={t} labels={false} />)}</div>}
                 </div>
               </div>
@@ -292,7 +302,7 @@ function PipelineDemo({ type, onBack }) {
         {stage === 2 && (
           <div style={{ display: "flex", gap: 16 }}>
             <div style={{ flex: "0 0 280px" }}>
-              <div style={cardS}>
+              <div style={cardS()}>
                 <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 4 }}><span style={{ color: C.red }}>3.</span> Critique & Iterate</div>
                 <div style={{ fontSize: 13, color: C.red, fontWeight: 700, marginBottom: 8 }}>🔄 ITERATIVE LOOP</div>
                 <div style={{ padding: 6, borderRadius: 5, background: C.amber + "10", border: `1px solid ${C.amber}33`, marginBottom: 8, fontSize: 12, color: C.amber }}><HT s={6}/> Expert Critics rate naturalness & accuracy</div>
@@ -300,7 +310,7 @@ function PipelineDemo({ type, onBack }) {
               </div>
             </div>
             <div style={{ flex: 1 }}>
-              <div style={cardS}>
+              <div style={cardS()}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Rate & Approve</div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                   {conf.prompts.map((p, i) => {
@@ -311,8 +321,8 @@ function PipelineDemo({ type, onBack }) {
                     const DCComp = dcVariants[i] || DC_Gen1;
                     return (
                     <div key={i} style={{ borderRadius: 8, overflow: "hidden", background: C.bg, border: `1px solid ${approvals[i] === "ok" ? C.green + "55" : approvals[i] === "no" ? C.red + "55" : C.bdr}` }}>
-                      {type === "warehouse" && <WHComp style={imgS} />}
-                      {type === "driving" && <DCComp style={imgS} />}
+                      {type === "warehouse" && <WHComp style={imgS()} />}
+                      {type === "driving" && <DCComp style={imgS()} />}
                       {type === "support" && (
                         <div style={{ padding: 8, maxHeight: 80, overflow: "hidden", borderBottom: `1px solid ${C.bdr}` }}>
                           {GEN_CHAT.slice(i * 2, i * 2 + 2).map((t, j) => <ChatBubble key={j} turn={t} />)}
@@ -344,7 +354,7 @@ function PipelineDemo({ type, onBack }) {
         {stage === 3 && (
           <div style={{ display: "flex", gap: 16 }}>
             <div style={{ flex: "0 0 280px" }}>
-              <div style={cardS}>
+              <div style={cardS()}>
                 <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: C.cyan }}>4.</span> Curate & Filter</div>
                 {["Quality Filter", "Deduplication", "Safety Screen", "Domain Route"].map((f, i) => (
                   <label key={f} style={{ display: "flex", alignItems: "center", gap: 5, padding: 6, marginBottom: 3, borderRadius: 5, background: filters[i] ? C.cyan + "10" : C.bg, border: `1px solid ${filters[i] ? C.cyan + "33" : C.bdr}`, cursor: "pointer" }}>
@@ -357,7 +367,7 @@ function PipelineDemo({ type, onBack }) {
               </div>
             </div>
             <div style={{ flex: 1 }}>
-              <div style={cardS}>
+              <div style={cardS()}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Curation Funnel</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
                   {[{ l: "Input", n: conf.vol }, { l: "Quality", n: Math.round(conf.vol * 0.95) }, { l: "Dedup", n: Math.round(conf.vol * 0.9) }, { l: "Safety", n: Math.round(conf.vol * 0.87), h: 1 }, { l: "Routed", n: Math.round(conf.vol * 0.84), h: 1 }, { l: "Final", n: Math.round(conf.vol * 0.84) }].map((f, i) => (
@@ -375,7 +385,7 @@ function PipelineDemo({ type, onBack }) {
         {stage === 4 && (
           <div style={{ display: "flex", gap: 16 }}>
             <div style={{ flex: "0 0 280px" }}>
-              <div style={cardS}>
+              <div style={cardS()}>
                 <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: C.orange }}>5.</span> Compliance & Privacy</div>
                 {!piiDone && <button style={btn(C.orange, false, { width: "100%" })} onClick={() => setTimeout(() => setPiiDone(true), 2000)}>🔍 Detect PII</button>}
                 {piiDone && !deIdDone && <div><div style={{ fontSize: 13, color: C.green, fontWeight: 600, marginBottom: 4 }}>✓ {conf.piiLabel}</div><button style={btn(C.orange, false, { width: "100%" })} onClick={() => setDeIdDone(true)}>🎭 De-identify</button></div>}
@@ -393,9 +403,9 @@ function PipelineDemo({ type, onBack }) {
               </div>
             </div>
             <div style={{ flex: 1 }}>
-              <div style={cardS}>
+              <div style={cardS()}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: C.hi, marginBottom: 8 }}>De-identification Preview</div>
-                {type === "warehouse" && <WH_Gen1 style={{ ...imgS }} showFaces={piiDone} facesOk={deIdDone} />}
+                {type === "warehouse" && <WH_Gen1 style={{ ...imgS() }} showFaces={piiDone} facesOk={deIdDone} />}
                 {type === "driving" && <FrameScrubber totalFrames={300} fps={10} showFaces={piiDone} facesOk={deIdDone} />}
                 {type === "support" && (
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -419,7 +429,7 @@ function PipelineDemo({ type, onBack }) {
         {stage === 5 && (
           <div style={{ display: "flex", gap: 16 }}>
             <div style={{ flex: "0 0 300px" }}>
-              <div style={cardS}>
+              <div style={cardS()}>
                 <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: C.green }}>6.</span> Annotate & Package</div>
                 {!labelsOk && <div style={{ padding: 8, borderRadius: 6, background: C.amber + "10", border: `1px solid ${C.amber}33`, marginBottom: 8 }}><div style={{ fontSize: 12, fontWeight: 700, color: C.amber, display: "flex", alignItems: "center", gap: 3, marginBottom: 3 }}><HT s={6}/> Labelers & Data Librarians</div><button style={btn(C.green, false, { padding: "6px 12px", fontSize: 13 })} onClick={() => setLabelsOk(true)}>✓ Approve Annotations</button></div>}
                 {labelsOk && !packed && <button style={btn(C.green, false, { width: "100%" })} onClick={() => setTimeout(() => setPacked(true), 1000)}>📦 Package</button>}
@@ -436,9 +446,9 @@ function PipelineDemo({ type, onBack }) {
             </div>
             <div style={{ flex: 1 }}>
               {showReport ? <ComplianceReport type={type} onClose={() => setShowReport(false)} /> : (
-                <div style={cardS}>
+                <div style={cardS()}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Annotated Output</div>
-                  {type === "warehouse" && <WH_Gen1 style={{ ...imgS, marginBottom: 8 }} showBoxes={true} facesOk={true} />}
+                  {type === "warehouse" && <WH_Gen1 style={{ ...imgS(), marginBottom: 8 }} showBoxes={true} facesOk={true} />}
                   {type === "driving" && <FrameScrubber totalFrames={300} fps={10} />}
                   {type === "support" && <div style={{ padding: 10, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}`, maxHeight: 200, overflow: "auto", marginBottom: 8 }}>{GEN_CHAT.map((t, i) => <ChatBubble key={i} turn={t} labels={true} />)}</div>}
                   <div style={{ fontSize: 13, fontWeight: 700, color: C.hi, marginBottom: 4 }}>Provenance</div>
@@ -600,7 +610,7 @@ function ChatHDGDemo({ onBack }) {
       {stage === 0 && (
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ flex: "0 0 320px" }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 36, fontWeight: 800, color: "#fff", marginBottom: 12 }}><span style={{ color: C.accent }}>1.</span> Task Brief</div>
               <ChipGroup label="Domain" options={["Customer Support","Healthcare Intake","Legal Q&A","Technical Support"]} value={domain} onChange={setDomain} color={C.accent} />
               <ChipGroup label="Persona" options={["Frustrated User","Expert Professional","Confused Novice","Adversarial Actor"]} value={persona} onChange={setPersona} color={C.accent} />
@@ -609,7 +619,7 @@ function ChatHDGDemo({ onBack }) {
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 22, fontWeight: 700, color: C.hi, marginBottom: 10 }}>Task Brief Preview</div>
               <div style={{ padding: 14, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}`, fontFamily: "monospace", fontSize: 20, color: C.txt, lineHeight: 2 }}>
                 <div style={{ color: C.accent, fontWeight: 700, marginBottom: 4 }}>TASK-{Date.now().toString(36).toUpperCase().slice(-6)}</div>
@@ -627,7 +637,7 @@ function ChatHDGDemo({ onBack }) {
       {stage === 1 && (
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ flex: "0 0 280px" }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 36, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: "#8B5CF6" }}>2.</span> Authoring</div>
               <div style={{ fontSize: 20, color: C.txt, marginBottom: 10 }}>Contributor receives the brief and writes the conversation.</div>
               {!authoring && !authorDone && <button style={btn("#8B5CF6", false, { width: "100%" })} onClick={runAuthor}>✍️ Simulate Authoring</button>}
@@ -636,7 +646,7 @@ function ChatHDGDemo({ onBack }) {
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 22, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Authored Output — {domain}</div>
               <div style={{ opacity: authorDone ? 1 : authoring ? 0.2 : 0.06, transition: "opacity .8s", padding: 10, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}` }}>
                 {chat.map((t, i) => <ChatBubble key={i} turn={t} labels={false} />)}
@@ -650,7 +660,7 @@ function ChatHDGDemo({ onBack }) {
       {stage === 2 && (
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ flex: "0 0 280px" }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 36, fontWeight: 800, color: "#fff", marginBottom: 8 }}><span style={{ color: C.amber }}>3.</span> QA Review</div>
               <div style={{ fontSize: 20, fontWeight: 700, color: C.hi, marginBottom: 6 }}>Quality Flags</div>
               {HDG_FLAGS.map(f => (
@@ -673,7 +683,7 @@ function ChatHDGDemo({ onBack }) {
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 22, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Rate Each Turn</div>
               {chat.map((turn, i) => (
                 <div key={i} style={{ padding: 10, borderRadius: 8, background: C.bg, border: `1px solid ${ratings[i] ? C.bdr : C.bdr}`, marginBottom: 6 }}>
@@ -693,7 +703,7 @@ function ChatHDGDemo({ onBack }) {
       {stage === 3 && (
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ flex: "0 0 300px" }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 36, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: C.cyan }}>4.</span> Metadata Labels</div>
               <div style={{ marginBottom: 10 }}>
                 <div style={{ fontSize: 20, fontWeight: 700, color: C.hi, marginBottom: 5 }}>Intent Tags</div>
@@ -718,7 +728,7 @@ function ChatHDGDemo({ onBack }) {
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 22, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Annotated Record Preview</div>
               <div style={{ maxHeight: 360, overflow: "auto" }}>
                 {chat.map((turn, i) => (
@@ -742,14 +752,14 @@ function ChatHDGDemo({ onBack }) {
       {stage === 4 && (
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ flex: "0 0 300px" }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 36, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: C.green }}>5.</span> Package & Deliver</div>
               {!packed && <button style={btn(C.green, false, { width: "100%" })} onClick={() => setTimeout(() => setPacked(true), 1000)}>📦 Package Record</button>}
               {packed && <div><div style={{ fontSize: 24, color: C.green, fontWeight: 700, marginBottom: 10 }}>🎉 Delivered to corpus</div><button style={btn(C.accent, true, { width: "100%", fontSize: 20 })} onClick={reset}>New Task</button></div>}
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 22, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Provenance Record</div>
               <div style={{ padding: 14, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}`, fontFamily: "monospace", fontSize: 20, color: C.txt, lineHeight: 2 }}>
                 <div style={{ color: C.green, fontWeight: 700, fontSize: 18, letterSpacing: 1, marginBottom: 6 }}>HDG-{Date.now().toString(36).toUpperCase().slice(-10)}</div>
@@ -987,7 +997,7 @@ function PodcastHDGDemo({ onBack }) {
       {stage === 0 && (
         <div style={{ display:"flex", gap:16 }}>
           <div style={{ flex:"0 0 320px" }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize:26, fontWeight:800, color:"#fff", marginBottom:14 }}><span style={{ color:"#F97316" }}>1.</span> Generation Design</div>
 
               {/* Locale multi-select */}
@@ -1032,7 +1042,7 @@ function PodcastHDGDemo({ onBack }) {
           </div>
 
           <div style={{ flex:1 }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize:17, fontWeight:700, color:C.hi, marginBottom:12 }}>Task Specification Preview</div>
               <div style={{ padding:14, borderRadius:8, background:C.bg, border:`1px solid ${C.bdr}`, fontFamily:"monospace", fontSize:13, color:C.txt, lineHeight:2.1, marginBottom:12 }}>
                 <div style={{ color:"#F97316", fontWeight:700, marginBottom:6, fontSize:14 }}>PODCAST-{Date.now().toString(36).toUpperCase().slice(-6)}</div>
@@ -1063,7 +1073,7 @@ function PodcastHDGDemo({ onBack }) {
       {stage === 1 && (
         <div style={{ display:"flex", gap:16 }}>
           <div style={{ flex:"0 0 240px" }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize:26, fontWeight:800, color:"#fff", marginBottom:10 }}><span style={{ color:"#8B5CF6" }}>2.</span> Recording</div>
               <div style={{ fontSize:13, color:C.txt, marginBottom:14, lineHeight:1.6 }}>Contributors record the podcast live. Each locale is a separate session.</div>
               {!generating && !genDone && <button style={btn("#8B5CF6", false, { width:"100%" })} onClick={runGenerate}>▶ Start Recording Session</button>}
@@ -1109,7 +1119,7 @@ function PodcastHDGDemo({ onBack }) {
 
           {/* Studio monitor */}
           <div style={{ flex:1 }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
                 <div style={{ fontSize:17, fontWeight:700, color:C.hi }}>Studio Monitor</div>
                 <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:20, background:generating?"#EF444420":genDone?"#10B98120":"#33333330", border:`1px solid ${generating?"#EF444455":genDone?"#10B98155":"#333"}` }}>
@@ -1165,7 +1175,7 @@ function PodcastHDGDemo({ onBack }) {
       {stage === 2 && (
         <div style={{ display:"flex", gap:16 }}>
           <div style={{ flex:"0 0 260px" }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize:26, fontWeight:800, color:"#fff", marginBottom:10 }}><span style={{ color:C.cyan }}>3.</span> Transcription</div>
               <div style={{ fontSize:13, color:C.txt, marginBottom:12, lineHeight:1.6 }}>Auto-transcription generated. Click any <strong style={{ color:C.hi }}>word</strong> to correct it. Click a <strong style={{ color:C.hi }}>speaker badge</strong> to swap attribution.</div>
               <div style={{ padding:"10px 12px", borderRadius:8, background:C.bg, border:`1px solid ${C.bdr}`, marginBottom:14 }}>
@@ -1186,7 +1196,7 @@ function PodcastHDGDemo({ onBack }) {
           </div>
 
           <div style={{ flex:1 }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize:15, fontWeight:700, color:C.hi, marginBottom:12 }}>Interactive Transcript — {selectedTopic}</div>
               <div style={{ maxHeight:420, overflowY:"auto" }}>
                 {activeTranscript.map((line, li) => {
@@ -1232,7 +1242,7 @@ function PodcastHDGDemo({ onBack }) {
       {stage === 3 && (
         <div style={{ display:"flex", gap:16 }}>
           <div style={{ flex:"0 0 300px" }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize:26, fontWeight:800, color:"#fff", marginBottom:10 }}><span style={{ color:C.amber }}>4.</span> Quality Assurance</div>
               <div style={{ fontSize:13, color:C.txt, marginBottom:14, lineHeight:1.6 }}>Review each check and approve or flag for re-record.</div>
               {qaItems.map(({ key, label, desc }) => (
@@ -1273,7 +1283,7 @@ function PodcastHDGDemo({ onBack }) {
           </div>
 
           <div style={{ flex:1 }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize:15, fontWeight:700, color:C.hi, marginBottom:14 }}>QA Dashboard</div>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:14 }}>
                 {[
@@ -1305,7 +1315,7 @@ function PodcastHDGDemo({ onBack }) {
       {stage === 4 && (
         <div style={{ display:"flex", gap:16 }}>
           <div style={{ flex:"0 0 280px" }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize:26, fontWeight:800, color:"#fff", marginBottom:10 }}><span style={{ color:C.green }}>5.</span> Dataset Complete</div>
               {!published ? (
                 <>
@@ -1325,7 +1335,7 @@ function PodcastHDGDemo({ onBack }) {
           </div>
 
           <div style={{ flex:1 }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize:15, fontWeight:700, color:C.hi, marginBottom:14 }}>Dataset Summary</div>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:14 }}>
                 {[
@@ -1672,7 +1682,7 @@ function MeetingDataCollectDemo({ onBack }) {
       {stage === 0 && (
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ flex: "0 0 320px" }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 12 }}><span style={{ color: C.cyan }}>1.</span> Collection Setup</div>
               <ChipGroup label="Meeting Type" options={["1:1","3-person","5-person","10-person"]} value={meetingType} onChange={setMeetingType} color={C.cyan} />
               <div style={{ marginBottom: 10 }}>
@@ -1704,7 +1714,7 @@ function MeetingDataCollectDemo({ onBack }) {
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 15, fontWeight: 700, color: C.hi, marginBottom: 10 }}>Campaign Brief</div>
               <div style={{ padding: 14, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}`, fontFamily: "monospace", fontSize: 13, color: C.txt, lineHeight: 2 }}>
                 <div style={{ color: C.cyan, fontWeight: 700, marginBottom: 4 }}>MTGDC-{Date.now().toString(36).toUpperCase().slice(-6)}</div>
@@ -1726,7 +1736,7 @@ function MeetingDataCollectDemo({ onBack }) {
           <div style={{ display: "flex", gap: 14 }}>
             {/* Left: controls */}
             <div style={{ flex: "0 0 240px" }}>
-              <div style={cardS}>
+              <div style={cardS()}>
                 <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: "#8B5CF6" }}>2.</span> Live Capture</div>
                 {!captureRunning && !captureDone && <button style={btn("#8B5CF6", false, { width: "100%" })} onClick={runCapture}>▶ Start Recording Sessions</button>}
                 {captureRunning && (
@@ -1762,7 +1772,7 @@ function MeetingDataCollectDemo({ onBack }) {
             </div>
             {/* Right: session log */}
             <div style={{ flex: "0 0 240px" }}>
-              <div style={cardS}>
+              <div style={cardS()}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Session Log</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 3, maxHeight: 360, overflowY: "auto" }}>
                   {sessionList.map(s => {
@@ -1788,7 +1798,7 @@ function MeetingDataCollectDemo({ onBack }) {
       {stage === 2 && (
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ flex: "0 0 280px" }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 12 }}><span style={{ color: C.amber }}>3.</span> Quality Control</div>
               {[["autoQC",autoQC,setAutoQC,"Automated QC","Speech quality · Agenda completeness · Duration"],["humanReview",humanReview,setHumanReview,"Human Review","Spot-check flagged sessions"]].map(([key,val,set,label,desc]) => (
                 <label key={key} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 10, cursor: "pointer" }}>
@@ -1812,7 +1822,7 @@ function MeetingDataCollectDemo({ onBack }) {
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 15, fontWeight: 700, color: C.hi, marginBottom: 8 }}>QC Results</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 3, maxHeight: 420, overflowY: "auto" }}>
                 {sessionList.map((s, idx) => {
@@ -1839,7 +1849,7 @@ function MeetingDataCollectDemo({ onBack }) {
       {stage === 3 && (
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ flex: "0 0 260px" }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}><span style={{ color: C.orange }}>4.</span> Meeting Docs</div>
               <div style={{ fontSize: 11, color: C.txt, marginBottom: 8 }}>Click a session to review its artifacts</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 3, maxHeight: 300, overflowY: "auto", marginBottom: 10 }}>
@@ -1863,7 +1873,7 @@ function MeetingDataCollectDemo({ onBack }) {
               const v = validations[selectedSess];
               const sess = sessionList.find(s => s.id === selectedSess);
               return (
-                <div style={cardS}>
+                <div style={cardS()}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                     <div><span style={{ fontFamily: "monospace", fontSize: 14, fontWeight: 700, color: C.hi }}>{selectedSess}</span><span style={{ fontSize: 12, color: C.txt, marginLeft: 8 }}>{sess?.lang} · {sess?.participants}p · {sess?.dur}</span></div>
                     {!v && (
@@ -1894,7 +1904,7 @@ function MeetingDataCollectDemo({ onBack }) {
                 </div>
               );
             })() : (
-              <div style={{ ...cardS, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 200, color: C.txt, fontSize: 13 }}>
+              <div style={{ ...cardS(), display: "flex", alignItems: "center", justifyContent: "center", minHeight: 200, color: C.txt, fontSize: 13 }}>
                 ← Select a session to view its artifacts
               </div>
             )}
@@ -1906,7 +1916,7 @@ function MeetingDataCollectDemo({ onBack }) {
       {stage === 4 && (
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ flex: "0 0 300px" }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: C.green }}>5.</span> Final Delivery</div>
               {!delivered && <button style={btn(C.green, false, { width: "100%" })} onClick={() => setTimeout(() => setDelivered(true), 800)}>📦 Finalize Dataset Delivery</button>}
               {delivered && (
@@ -1923,7 +1933,7 @@ function MeetingDataCollectDemo({ onBack }) {
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 15, fontWeight: 700, color: C.hi, marginBottom: 10 }}>Delivery Manifest</div>
               <div style={{ padding: 14, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}`, fontFamily: "monospace", fontSize: 12, color: C.txt, lineHeight: 2 }}>
                 <div style={{ color: C.cyan, fontWeight: 700, marginBottom: 4 }}>MTGDC-{Date.now().toString(36).toUpperCase().slice(-10)}</div>
@@ -2026,7 +2036,7 @@ function VoiceClipHDC({ onBack }) {
       {stage === 0 && (
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ flex: "0 0 320px" }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 36, fontWeight: 800, color: "#fff", marginBottom: 12 }}><span style={{ color: C.cyan }}>1.</span> Campaign Design</div>
               <ChipGroup label="Data Type" options={["Voice Clips","Screen Recordings","Form Responses","Photo Submissions"]} value={dataType} onChange={setDataType} color={C.cyan} />
               <ChipGroup label="Geography" options={["India","Southeast Asia","LATAM","Europe"]} value={geography} onChange={setGeography} color={C.cyan} />
@@ -2036,7 +2046,7 @@ function VoiceClipHDC({ onBack }) {
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 22, fontWeight: 700, color: C.hi, marginBottom: 10 }}>Campaign Brief</div>
               <div style={{ padding: 14, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}`, fontFamily: "monospace", fontSize: 20, color: C.txt, lineHeight: 2 }}>
                 <div style={{ color: C.cyan, fontWeight: 700, marginBottom: 4 }}>HDC-{Date.now().toString(36).toUpperCase().slice(-6)}</div>
@@ -2053,7 +2063,7 @@ function VoiceClipHDC({ onBack }) {
       {stage === 1 && (
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ flex: "0 0 280px" }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 36, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: "#8B5CF6" }}>2.</span> Data Capture</div>
               {!capturing && !capDone && <button style={btn("#8B5CF6", false, { width: "100%" })} onClick={runCapture}>📡 Simulate Ingestion</button>}
               {capturing && <div><div style={{ fontSize: 20, color: "#8B5CF6", fontWeight: 600, marginBottom: 6 }}>Participants submitting...</div><div style={{ height: 5, borderRadius: 3, background: C.bdr, overflow: "hidden", marginBottom: 4 }}><div style={{ height: "100%", width: `${capProg}%`, background: "#8B5CF6", transition: "width .05s" }} /></div><div style={{ fontSize: 18, color: C.txt }}>{Math.round(capProg / 100 * HDC_CLIPS.length)} / {HDC_CLIPS.length} clips received</div></div>}
@@ -2061,7 +2071,7 @@ function VoiceClipHDC({ onBack }) {
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 22, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Ingested Clips</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 4, opacity: capDone ? 1 : capturing ? 0.35 : 0.07, transition: "opacity .6s" }}>
                 {HDC_CLIPS.map(clip => (
@@ -2087,7 +2097,7 @@ function VoiceClipHDC({ onBack }) {
       {stage === 2 && (
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ flex: "0 0 280px" }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 36, fontWeight: 800, color: "#fff", marginBottom: 12 }}><span style={{ color: C.amber }}>3.</span> QA Filters</div>
               {[{ label: "Min SNR", val: minSNR, set: setMinSNR, min: 0, max: 30, unit: "dB", color: C.amber }, { label: "Min Duration", val: minDur, set: setMinDur, min: 1, max: 15, unit: "s", color: C.amber }].map(({ label, val, set, min, max, unit, color }) => (
                 <div key={label} style={{ marginBottom: 14 }}>
@@ -2111,7 +2121,7 @@ function VoiceClipHDC({ onBack }) {
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 22, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Filter Results</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 {HDC_CLIPS.map(clip => {
@@ -2137,7 +2147,7 @@ function VoiceClipHDC({ onBack }) {
       {stage === 3 && (
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ flex: "0 0 280px" }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 36, fontWeight: 800, color: "#fff", marginBottom: 8 }}><span style={{ color: C.orange }}>4.</span> Transcript Review</div>
               <div style={{ padding: 8, borderRadius: 6, background: C.cyan + "10", border: `1px solid ${C.cyan}22`, fontSize: 18, color: C.cyan, marginBottom: 10 }}>
                 {passCount} clips passed · showing {annotateSet.length} for review
@@ -2151,7 +2161,7 @@ function VoiceClipHDC({ onBack }) {
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 22, fontWeight: 700, color: C.hi, marginBottom: 8 }}>ASR Transcript Review</div>
               {annotateSet.map(clip => {
                 const ann = annotations[clip.id];
@@ -2185,7 +2195,7 @@ function VoiceClipHDC({ onBack }) {
       {stage === 4 && (
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ flex: "0 0 300px" }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 36, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: C.green }}>5.</span> Package Dataset</div>
               {!packed && <button style={btn(C.green, false, { width: "100%" })} onClick={() => setTimeout(() => setPacked(true), 1200)}>📦 Package</button>}
               {packed && (
@@ -2202,7 +2212,7 @@ function VoiceClipHDC({ onBack }) {
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={cardS}>
+            <div style={cardS()}>
               <div style={{ fontSize: 22, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Dataset Manifest</div>
               <div style={{ padding: 14, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}`, fontFamily: "monospace", fontSize: 20, color: C.txt, lineHeight: 2 }}>
                 <div style={{ color: C.cyan, fontWeight: 700, fontSize: 18, letterSpacing: 1, marginBottom: 6 }}>HDC-{Date.now().toString(36).toUpperCase().slice(-10)}</div>
@@ -2301,7 +2311,7 @@ function HumanDataGen() {
         </div>
 
         <div style={{ flex: "1 1 320px", minWidth: 280 }}>
-          <div style={{ ...cardS, borderColor: C.accent + "33" }}>
+          <div style={{ ...cardS(), borderColor: C.accent + "33" }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: C.accent, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>
               Example — Synthetic Customer Support Conversation
             </div>
@@ -2368,7 +2378,7 @@ function HumanDataCollect() {
         </div>
 
         <div style={{ flex: "1 1 320px", minWidth: 280 }}>
-          <div style={{ ...cardS, borderColor: C.cyan + "33" }}>
+          <div style={{ ...cardS(), borderColor: C.cyan + "33" }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: C.cyan, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14 }}>
               Example — Voice Data Collection for Speech Recognition
             </div>
@@ -2510,25 +2520,31 @@ export default function App() {
   const [activeTab, setActiveTab] = useState(0);
   const [journey, setJourney] = useState(null);
   const [hov, setHov] = useState(null);
-  const [theme, setTheme] = useState("dark");
+  const [isLight, setIsLight] = useState(detectLight);
+  C = isLight ? LIGHT_C : DARK_C;
 
-  // Listen for theme changes posted from the outer homepage nav
   useEffect(() => {
-    function handleMessage(e) {
-      if (e.data && e.data.type === "tp-theme") {
-        setTheme(e.data.theme);
-      }
-    }
+    // postMessage from outer shell nav (e.g. parent frame sends { type:"tp-theme", theme:"light" })
+    const handleMessage = (e) => {
+      if (e.data && e.data.type === "tp-theme") setIsLight(e.data.theme === "light");
+    };
     window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
+    // matchMedia + MutationObserver for standalone / preview panel use
+    const mq = window.matchMedia("(prefers-color-scheme: light)");
+    const mqHandler = () => setIsLight(detectLight());
+    mq.addEventListener("change", mqHandler);
+    const obs = new MutationObserver(() => setIsLight(detectLight()));
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class", "data-theme", "data-color-scheme", "style"],
+    });
+    obs.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    return () => {
+      window.removeEventListener("message", handleMessage);
+      mq.removeEventListener("change", mqHandler);
+      obs.disconnect();
+    };
   }, []);
-
-  // Mutate shared C, cardS, imgS in-place so all child components pick up
-  // the updated values on re-render without requiring prop drilling
-  const palette = theme === "light" ? LIGHT_C : DARK_C;
-  Object.assign(C, palette);
-  Object.assign(cardS, { background: C.card, border: `1px solid ${C.bdr}` });
-  Object.assign(imgS, { border: `1px solid ${C.bdr}` });
 
   return (
     <div style={{ minHeight: "100vh", background: C.bg, color: C.txt, fontFamily: "'TP Sans', 'DM Sans', sans-serif" }}>
@@ -2542,12 +2558,12 @@ export default function App() {
       {/* Blurred GIF strip — fixed at bottom across all tabs */}
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 220, zIndex: 0, pointerEvents: "none", overflow: "hidden" }}>
         <img src="/banner.gif" alt="" aria-hidden="true" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top", filter: "blur(14px)", opacity: 0.55, transform: "scale(1.05)" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(19,19,19,1) 0%, rgba(19,19,19,0.3) 50%, transparent 100%)" }} />
+        <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to bottom, ${C.bg} 0%, ${C.bg}4D 50%, transparent 100%)` }} />
       </div>
 
       <div>
-        <div style={{ padding: "0 3rem", height: 56, background: C.card, display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${C.bdr}` }}>
-          <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ height: 20, width: "auto", objectFit: "contain", objectPosition: "left center" }} />
+        <div style={{ padding: "0 3rem", height: 56, background: C.nav, display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
+          <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ height: 20, width: "auto", objectFit: "contain", objectPosition: "left center", position: "absolute", left: "3rem" }} />
           <div style={{ display: "flex", alignItems: "stretch", gap: 0, height: "100%" }}>
             {["Synthetic Data Generation", "Human Data Generation", "Human Data Collection"].map((label, i) => (
               <button key={i} onClick={() => setActiveTab(i)} style={{
@@ -2560,6 +2576,23 @@ export default function App() {
                 transition: "color .15s, border-color .15s",
               }}>{label}</button>
             ))}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, position: "absolute", right: "1.5rem" }}>
+            {/* Camouflaged theme toggle — blends into nav, brightens on hover */}
+            <button
+              onClick={() => setIsLight(l => !l)}
+              title={isLight ? "Switch to dark mode" : "Switch to light mode"}
+              style={{
+                background: "none", border: "none", cursor: "pointer",
+                fontSize: 16, lineHeight: 1, padding: "4px 6px", borderRadius: 6,
+                color: isLight ? C.nav : "#fff",
+                opacity: 0.18,
+                transition: "opacity .2s",
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity = "0.75"}
+              onMouseLeave={e => e.currentTarget.style.opacity = "0.18"}
+            >{isLight ? "◑" : "☀"}</button>
+            <img src="/TP-logo.png" alt="TP" style={{ height: 26, width: "auto", objectFit: "contain" }} />
           </div>
         </div>
         <div style={{ height: 2, background: "linear-gradient(90deg, #5b21b6 0%, #9071f0 100%)" }} />
@@ -2582,3 +2615,4 @@ export default function App() {
     </div>
   );
 }
+
