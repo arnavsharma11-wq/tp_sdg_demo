@@ -1541,7 +1541,7 @@ function PersonTile({ name, color, index, isSpeaking, captureRunning }) {
   const WAVE_ANIMS = ["audioBar2","audioBar1","audioBar4","audioBar3","audioBar2","audioBar4","audioBar1","audioBar3","audioBar2"];
   const WAVE_HEIGHTS = [5,9,13,18,13,9,5,9,13];
   return (
-    <div style={{ position:"relative", background:`radial-gradient(ellipse at 50% 70%, ${color}22 0%, #16162A 55%, #0D0D1C 100%)`, borderRadius:6, overflow:"hidden", border:`2px solid ${isSpeaking ? color : "#ffffff0b"}`, transition:"border-color .35s, box-shadow .35s", boxShadow: isSpeaking ? `0 0 22px ${color}55` : "none", minHeight:0 }}>
+    <div style={{ position:"relative", background:`radial-gradient(ellipse at 50% 70%, ${color}22 0%, #16162A 55%, #0D0D1C 100%)`, borderRadius:6, overflow:"hidden", border:`2px solid ${isSpeaking ? color : "#ffffff0b"}`, transition:"border-color .35s, box-shadow .35s", boxShadow: isSpeaking ? `0 0 22px ${color}55` : "none" }}>
       {/* Clipart person — fills tile */}
       {PERSON_SVGS[index % PERSON_SVGS.length](color)}
       {/* Video shimmer overlay */}
@@ -1593,7 +1593,7 @@ function MeetingGrid({ participants, lang, captureRunning, captureDone, activeSp
         </div>
       </div>
       {/* Video grid */}
-      <div style={{ flex: 1, display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 3, padding: 3, background: "#0A0A16", minHeight: 0 }}>
+      <div style={{ flex: 1, display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gridAutoRows: "1fr", gap: 3, padding: 3, background: "#0A0A16", minHeight: 0, alignContent: "stretch" }}>
         {names.map((name, i) => (
           <PersonTile key={i} name={name} color={COLORS[i % COLORS.length]} index={i} isSpeaking={i === speaking} captureRunning={captureRunning} />
         ))}
