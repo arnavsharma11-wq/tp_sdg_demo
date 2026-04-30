@@ -845,7 +845,6 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
   const [generating, setGenerating] = useState(false);
   const [genProg, setGenProg] = useState(0);
   const [genDone, setGenDone] = useState(false);
-  const [paused, setPaused] = useState(false);
   const [activeSpeaker, setActiveSpeaker] = useState(0);
   const [transcriptEdits, setTranscriptEdits] = useState({});
   const [speakerEdits, setSpeakerEdits] = useState({});
@@ -854,8 +853,10 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
   const [accuracy, setAccuracy] = useState(85);
   const [qaChecks, setQaChecks] = useState({ clarity: null, uniqueness: null, balance: null, confidence: null });
   const [published, setPublished] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const generatingRef = useRef(false);
-  const pausedRef     = useRef(false);
+  const isPausedRef   = useRef(false);   // sync ref so speakLine closure can read it
+  const speakNextRef  = useRef(null);    // stores continuation fn when paused between utterances
   const localeIdxRef  = useRef(0);   // which locale is currently being spoken
   const lineIdxRef    = useRef(0);   // which line within that locale
   const lineStartRef  = useRef(0);   // Date.now() when current line began
@@ -879,12 +880,19 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
     if (!generatingRef.current) return;
     if (!isActive) {
       window.speechSynthesis && window.speechSynthesis.pause();
-      pausedRef.current = true;
-      setPaused(true);
-    } else if (pausedRef.current) {
-      window.speechSynthesis && window.speechSynthesis.resume();
-      pausedRef.current = false;
-      setPaused(false);
+      isPausedRef.current = true;
+      setIsPaused(true);
+      setActiveSpeaker(-1);
+    } else if (isPausedRef.current) {
+      isPausedRef.current = false;
+      setIsPaused(false);
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      } else if (speakNextRef.current) {
+        const fn = speakNextRef.current;
+        speakNextRef.current = null;
+        fn();
+      }
     }
   }, [isActive]);
 
@@ -893,22 +901,33 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
     setAccuracy(Math.min(99, 85 + edits * 3.5));
   }, [transcriptEdits, speakerEdits]);
 
-  const pauseRecording = () => {
-    window.speechSynthesis && window.speechSynthesis.pause();
-    pausedRef.current = true;
-    setPaused(true);
-  };
-
-  const resumeRecording = () => {
-    window.speechSynthesis && window.speechSynthesis.resume();
-    pausedRef.current = false;
-    setPaused(false);
+  // ── Pause / Resume ────────────────────────────────────────────────────────
+  const handlePauseResume = () => {
+    if (isPausedRef.current) {
+      // ── RESUME ──
+      isPausedRef.current = false;
+      setIsPaused(false);
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      } else if (speakNextRef.current) {
+        const fn = speakNextRef.current;
+        speakNextRef.current = null;
+        fn();
+      }
+    } else {
+      // ── PAUSE ──
+      isPausedRef.current = true;
+      setIsPaused(true);
+      setActiveSpeaker(-1);
+      window.speechSynthesis.pause();
+    }
   };
 
   const runGenerate = () => {
     generatingRef.current = true;
-    pausedRef.current = false;
-    setPaused(false);
+    isPausedRef.current = false;
+    setIsPaused(false);
+    speakNextRef.current = null;
     setGenerating(true); setGenProg(0); setActiveSpeaker(0);
     window.speechSynthesis.cancel();
 
@@ -965,10 +984,18 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
 
       const speakLine = (lineIdx) => {
         if (!generatingRef.current) return;
+        // If paused between utterances, store our continuation and wait
+        if (isPausedRef.current) {
+          lineIdxRef.current = lineIdx;
+          speakNextRef.current = () => speakLine(lineIdx);
+          return;
+        }
+        speakNextRef.current = null;
         lineIdxRef.current = lineIdx;
         if (lineIdx >= lines.length) {
           // Locale done — brief pause then next locale
-          setTimeout(() => playLocale(localeIdx + 1), 700);
+          setActiveSpeaker(-1);
+          setTimeout(() => playLocale(localeIdx + 1), 500);
           return;
         }
         const line = lines[lineIdx];
@@ -983,8 +1010,16 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
         utt.rate   = line.spk === "A" ? 0.88 : 0.93;
         utt.volume = 1.0;
         setActiveSpeaker(line.spk === "A" ? 0 : 1);
-        utt.onend  = () => { lineStartRef.current = 0; setTimeout(() => speakLine(lineIdx + 1), 320); };
-        utt.onerror = () => { lineStartRef.current = 0; setTimeout(() => speakLine(lineIdx + 1), 100); };
+        utt.onend  = () => {
+          lineStartRef.current = 0;
+          setActiveSpeaker(-1);  // clear wave immediately — no stale animation between speakers
+          setTimeout(() => speakLine(lineIdx + 1), 120);
+        };
+        utt.onerror = () => {
+          lineStartRef.current = 0;
+          setActiveSpeaker(-1);
+          setTimeout(() => speakLine(lineIdx + 1), 80);
+        };
         window.speechSynthesis.speak(utt);
       };
 
@@ -1118,17 +1153,17 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
               {generating && (
                 <div>
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
-                    <div style={{ fontSize:13, color: paused ? C.amber : "#8B5CF6", fontWeight:700 }}>
-                      {paused ? "⏸ Paused" : "● Recording in progress…"}
+                    <div style={{ fontSize:13, color: isPaused ? "#F97316" : "#8B5CF6", fontWeight:700 }}>
+                      {isPaused ? "⏸ Paused" : "● Recording in progress…"}
                     </div>
                     <button
-                      onClick={paused ? resumeRecording : pauseRecording}
-                      style={{ fontSize:12, fontWeight:700, padding:"3px 10px", borderRadius:6, border:`1px solid ${paused ? C.amber : "#8B5CF644"}`, background: paused ? C.amber+"20" : "#8B5CF610", color: paused ? C.amber : "#8B5CF6", cursor:"pointer", fontFamily:"inherit" }}>
-                      {paused ? "▶ Resume" : "⏸ Pause"}
+                      onClick={handlePauseResume}
+                      style={{ fontSize:12, fontWeight:700, padding:"3px 10px", borderRadius:6, border:`1px solid ${isPaused ? "#F9731655" : "#8B5CF644"}`, background: isPaused ? "#F9731620" : "#8B5CF610", color: isPaused ? "#F97316" : "#8B5CF6", cursor:"pointer", fontFamily:"inherit" }}>
+                      {isPaused ? "▶ Resume" : "⏸ Pause"}
                     </button>
                   </div>
                   <div style={{ height:5, borderRadius:3, background:C.bdr, overflow:"hidden", marginBottom:6 }}>
-                    <div style={{ height:"100%", width:`${genProg}%`, background: paused ? C.amber : "#8B5CF6", transition:"width .08s" }} />
+                    <div style={{ height:"100%", width:`${genProg}%`, background: isPaused ? "#F97316" : "#8B5CF6", transition: isPaused ? "none" : "width .08s" }} />
                   </div>
                   <div style={{ fontSize:12, color:C.txt, marginBottom:12 }}>{Math.round(genProg)}%</div>
                 </div>
@@ -1169,16 +1204,18 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
             <div style={cardS()}>
               <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
                 <div style={{ fontSize:17, fontWeight:700, color:C.hi }}>Studio Monitor</div>
-                <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:20, background:paused?C.amber+"20":generating?"#EF444420":genDone?"#10B98120":"#33333330", border:`1px solid ${paused?C.amber+"55":generating?"#EF444455":genDone?"#10B98155":"#333"}` }}>
-                  <div style={{ width:7, height:7, borderRadius:"50%", background:paused?C.amber:generating?"#EF4444":genDone?"#10B981":"#555", boxShadow:generating&&!paused?"0 0 8px #EF4444":"none" }} />
-                  <span style={{ fontSize:12, fontWeight:700, color:paused?C.amber:generating?"#EF4444":genDone?"#10B981":"#555" }}>{paused?"⏸ PAUSED":generating?"● REC":genDone?"✓ CAPTURED":"○ READY"}</span>
+                <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:20, background:isPaused?"#F9731620":generating?"#EF444420":genDone?"#10B98120":"#33333330", border:`1px solid ${isPaused?"#F9731655":generating?"#EF444455":genDone?"#10B98155":"#333"}` }}>
+                  <div style={{ width:7, height:7, borderRadius:"50%", background:isPaused?"#F97316":generating?"#EF4444":genDone?"#10B981":"#555", boxShadow:isPaused?"0 0 8px #F97316":generating&&!isPaused?"0 0 8px #EF4444":"none" }} />
+                  <span style={{ fontSize:12, fontWeight:700, color:isPaused?"#F97316":generating?"#EF4444":genDone?"#10B981":"#555" }}>{isPaused?"⏸ PAUSED":generating?"● REC":genDone?"✓ CAPTURED":"○ READY"}</span>
                 </div>
               </div>
 
               <div style={{ display:"flex", gap:14, marginBottom:16 }}>
                 {SPK_LABELS.map((label,si) => {
                   const color = SPEAKER_COLORS[si];
-                  const isActive = generating && activeSpeaker === si;
+                  // isActive requires generating, NOT paused, and this speaker is current
+                  const isActive = generating && !isPaused && activeSpeaker === si;
+                  const isListening = generating && !isPaused && activeSpeaker !== si && activeSpeaker !== -1;
                   return (
                     <div key={si} style={{ flex:1, padding:16, borderRadius:10, background:`radial-gradient(ellipse at 50% 100%, ${color}15 0%, #12121E 70%)`, border:`1.5px solid ${isActive?color:"#ffffff10"}`, boxShadow:isActive?`0 0 24px ${color}33`:"none", transition:"border-color .3s, box-shadow .3s" }}>
                       <div style={{ fontSize:14, fontWeight:700, color:isActive?color:C.txt, marginBottom:14 }}>{label}</div>
@@ -1188,7 +1225,7 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
                         ))}
                       </div>
                       <div style={{ marginTop:10, fontSize:11, color:isActive?color:"#555", textAlign:"center", fontFamily:"monospace", letterSpacing:"0.06em" }}>
-                        {isActive?"● SPEAKING":generating?"◦ LISTENING":genDone?"✓ RECORDED":"○ STANDBY"}
+                        {isActive?"● SPEAKING":isPaused&&generating?"⏸ PAUSED":isListening?"◦ LISTENING":genDone?"✓ RECORDED":"○ STANDBY"}
                       </div>
                     </div>
                   );
@@ -1204,10 +1241,10 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
               <div style={{ padding:"10px 14px", borderRadius:8, background:C.bg, border:`1px solid ${C.bdr}` }}>
                 <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6, fontSize:12, color:C.txt }}>
                   <span>Session progress</span>
-                  <span style={{ fontFamily:"monospace", color:genDone?C.green:"#8B5CF6" }}>{Math.round(genProg)}%</span>
+                  <span style={{ fontFamily:"monospace", color:genDone?C.green:isPaused?"#F97316":"#8B5CF6" }}>{Math.round(genProg)}%</span>
                 </div>
                 <div style={{ height:6, borderRadius:3, background:C.bdr }}>
-                  <div style={{ height:"100%", borderRadius:3, width:`${genProg}%`, background:genDone?C.green:"linear-gradient(90deg,#8B5CF6,#7C3AED)", transition:"width .05s" }} />
+                  <div style={{ height:"100%", borderRadius:3, width:`${genProg}%`, background:genDone?C.green:isPaused?"#F97316":"linear-gradient(90deg,#8B5CF6,#7C3AED)", transition:isPaused?"none":"width .1s" }} />
                 </div>
                 <div style={{ display:"flex", justifyContent:"space-between", marginTop:6, fontSize:11, color:"#555" }}>
                   <span>0:00</span><span>{numSpeakers===1?"10:00":"20:00"}</span>
