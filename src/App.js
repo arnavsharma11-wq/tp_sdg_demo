@@ -1139,149 +1139,175 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
         </div>
       )}
 
-      {/* ── STAGE 1: GENERATE ── */}
+      {/* ── STAGE 1: RECORD & TRANSCRIBE ── */}
       {stage === 1 && (
-        <div style={{ display:"flex", gap:16 }}>
-          <div style={{ flex:"0 0 240px" }}>
+        <div style={{ display:"flex", gap:14, alignItems:"flex-start", minWidth:0 }}>
+
+          {/* ── Column 1: Controls ── */}
+          <div style={{ flex:"0 0 200px", minWidth:0 }}>
             <div style={cardS()}>
-              <div style={{ fontSize:26, fontWeight:800, color:C.hi, marginBottom:10 }}><span style={{ color:"#8B5CF6" }}>2.</span> Recording</div>
-              <div style={{ fontSize:13, color:C.txt, marginBottom:14, lineHeight:1.6 }}>Contributors record the podcast live. Each locale is a separate session.</div>
-              {!generating && !genDone && <button style={btn("#8B5CF6", false, { width:"100%" })} onClick={runGenerate}>▶ Start Recording Session</button>}
+              <div style={{ fontSize:20, fontWeight:800, color:C.hi, marginBottom:8 }}><span style={{ color:"#8B5CF6" }}>2.</span> Recording</div>
+              <div style={{ fontSize:12, color:C.txt, marginBottom:12, lineHeight:1.5 }}>Contributors record live. Each locale is a separate session.</div>
+
+              {!generating && !genDone && <button style={btn("#8B5CF6", false, { width:"100%", padding:"8px 0", fontSize:13 })} onClick={runGenerate}>▶ Start Recording Session</button>}
+
               {generating && (
                 <div>
-                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
-                    <div style={{ fontSize:13, color: paused ? "#F97316" : "#8B5CF6", fontWeight:700 }}>
-                      {paused ? "⏸ Paused" : "● Recording in progress…"}
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
+                    <div style={{ fontSize:12, color:paused?"#F97316":"#8B5CF6", fontWeight:700, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                      {paused?"⏸ Paused":"● Recording…"}
                     </div>
-                    <button
-                      onClick={paused ? resumeRecording : pauseRecording}
-                      style={{ fontSize:12, fontWeight:700, padding:"3px 10px", borderRadius:6, border:`1px solid ${paused ? "#F9731655" : "#8B5CF644"}`, background: paused ? "#F9731620" : "#8B5CF610", color: paused ? "#F97316" : "#8B5CF6", cursor:"pointer", fontFamily:"inherit" }}>
-                      {paused ? "▶ Resume" : "⏸ Pause"}
+                    <button onClick={paused?resumeRecording:pauseRecording}
+                      style={{ fontSize:11, fontWeight:700, padding:"3px 8px", borderRadius:6, border:`1px solid ${paused?"#F9731655":"#8B5CF644"}`, background:paused?"#F9731620":"#8B5CF610", color:paused?"#F97316":"#8B5CF6", cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap", flexShrink:0 }}>
+                      {paused?"▶ Resume":"⏸ Pause"}
                     </button>
                   </div>
-                  <div style={{ height:5, borderRadius:3, background:C.bdr, overflow:"hidden", marginBottom:6 }}>
-                    <div style={{ height:"100%", width:`${genProg}%`, background: paused ? "#F97316" : "#8B5CF6", transition: paused ? "none" : "width .08s" }} />
+                  <div style={{ height:4, borderRadius:3, background:C.bdr, overflow:"hidden", marginBottom:5 }}>
+                    <div style={{ height:"100%", width:`${genProg}%`, background:paused?"#F97316":"#8B5CF6", transition:paused?"none":"width .08s" }} />
                   </div>
-                  <div style={{ fontSize:12, color:C.txt, marginBottom:12 }}>{Math.round(genProg)}%</div>
-                </div>
-              )}
-              {genDone && (
-                <div>
-                  <div style={{ fontSize:14, color:C.green, fontWeight:700, marginBottom:8 }}>✓ Session complete</div>
-                  <div style={{ padding:"6px 10px", borderRadius:6, background:C.green+"10", border:`1px solid ${C.green}33`, fontSize:13, color:C.green, marginBottom:12, lineHeight:1.6 }}>
-                    {selectedLocales.length} locale{selectedLocales.length!==1?"s":""} · {numSpeakers} speaker{numSpeakers!==1?"s":""} · {recFormat}
-                  </div>
-                  {accuracy >= 98
-                    ? <button style={btn(C.accent, false, { width:"100%" })} onClick={() => advance(2)}>Confirm Transcript →</button>
-                    : <div style={{ padding:"8px 10px", borderRadius:6, background:C.cyan+"12", border:`1px solid ${C.cyan}30`, fontSize:12, color:C.cyan, lineHeight:1.5 }}>💡 Fix {Math.max(1, Math.ceil((98-accuracy)/3.5))} more word{Math.max(1, Math.ceil((98-accuracy)/3.5))!==1?"s":""} in the transcript below to confirm</div>}
+                  <div style={{ fontSize:11, color:C.txt, marginBottom:10 }}>{Math.round(genProg)}%</div>
                 </div>
               )}
 
-              <div style={{ marginTop:14 }}>
-                <div style={{ fontSize:11, fontWeight:700, color:C.txt, marginBottom:8, letterSpacing:"0.08em", textTransform:"uppercase" }}>Sessions</div>
-                {selectedLocales.map((lKey, idx) => {
+              {genDone && (
+                <div>
+                  <div style={{ fontSize:13, color:C.green, fontWeight:700, marginBottom:6 }}>✓ Session complete</div>
+                  <div style={{ padding:"5px 8px", borderRadius:6, background:C.green+"10", border:`1px solid ${C.green}33`, fontSize:11, color:C.green, marginBottom:10, lineHeight:1.5 }}>
+                    {selectedLocales.length} locale{selectedLocales.length!==1?"s":""} · {numSpeakers} spk · {recFormat.replace("-channel","ch")}
+                  </div>
+                  {accuracy >= 98
+                    ? <button style={btn(C.accent, false, { width:"100%", padding:"8px 0", fontSize:13 })} onClick={() => advance(2)}>Confirm Transcript →</button>
+                    : <div style={{ padding:"7px 8px", borderRadius:6, background:C.cyan+"12", border:`1px solid ${C.cyan}30`, fontSize:11, color:C.cyan, lineHeight:1.5 }}>
+                        💡 Fix {Math.max(1,Math.ceil((98-accuracy)/3.5))} more word{Math.max(1,Math.ceil((98-accuracy)/3.5))!==1?"s":""} in the transcript to confirm
+                      </div>
+                  }
+                </div>
+              )}
+
+              {/* Session list */}
+              <div style={{ marginTop:12 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:C.txt, marginBottom:6, letterSpacing:"0.08em", textTransform:"uppercase" }}>Sessions</div>
+                {selectedLocales.map((lKey,idx) => {
                   const loc = PODCAST_LOCALES.find(l=>l.key===lKey);
                   const segSize = 100 / selectedLocales.length;
                   const done = genDone || genProg >= (idx+1)*segSize;
                   const segProg = Math.min(100, Math.max(0, (genProg - idx*segSize) / segSize * 100));
                   return (
-                    <div key={lKey} style={{ padding:"6px 8px", borderRadius:6, background:C.bg, border:`1px solid ${done?C.green+"44":generating&&segProg>0?"#8B5CF644":C.bdr}`, marginBottom:5, transition:"border-color .3s" }}>
-                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:3 }}>
-                        <span style={{ fontSize:13, color:done?C.green:generating&&segProg>0?"#8B5CF6":C.txt, fontWeight:600 }}>{loc?.flag} {loc?.label}</span>
-                        <span style={{ fontSize:11, color:done?C.green:C.txt }}>{done?"✓ Done":generating&&segProg>0?`${Math.round(segProg)}%`:"Queued"}</span>
+                    <div key={lKey} style={{ padding:"5px 7px", borderRadius:6, background:C.bg, border:`1px solid ${done?C.green+"44":generating&&segProg>0?"#8B5CF644":C.bdr}`, marginBottom:4, transition:"border-color .3s" }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:2 }}>
+                        <span style={{ fontSize:11, color:done?C.green:generating&&segProg>0?"#8B5CF6":C.txt, fontWeight:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", minWidth:0 }}>{loc?.flag} {loc?.label}</span>
+                        <span style={{ fontSize:10, color:done?C.green:C.txt, flexShrink:0, marginLeft:4 }}>{done?"✓":generating&&segProg>0?`${Math.round(segProg)}%`:"—"}</span>
                       </div>
-                      {(generating||genDone) && <div style={{ height:3, borderRadius:2, background:C.bdr }}><div style={{ height:"100%", width:`${done?100:segProg}%`, background:done?C.green:"#8B5CF6", transition:"width .1s" }} /></div>}
+                      {(generating||genDone) && <div style={{ height:2, borderRadius:2, background:C.bdr }}><div style={{ height:"100%", width:`${done?100:segProg}%`, background:done?C.green:"#8B5CF6", transition:"width .1s" }} /></div>}
                     </div>
                   );
                 })}
               </div>
 
-              {/* Accuracy meter — visible once recording starts */}
+              {/* Accuracy meter */}
               {(generating || genDone) && (
-                <div style={{ marginTop:14, padding:"10px 12px", borderRadius:8, background:C.bg, border:`1px solid ${C.bdr}` }}>
-                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
-                    <span style={{ fontSize:12, fontWeight:700, color:C.hi }}>Transcript Accuracy</span>
-                    <span style={{ fontSize:15, fontWeight:800, color:accuracy>=98?C.green:C.amber, fontFamily:"monospace" }}>{Math.round(accuracy)}%</span>
+                <div style={{ marginTop:12, padding:"9px 10px", borderRadius:8, background:C.bg, border:`1px solid ${C.bdr}` }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
+                    <span style={{ fontSize:11, fontWeight:700, color:C.hi }}>Transcript Accuracy</span>
+                    <span style={{ fontSize:14, fontWeight:800, color:accuracy>=98?C.green:C.amber, fontFamily:"monospace" }}>{Math.round(accuracy)}%</span>
                   </div>
-                  <div style={{ height:5, borderRadius:3, background:C.bdr }}>
+                  <div style={{ height:4, borderRadius:3, background:C.bdr }}>
                     <div style={{ height:"100%", borderRadius:3, width:`${accuracy}%`, background:accuracy>=98?C.green:`linear-gradient(90deg,${C.amber},#F97316)`, transition:"width .5s" }} />
                   </div>
-                  <div style={{ fontSize:11, color:C.txt, marginTop:4 }}>
-                    {Object.keys(transcriptEdits).length+Object.keys(speakerEdits).length} correction{(Object.keys(transcriptEdits).length+Object.keys(speakerEdits).length)!==1?"s":""} applied · target 98%
+                  <div style={{ fontSize:10, color:C.txt, marginTop:3 }}>
+                    {Object.keys(transcriptEdits).length+Object.keys(speakerEdits).length} correction{(Object.keys(transcriptEdits).length+Object.keys(speakerEdits).length)!==1?"s":""} · target 98%
                   </div>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Studio monitor + Live Transcript */}
-          <div style={{ flex:1, display:"flex", flexDirection:"column", gap:14 }}>
+          {/* ── Column 2: Studio Monitor (speakers stacked vertically) ── */}
+          <div style={{ flex:"0 0 230px", minWidth:0 }}>
             <div style={cardS()}>
-              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
-                <div style={{ fontSize:17, fontWeight:700, color:C.hi }}>Studio Monitor</div>
-                <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:6, padding:"3px 10px", borderRadius:20, background:paused?"#F9731620":generating?"#EF444420":genDone?"#10B98120":"#33333330", border:`1px solid ${paused?"#F9731655":generating?"#EF444455":genDone?"#10B98155":"#333"}` }}>
-                  <div style={{ width:7, height:7, borderRadius:"50%", background:paused?"#F97316":generating?"#EF4444":genDone?"#10B981":"#555", boxShadow:paused?"0 0 8px #F97316":generating&&!paused?"0 0 8px #EF4444":"none" }} />
-                  <span style={{ fontSize:12, fontWeight:700, color:paused?"#F97316":generating?"#EF4444":genDone?"#10B981":"#555" }}>{paused?"⏸ PAUSED":generating?"● REC":genDone?"✓ CAPTURED":"○ READY"}</span>
+              {/* Header */}
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
+                <div style={{ fontSize:15, fontWeight:700, color:C.hi, whiteSpace:"nowrap" }}>Studio Monitor</div>
+                <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:5, padding:"2px 8px", borderRadius:20, background:paused?"#F9731620":generating?"#EF444420":genDone?"#10B98120":"#33333330", border:`1px solid ${paused?"#F9731655":generating?"#EF444455":genDone?"#10B98155":"#333"}`, flexShrink:0 }}>
+                  <div style={{ width:6, height:6, borderRadius:"50%", background:paused?"#F97316":generating?"#EF4444":genDone?"#10B981":"#555", boxShadow:paused?"0 0 7px #F97316":generating&&!paused?"0 0 7px #EF4444":"none" }} />
+                  <span style={{ fontSize:11, fontWeight:700, color:paused?"#F97316":generating?"#EF4444":genDone?"#10B981":"#555", whiteSpace:"nowrap" }}>{paused?"⏸ PAUSED":generating?"● REC":genDone?"✓ CAPTURED":"○ READY"}</span>
                 </div>
               </div>
 
-              <div style={{ display:"flex", gap:14, marginBottom:16 }}>
+              {/* Speakers — stacked vertically, one per row */}
+              <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:14 }}>
                 {SPK_LABELS.map((label,si) => {
                   const color = SPEAKER_COLORS[si];
-                  // isActive requires generating, NOT paused, and this speaker is current
                   const isActive = generating && !paused && activeSpeaker === si;
                   const isListening = generating && !paused && activeSpeaker !== si && activeSpeaker !== -1;
                   return (
-                    <div key={si} style={{ flex:1, padding:16, borderRadius:10, background:`radial-gradient(ellipse at 50% 100%, ${color}15 0%, #12121E 70%)`, border:`1.5px solid ${isActive?color:"#ffffff10"}`, boxShadow:isActive?`0 0 24px ${color}33`:"none", transition:"border-color .3s, box-shadow .3s" }}>
-                      <div style={{ fontSize:14, fontWeight:700, color:isActive?color:C.txt, marginBottom:14 }}>{label}</div>
-                      <div style={{ display:"flex", alignItems:"center", gap:2, height:44, justifyContent:"center" }}>
-                        {WAVE_ANIMS.map((anim,wi) => (
-                          <div key={wi} style={{ width:3, borderRadius:2, background:isActive?color:"#2a2a3a", height:isActive?undefined:4, animation:isActive?`${anim} ${0.42+(wi%3)*0.13}s ${wi*0.055}s ease-in-out infinite`:"none" }} />
-                        ))}
+                    <div key={si} style={{ padding:"12px 14px", borderRadius:10, background:`radial-gradient(ellipse at 50% 100%, ${color}15 0%, #12121E 70%)`, border:`1.5px solid ${isActive?color:"#ffffff10"}`, boxShadow:isActive?`0 0 20px ${color}33`:"none", transition:"border-color .3s, box-shadow .3s" }}>
+                      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+                        <span style={{ fontSize:13, fontWeight:700, color:isActive?color:C.txt }}>{label}</span>
+                        <span style={{ fontSize:10, color:isActive?color:"#555", fontFamily:"monospace", letterSpacing:"0.05em" }}>
+                          {isActive?"● SPEAKING":paused&&generating?"⏸ PAUSED":isListening?"◦ LISTENING":genDone?"✓ RECORDED":"○ STANDBY"}
+                        </span>
                       </div>
-                      <div style={{ marginTop:10, fontSize:11, color:isActive?color:"#555", textAlign:"center", fontFamily:"monospace", letterSpacing:"0.06em" }}>
-                        {isActive?"● SPEAKING":paused&&generating?"⏸ PAUSED":isListening?"◦ LISTENING":genDone?"✓ RECORDED":"○ STANDBY"}
+                      <div style={{ display:"flex", alignItems:"center", gap:2, height:36, justifyContent:"center" }}>
+                        {WAVE_ANIMS.map((anim,wi) => (
+                          <div key={wi} style={{ width:3, borderRadius:2, background:isActive?color:"#2a2a3a", height:isActive?undefined:3, animation:isActive?`${anim} ${0.42+(wi%3)*0.13}s ${wi*0.055}s ease-in-out infinite`:"none" }} />
+                        ))}
                       </div>
                     </div>
                   );
                 })}
               </div>
 
-              <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:14 }}>
-                <span style={{ padding:"3px 10px", borderRadius:20, background:"#8B5CF620", border:"1px solid #8B5CF640", fontSize:12, color:"#8B5CF6" }}>🎙️ {selectedTopic}</span>
-                <span style={{ padding:"3px 10px", borderRadius:20, background:"#F9731614", border:"1px solid #F9731640", fontSize:12, color:"#F97316" }}>{recFormat}</span>
-                <span style={{ padding:"3px 10px", borderRadius:20, background:"#10B98112", border:"1px solid #10B98130", fontSize:12, color:"#10B981" }}>✦ Human-authored</span>
+              {/* Chips */}
+              <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:12 }}>
+                <span style={{ padding:"2px 8px", borderRadius:20, background:"#8B5CF620", border:"1px solid #8B5CF640", fontSize:11, color:"#8B5CF6", whiteSpace:"nowrap" }}>🎙️ {selectedTopic}</span>
+                <span style={{ padding:"2px 8px", borderRadius:20, background:"#F9731614", border:"1px solid #F9731640", fontSize:11, color:"#F97316", whiteSpace:"nowrap" }}>{recFormat}</span>
+                <span style={{ padding:"2px 8px", borderRadius:20, background:"#10B98112", border:"1px solid #10B98130", fontSize:11, color:"#10B981", whiteSpace:"nowrap" }}>✦ Human</span>
               </div>
 
-              <div style={{ padding:"10px 14px", borderRadius:8, background:C.bg, border:`1px solid ${C.bdr}` }}>
-                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6, fontSize:12, color:C.txt }}>
+              {/* Session progress bar */}
+              <div style={{ padding:"9px 12px", borderRadius:8, background:C.bg, border:`1px solid ${C.bdr}` }}>
+                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5, fontSize:11, color:C.txt }}>
                   <span>Session progress</span>
                   <span style={{ fontFamily:"monospace", color:genDone?C.green:paused?"#F97316":"#8B5CF6" }}>{Math.round(genProg)}%</span>
                 </div>
-                <div style={{ height:6, borderRadius:3, background:C.bdr }}>
+                <div style={{ height:5, borderRadius:3, background:C.bdr }}>
                   <div style={{ height:"100%", borderRadius:3, width:`${genProg}%`, background:genDone?C.green:paused?"#F97316":"linear-gradient(90deg,#8B5CF6,#7C3AED)", transition:paused?"none":"width .1s" }} />
                 </div>
-                <div style={{ display:"flex", justifyContent:"space-between", marginTop:6, fontSize:11, color:"#555" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", marginTop:5, fontSize:10, color:"#555" }}>
                   <span>0:00</span><span>{numSpeakers===1?"10:00":"20:00"}</span>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* ── LIVE TRANSCRIPT (appears as lines are spoken) ── */}
-            {(spokenCount > 0 || (currentLineIdx >= 0 && generating)) && (
-              <div style={cardS()}>
-                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
-                  <div style={{ fontSize:15, fontWeight:700, color:C.hi }}>Live Transcript — {selectedTopic}</div>
-                  {generating && !paused && (
-                    <div style={{ display:"flex", alignItems:"center", gap:5, padding:"2px 9px", borderRadius:20, background:"#8B5CF620", border:"1px solid #8B5CF640" }}>
-                      <div style={{ width:6, height:6, borderRadius:"50%", background:"#8B5CF6", boxShadow:"0 0 6px #8B5CF6" }} />
-                      <span style={{ fontSize:11, fontWeight:700, color:"#8B5CF6", letterSpacing:"0.05em" }}>LIVE</span>
-                    </div>
-                  )}
-                  {genDone && <span style={{ fontSize:12, color:C.green, marginLeft:"auto" }}>✓ {spokenCount} line{spokenCount!==1?"s":""} · click any word to correct</span>}
+          {/* ── Column 3: Live Transcript (always visible, fills remaining space) ── */}
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={cardS()}>
+              {/* Header */}
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12, flexWrap:"wrap" }}>
+                <div style={{ fontSize:15, fontWeight:700, color:C.hi, whiteSpace:"nowrap" }}>Live Transcript</div>
+                <span style={{ fontSize:12, color:C.txt, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>— {selectedTopic}</span>
+                {generating && !paused && (
+                  <div style={{ display:"flex", alignItems:"center", gap:4, padding:"2px 8px", borderRadius:20, background:"#8B5CF620", border:"1px solid #8B5CF640", marginLeft:"auto", flexShrink:0 }}>
+                    <div style={{ width:5, height:5, borderRadius:"50%", background:"#8B5CF6", boxShadow:"0 0 5px #8B5CF6" }} />
+                    <span style={{ fontSize:10, fontWeight:700, color:"#8B5CF6", letterSpacing:"0.05em" }}>LIVE</span>
+                  </div>
+                )}
+                {genDone && <span style={{ fontSize:11, color:C.green, marginLeft:"auto", whiteSpace:"nowrap" }}>✓ {spokenCount} line{spokenCount!==1?"s":""} · click any word to correct</span>}
+              </div>
+
+              {/* Placeholder before recording starts */}
+              {!generating && !genDone && (
+                <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"48px 20px", textAlign:"center" }}>
+                  <div style={{ fontSize:36, marginBottom:12, opacity:0.3 }}>🎙️</div>
+                  <div style={{ fontSize:13, color:C.txt, opacity:0.5, lineHeight:1.6 }}>Transcript appears here as speakers record.<br/>Click any word to correct it inline.</div>
                 </div>
+              )}
 
-                <div style={{ maxHeight:260, overflowY:"auto", display:"flex", flexDirection:"column", gap:6 }}>
+              {/* Transcript lines */}
+              {(generating || genDone) && (
+                <div style={{ overflowY:"auto", maxHeight:"calc(100vh - 320px)", minHeight:180, display:"flex", flexDirection:"column", gap:6 }}>
                   {/* Completed lines — editable */}
                   {activeTranscript.slice(0, spokenCount).map((line, li) => {
                     const spkColor = line.spk==="A" ? SPEAKER_COLORS[0] : SPEAKER_COLORS[1];
@@ -1289,9 +1315,9 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
                     const words = (transcriptEdits[li] || line.text).split(" ");
                     return (
                       <div key={li} style={{ padding:"8px 10px", borderRadius:7, background:C.bg, border:`1px solid ${C.bdr}` }}>
-                        <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:5 }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:5, flexWrap:"wrap" }}>
                           <button onClick={() => setSpeakerEdits(e => ({ ...e, [li]: curLabel===SPK_LABELS[0] ? (SPK_LABELS[1]||SPK_LABELS[0]) : SPK_LABELS[0] }))}
-                            style={{ padding:"2px 7px", borderRadius:4, fontSize:11, fontWeight:700, border:`1px solid ${spkColor}44`, background:spkColor+"18", color:spkColor, cursor:"pointer", fontFamily:"inherit" }}>{curLabel}</button>
+                            style={{ padding:"2px 7px", borderRadius:4, fontSize:11, fontWeight:700, border:`1px solid ${spkColor}44`, background:spkColor+"18", color:spkColor, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap" }}>{curLabel}</button>
                           <span style={{ fontSize:10, color:"#555", fontFamily:"monospace" }}>{line.ts}</span>
                           {speakerEdits[li] && <span style={{ fontSize:10, color:C.amber }}>✎ reassigned</span>}
                         </div>
@@ -1319,26 +1345,28 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
 
                   {/* Currently speaking line — highlighted, not yet editable */}
                   {currentLineIdx >= 0 && currentLineIdx < activeTranscript.length && (
-                    <div style={{ padding:"8px 10px", borderRadius:7, background:"#8B5CF608", border:`1px solid ${paused?"#F9731644":"#8B5CF644"}`, opacity: paused ? 0.75 : 1, transition:"opacity .3s, border-color .3s" }}>
-                      <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:5 }}>
+                    <div style={{ padding:"8px 10px", borderRadius:7, background:"#8B5CF608", border:`1px solid ${paused?"#F9731644":"#8B5CF644"}`, opacity:paused?0.75:1, transition:"opacity .3s, border-color .3s" }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:5, flexWrap:"wrap" }}>
                         <span style={{ padding:"2px 7px", borderRadius:4, fontSize:11, fontWeight:700,
                           border:`1px solid ${SPEAKER_COLORS[activeTranscript[currentLineIdx].spk==="A"?0:1]}44`,
                           background:SPEAKER_COLORS[activeTranscript[currentLineIdx].spk==="A"?0:1]+"18",
-                          color:SPEAKER_COLORS[activeTranscript[currentLineIdx].spk==="A"?0:1] }}>
+                          color:SPEAKER_COLORS[activeTranscript[currentLineIdx].spk==="A"?0:1],
+                          whiteSpace:"nowrap" }}>
                           {activeTranscript[currentLineIdx].spk==="A" ? SPK_LABELS[0] : SPK_LABELS[1]}
                         </span>
                         <span style={{ fontSize:10, color:"#555", fontFamily:"monospace" }}>{activeTranscript[currentLineIdx].ts}</span>
-                        <span style={{ fontSize:10, color: paused?"#F97316":"#8B5CF6", fontFamily:"monospace" }}>{paused?"⏸ paused":"● speaking…"}</span>
+                        <span style={{ fontSize:10, color:paused?"#F97316":"#8B5CF6", fontFamily:"monospace" }}>{paused?"⏸ paused":"● speaking…"}</span>
                       </div>
-                      <div style={{ fontSize:13, color: paused?"#F97316":"#8B5CF6", lineHeight:1.7, fontStyle:"italic" }}>
+                      <div style={{ fontSize:13, color:paused?"#F97316":"#8B5CF6", lineHeight:1.7, fontStyle:"italic" }}>
                         {activeTranscript[currentLineIdx].text}
                       </div>
                     </div>
                   )}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
+
         </div>
       )}
 
