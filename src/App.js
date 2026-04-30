@@ -853,14 +853,14 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
   const [accuracy, setAccuracy] = useState(85);
   const [qaChecks, setQaChecks] = useState({ clarity: null, uniqueness: null, balance: null, confidence: null });
   const [published, setPublished] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
+  const [paused, setPaused] = useState(false);
   const generatingRef = useRef(false);
-  const isPausedRef   = useRef(false);   // sync ref so speakLine closure can read it
-  const speakNextRef  = useRef(null);    // stores continuation fn when paused between utterances
+  const pausedRef     = useRef(false);
   const localeIdxRef  = useRef(0);   // which locale is currently being spoken
   const lineIdxRef    = useRef(0);   // which line within that locale
   const lineStartRef  = useRef(0);   // Date.now() when current line began
   const lineEstDurRef = useRef(1000);// estimated ms duration of current line
+  const resumeFnRef   = useRef(null);// cancel+restart: stores continuation set by speakLine
 
   const advance = n => { setStage(n); setMaxStage(m => Math.max(m, n)); };
   const STAGE_C = ["#F97316", "#8B5CF6", C.cyan, C.amber, C.green];
@@ -878,21 +878,16 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
   // Pause / resume when the outer nav tab changes
   useEffect(() => {
     if (!generatingRef.current) return;
-    if (!isActive) {
-      window.speechSynthesis && window.speechSynthesis.pause();
-      isPausedRef.current = true;
-      setIsPaused(true);
+    if (!isActive && !pausedRef.current) {
+      pausedRef.current = true;
+      setPaused(true);
       setActiveSpeaker(-1);
-    } else if (isPausedRef.current) {
-      isPausedRef.current = false;
-      setIsPaused(false);
-      if (window.speechSynthesis.paused) {
-        window.speechSynthesis.resume();
-      } else if (speakNextRef.current) {
-        const fn = speakNextRef.current;
-        speakNextRef.current = null;
-        fn();
-      }
+      window.speechSynthesis && window.speechSynthesis.cancel();
+    } else if (isActive && pausedRef.current) {
+      pausedRef.current = false;
+      setPaused(false);
+      lineStartRef.current = Date.now();
+      resumeFnRef.current && resumeFnRef.current();
     }
   }, [isActive]);
 
@@ -901,33 +896,29 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
     setAccuracy(Math.min(99, 85 + edits * 3.5));
   }, [transcriptEdits, speakerEdits]);
 
-  // ── Pause / Resume ────────────────────────────────────────────────────────
-  const handlePauseResume = () => {
-    if (isPausedRef.current) {
-      // ── RESUME ──
-      isPausedRef.current = false;
-      setIsPaused(false);
-      if (window.speechSynthesis.paused) {
-        window.speechSynthesis.resume();
-      } else if (speakNextRef.current) {
-        const fn = speakNextRef.current;
-        speakNextRef.current = null;
-        fn();
-      }
-    } else {
-      // ── PAUSE ──
-      isPausedRef.current = true;
-      setIsPaused(true);
-      setActiveSpeaker(-1);
-      window.speechSynthesis.pause();
-    }
+  const pauseRecording = () => {
+    if (!generatingRef.current || pausedRef.current) return;
+    // Chrome's speechSynthesis.pause() is unreliable — cancel instead and save position.
+    // resumeFnRef holds a closure that restarts from the exact saved line.
+    pausedRef.current = true;
+    setPaused(true);
+    setActiveSpeaker(-1);
+    window.speechSynthesis && window.speechSynthesis.cancel();
+  };
+
+  const resumeRecording = () => {
+    if (!pausedRef.current) return;
+    pausedRef.current = false;
+    setPaused(false);
+    lineStartRef.current = Date.now();
+    resumeFnRef.current && resumeFnRef.current();
   };
 
   const runGenerate = () => {
     generatingRef.current = true;
-    isPausedRef.current = false;
-    setIsPaused(false);
-    speakNextRef.current = null;
+    pausedRef.current = false;
+    resumeFnRef.current = null;
+    setPaused(false);
     setGenerating(true); setGenProg(0); setActiveSpeaker(0);
     window.speechSynthesis.cancel();
 
@@ -992,6 +983,8 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
         }
         speakNextRef.current = null;
         lineIdxRef.current = lineIdx;
+        // Always keep resumeFnRef pointed at the current line so pause/tab-switch can restart here
+        resumeFnRef.current = () => speakLine(lineIdx);
         if (lineIdx >= lines.length) {
           // Locale done — brief pause then next locale
           setActiveSpeaker(-1);
@@ -1012,13 +1005,14 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
         setActiveSpeaker(line.spk === "A" ? 0 : 1);
         utt.onend  = () => {
           lineStartRef.current = 0;
-          setActiveSpeaker(-1);  // clear wave immediately — no stale animation between speakers
-          setTimeout(() => speakLine(lineIdx + 1), 120);
+          setActiveSpeaker(-1); // clear wave between speakers
+          setTimeout(() => speakLine(lineIdx + 1), 200);
         };
-        utt.onerror = () => {
+        // onerror fires when cancel() is called for pause — don't advance the line
+        utt.onerror = (e) => {
+          if (pausedRef.current || e.error === "canceled" || e.error === "interrupted") return;
           lineStartRef.current = 0;
-          setActiveSpeaker(-1);
-          setTimeout(() => speakLine(lineIdx + 1), 80);
+          setTimeout(() => speakLine(lineIdx + 1), 100);
         };
         window.speechSynthesis.speak(utt);
       };
@@ -1028,13 +1022,16 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
 
     // Progress bar: completed lines + fractional progress through the current line.
     // lineStartRef / lineEstDurRef give smooth interpolation while a sentence plays.
-    // Polls every 80 ms so the bar moves visibly as each word is spoken.
+    // When paused the bar freezes — we skip setGenProg but keep the loop alive so
+    // it picks back up immediately on resume without needing a new pollProgress call.
     const pollProgress = () => {
       if (!generatingRef.current) return;
-      const completedLines = localeIdxRef.current * lines.length + lineIdxRef.current;
-      const lineElapsed = lineStartRef.current > 0 ? Date.now() - lineStartRef.current : 0;
-      const lineFrac = Math.min(0.95, lineElapsed / Math.max(1, lineEstDurRef.current));
-      setGenProg(Math.min(99, ((completedLines + lineFrac) / totalLines) * 100));
+      if (!pausedRef.current) {
+        const completedLines = localeIdxRef.current * lines.length + lineIdxRef.current;
+        const lineElapsed = lineStartRef.current > 0 ? Date.now() - lineStartRef.current : 0;
+        const lineFrac = Math.min(0.95, lineElapsed / Math.max(1, lineEstDurRef.current));
+        setGenProg(Math.min(99, ((completedLines + lineFrac) / totalLines) * 100));
+      }
       setTimeout(pollProgress, 80);
     };
     pollProgress();
