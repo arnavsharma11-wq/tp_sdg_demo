@@ -1,4 +1,5 @@
 ﻿import React, { useState, useRef, useEffect } from "react";
+import { Sun, Moon } from "lucide-react";
 
 // ===== SHARED STYLES =====
 const DARK_C  = { bg:"#131313",  card:"#1A1A1A", bdr:"#252525", txt:"#9E9E9E", hi:"#E5E0DB", accent:"#7C3AED", green:"#10B981", amber:"#F59E0B", red:"#EF4444", cyan:"#06B6D4", orange:"#F97316", nav:"#0D0D0D" };
@@ -21,7 +22,7 @@ function HT({ s = 9 }) { return <span style={{ display: "inline-block", width: 0
 const stageC = [C.accent, "#8B5CF6", C.red, C.cyan, C.orange, C.green];
 const stageL = ["Seed", "Generate", "Critique", "Curate", "Comply", "Package"];
 function Nav({ stage, setStage }) {
-  return (<div style={{ display: "flex", alignItems: "center", gap: 3, marginBottom: 12 }}>{stageL.map((l, i) => (<div key={i} style={{ display: "flex", alignItems: "center" }}><div onClick={() => setStage(i)} title={l} style={{ width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, cursor: "pointer", background: stage === i ? stageC[i] + "22" : stage > i ? C.green + "18" : C.card, border: `2px solid ${stage === i ? stageC[i] : stage > i ? C.green : C.bdr}`, color: stage === i ? "#fff" : stage > i ? C.green : C.txt }}>{stage > i ? "✓" : i + 1}</div>{i < 5 && <div style={{ width: 8, height: 2, background: stage > i ? C.green + "44" : C.bdr }} />}</div>))}<span style={{ marginLeft: 6, fontSize: 13, color: C.txt }}>{stage < 3 ? "GENERATION" : "CURATION"}</span></div>);
+  return (<div style={{ display: "flex", alignItems: "center", gap: 3, marginBottom: 12 }}>{stageL.map((l, i) => (<div key={i} style={{ display: "flex", alignItems: "center" }}><div onClick={() => setStage(i)} title={l} style={{ width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, cursor: "pointer", background: stage === i ? stageC[i] : stage > i ? C.green + "30" : C.card, border: `2px solid ${stage === i ? stageC[i] : stage > i ? C.green : C.bdr}`, color: stage === i ? "#fff" : stage > i ? C.green : C.txt }}>{stage > i ? "✓" : i + 1}</div>{i < 5 && <div style={{ width: 8, height: 2, background: stage > i ? C.green + "66" : C.bdr }} />}</div>))}<span style={{ marginLeft: 6, fontSize: 13, color: C.txt }}>{stage < 3 ? "GENERATION" : "CURATION"}</span></div>);
 }
 
 // ===== WAREHOUSE SVGs =====
@@ -237,7 +238,7 @@ function PipelineDemo({ type, onBack }) {
   return (
     <div style={{ background: C.bg, color: C.txt, fontFamily: "'TP Sans', 'DM Sans', sans-serif", minHeight: "calc(100vh - 112px)" }}>
       <div style={{ padding: "8px 24px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${C.bdr}` }}>
-        <button style={btn(C.txt, true, { padding: "4px 10px", fontSize: 13 })} onClick={onBack}>← All Journeys</button>
+        <button style={btn(C.hi, true, { padding: "4px 10px", fontSize: 13 })} onClick={onBack}>← All Journeys</button>
         <span style={{ fontSize: 13, color: tc, fontWeight: 700 }}>{conf.icon} {conf.label}</span>
       </div>
       <div style={{ padding: "10px 24px" }}>
@@ -498,7 +499,7 @@ function DemoNav({ stage, stageLabels, stageColors, maxStage, advance, label }) 
     <div style={{ display: "flex", alignItems: "center", gap: 3, marginBottom: 16 }}>
       {stageLabels.map((l, i) => (
         <div key={i} style={{ display: "flex", alignItems: "center" }}>
-          <div onClick={() => i <= maxStage && advance(i)} title={l} style={{ width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, cursor: i <= maxStage ? "pointer" : "default", background: stage === i ? stageColors[i] + "22" : i < stage ? C.green + "18" : C.card, border: `2px solid ${stage === i ? stageColors[i] : i < stage ? C.green : C.bdr}`, color: stage === i ? "#fff" : i < stage ? C.green : C.txt }}>
+          <div onClick={() => i <= maxStage && advance(i)} title={l} style={{ width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 700, cursor: i <= maxStage ? "pointer" : "default", background: stage === i ? stageColors[i] : i < stage ? C.green + "30" : C.card, border: `2px solid ${stage === i ? stageColors[i] : i < stage ? C.green : C.bdr}`, color: stage === i ? "#fff" : i < stage ? C.green : C.txt }}>
             {i < stage ? "✓" : i + 1}
           </div>
           {i < stageLabels.length - 1 && <div style={{ width: 8, height: 2, background: i < stage ? C.green + "44" : C.bdr }} />}
@@ -2559,11 +2560,11 @@ function WarehouseIcon() {
   return (
     <div style={{ width: 80, height: 72, position: "relative" }}>
       <svg width="80" height="72" viewBox="0 0 80 72" fill="none">
-        <rect x="10" y="24" width="60" height="44" rx="2" fill={C.amber+"12"} stroke={C.amber} strokeWidth="1.5"/>
-        <polygon points="6,24 40,7 74,24" fill="none" stroke={C.amber} strokeWidth="1.5"/>
-        <rect x="30" y="44" width="20" height="24" rx="1" fill={C.amber+"20"} stroke={C.amber+"70"} strokeWidth="1"/>
-        <rect x="13" y="31" width="13" height="10" rx="1" fill={C.amber+"12"} stroke={C.amber+"55"} strokeWidth="1"/>
-        <rect x="54" y="31" width="13" height="10" rx="1" fill={C.amber+"12"} stroke={C.amber+"55"} strokeWidth="1"/>
+        <rect x="10" y="24" width="60" height="44" rx="2" fill={C.amber+"35"} stroke={C.amber} strokeWidth="1.5"/>
+        <polygon points="6,24 40,7 74,24" fill="none" stroke={C.amber} strokeWidth="2"/>
+        <rect x="30" y="44" width="20" height="24" rx="1" fill={C.amber+"55"} stroke={C.amber+"AA"} strokeWidth="1"/>
+        <rect x="13" y="31" width="13" height="10" rx="1" fill={C.amber+"35"} stroke={C.amber+"88"} strokeWidth="1"/>
+        <rect x="54" y="31" width="13" height="10" rx="1" fill={C.amber+"35"} stroke={C.amber+"88"} strokeWidth="1"/>
       </svg>
       <div style={{ position: "absolute", left: 10, right: 10, height: 2, background: `linear-gradient(90deg, transparent, ${C.amber}CC, transparent)`, animation: "scanDown 2.5s ease-in-out infinite" }} />
       <div style={{ position: "absolute", top: 0, right: 0, width: 20, height: 20, borderRadius: "50%", background: C.amber, fontSize: 12, fontWeight: 900, color: "#000", display: "flex", alignItems: "center", justifyContent: "center", animation: "alertPulse 1.8s ease-in-out infinite" }}>!</div>
@@ -2575,24 +2576,24 @@ function DrivingIcon() {
     <div style={{ width: 80, height: 72, position: "relative", overflow: "hidden" }}>
       {/* Road surface */}
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 26, background: "#181820" }}/>
-      <div style={{ position: "absolute", bottom: 25, left: 0, right: 0, height: 1, background: C.cyan+"30" }}/>
+      <div style={{ position: "absolute", bottom: 25, left: 0, right: 0, height: 1, background: C.cyan+"60" }}/>
       {/* Scrolling centre dashes */}
       <div style={{ position: "absolute", bottom: 11, left: -24, width: 260, display: "flex", gap: 10, animation: "roadScroll 0.9s linear infinite" }}>
-        {[...Array(11)].map((_, i) => <div key={i} style={{ width: 14, height: 2, background: C.cyan+"55", flexShrink: 0 }}/>)}
+        {[...Array(11)].map((_, i) => <div key={i} style={{ width: 14, height: 2, background: C.cyan+"99", flexShrink: 0 }}/>)}
       </div>
       {/* Speed lines left of car */}
       {[0,1,2].map(i => (
-        <div key={i} style={{ position: "absolute", height: 1.5, left: 2, width: 13 - i*3, top: 27 + i*7, background: `linear-gradient(90deg, transparent, ${C.cyan}55)`, transformOrigin: "left center", animation: `speedLine 0.7s ${i*0.1}s ease-in-out infinite` }}/>
+        <div key={i} style={{ position: "absolute", height: 1.5, left: 2, width: 13 - i*3, top: 27 + i*7, background: `linear-gradient(90deg, transparent, ${C.cyan}99)`, transformOrigin: "left center", animation: `speedLine 0.7s ${i*0.1}s ease-in-out infinite` }}/>
       ))}
       {/* Car side view */}
       <svg width="54" height="36" viewBox="0 0 54 36" fill="none" style={{ position: "absolute", bottom: 14, left: 13 }}>
-        <rect x="3" y="13" width="48" height="14" rx="3" fill={C.cyan+"20"} stroke={C.cyan} strokeWidth="1.5"/>
-        <path d="M11 13 L15 3 L38 3 L44 13Z" fill={C.cyan+"15"} stroke={C.cyan} strokeWidth="1.5"/>
-        <path d="M16 12 L19 4 L35 4 L40 12Z" fill={C.cyan+"12"} stroke={C.cyan+"50"} strokeWidth="0.75"/>
+        <rect x="3" y="13" width="48" height="14" rx="3" fill={C.cyan+"45"} stroke={C.cyan} strokeWidth="1.5"/>
+        <path d="M11 13 L15 3 L38 3 L44 13Z" fill={C.cyan+"38"} stroke={C.cyan} strokeWidth="1.5"/>
+        <path d="M16 12 L19 4 L35 4 L40 12Z" fill={C.cyan+"28"} stroke={C.cyan+"88"} strokeWidth="0.75"/>
         <circle cx="41" cy="27" r="7" fill="#0d0d14" stroke={C.cyan} strokeWidth="1.5"/>
-        <circle cx="41" cy="27" r="2.5" fill={C.cyan+"35"}/>
+        <circle cx="41" cy="27" r="2.5" fill={C.cyan+"70"}/>
         <circle cx="13" cy="27" r="7" fill="#0d0d14" stroke={C.cyan} strokeWidth="1.5"/>
-        <circle cx="13" cy="27" r="2.5" fill={C.cyan+"35"}/>
+        <circle cx="13" cy="27" r="2.5" fill={C.cyan+"70"}/>
         <rect x="49" y="16" width="4" height="3" rx="1" fill={C.cyan}/>
         <rect x="1"  y="16" width="3" height="3" rx="1" fill="#EF4444" opacity="0.85"/>
       </svg>
@@ -2604,10 +2605,10 @@ function DrivingIcon() {
 function SupportIcon() {
   return (
     <div style={{ width: 80, height: 72, position: "relative" }}>
-      <div style={{ position: "absolute", top: 2, left: 0, width: 54, height: 30, borderRadius: "10px 10px 10px 2px", background: C.red+"18", border: `1.5px solid ${C.red}`, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, animation: "chatFadeA 3s ease-in-out infinite" }}>
+      <div style={{ position: "absolute", top: 2, left: 0, width: 54, height: 30, borderRadius: "10px 10px 10px 2px", background: C.red+"40", border: `1.5px solid ${C.red}`, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, animation: "chatFadeA 3s ease-in-out infinite" }}>
         {[0, 1, 2].map(i => <div key={i} style={{ width: 5, height: 5, borderRadius: "50%", background: C.red, animation: `dotBounce 1s ${i * 0.18}s ease-in-out infinite` }} />)}
       </div>
-      <div style={{ position: "absolute", bottom: 2, right: 0, width: 54, height: 30, borderRadius: "10px 10px 2px 10px", background: C.green+"18", border: `1.5px solid ${C.green}`, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, animation: "chatFadeB 3s ease-in-out infinite" }}>
+      <div style={{ position: "absolute", bottom: 2, right: 0, width: 54, height: 30, borderRadius: "10px 10px 2px 10px", background: C.green+"40", border: `1.5px solid ${C.green}`, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, animation: "chatFadeB 3s ease-in-out infinite" }}>
         {[0, 1, 2].map(i => <div key={i} style={{ width: 5, height: 5, borderRadius: "50%", background: C.green, animation: `dotBounce 1s ${0.5 + i * 0.18}s ease-in-out infinite` }} />)}
       </div>
     </div>
@@ -2616,21 +2617,22 @@ function SupportIcon() {
 const CARD_ICONS = { warehouse: <WarehouseIcon />, driving: <DrivingIcon />, support: <SupportIcon /> };
 
 // ===== SYNTHETIC HOME =====
-function SyntheticHome({ hov, setHov, setJourney }) {
+function SyntheticHome({ hov, setHov, setJourney, isLight }) {
   return (
     <div style={{ position: "relative", display: "flex", flexDirection: "column", minHeight: "calc(100vh - 58px)" }}>
       {/* Banner */}
-      <div style={{ flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "clamp(28px, 3.5vh, 48px) 2rem clamp(20px, 2.5vh, 36px)" }}>
+      <div style={{ flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "clamp(28px, 3.5vh, 48px) 2rem clamp(20px, 2.5vh, 36px)", position: "relative" }}>
+        <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to bottom, #000000 0%, #000000 110%, ${C.bg} 120%)`, zIndex: 1, pointerEvents: "none" }} />
         <div style={{ position: "relative", zIndex: 2, textAlign: "center", maxWidth: 680 }}>
           <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ display: "block", height: 26, width: "auto", objectFit: "contain", margin: "0 auto 0.4rem auto", opacity: 0.92 }} />
-          <span style={{ display: "block", fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "1.1rem", fontWeight: 700, letterSpacing: "0.32em", textTransform: "uppercase", color: "rgba(210,195,225,0.5)", marginBottom: "0.4rem" }}>Introducing</span>
+          <span style={{ display: "block", fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "1.1rem", fontWeight: 700, letterSpacing: "0.32em", textTransform: "uppercase", color: "rgba(210,195,225,0.8)", marginBottom: "0.4rem" }}>Introducing</span>
           <h1 style={{ fontFamily: "'TP Sans', 'DM Sans', sans-serif", fontSize: "clamp(2.4rem, 6.5vw, 5rem)", fontWeight: 900, color: "#ffffff", lineHeight: 1.04, letterSpacing: "-0.025em", margin: "0 0 0.5rem 0", textShadow: "0 0 40px rgba(144,113,240,0.25), 0 2px 20px rgba(0,0,0,0.5)" }}>
             TP.ai <span style={{ color: "#9071f0" }}>Data</span>Gen
           </h1>
-          <p style={{ fontSize: "clamp(0.95rem, 1.7vw, 1.15rem)", color: C.hi, lineHeight: 1.55, margin: "0 auto 0.25rem auto" }}>
+          <p style={{ fontSize: "clamp(0.95rem, 1.7vw, 1.15rem)", color: "rgba(255,255,255,0.92)", lineHeight: 1.55, margin: "0 auto 0.25rem auto" }}>
             Machine-generated data created algorithmically to simulate real-world scenarios at scale.
           </p>
-          <p style={{ fontSize: "clamp(0.85rem, 1.4vw, 1rem)", color: C.txt, lineHeight: 1.55, margin: "0 auto" }}>
+          <p style={{ fontSize: "clamp(0.85rem, 1.4vw, 1rem)", color: "rgba(255,255,255,0.72)", lineHeight: 1.55, margin: "0 auto" }}>
             Used to expand coverage, stress-test models, and generate edge cases that are rare, sensitive, or unsafe to collect in the real world.
           </p>
         </div>
@@ -2647,10 +2649,10 @@ function SyntheticHome({ hov, setHov, setJourney }) {
           <div key={j.k}
             onMouseEnter={() => setHov(j.k)} onMouseLeave={() => setHov(null)}
             onClick={() => setJourney(j.k)}
-            style={{ flex: "1 1 0", minWidth: 0, padding: "14px 16px", borderRadius: 14, cursor: "pointer", transition: "all .35s cubic-bezier(.17,.67,.35,1.15)", border: `1px solid ${hov === j.k ? j.color + "66" : C.bdr}`, background: hov === j.k ? j.color + "08" : C.card, transform: hov === j.k ? "translateY(-4px)" : "none", boxShadow: hov === j.k ? `0 14px 40px ${j.color}18` : "none" }}>
+            style={{ flex: "1 1 0", minWidth: 0, padding: "14px 16px", borderRadius: 14, cursor: "pointer", transition: "all .35s cubic-bezier(.17,.67,.35,1.15)", border: `2px solid ${hov === j.k ? j.color : C.bdr}`, background: hov === j.k ? (isLight ? "#F0F0F0" : "#2C2C2C") : C.card, transform: hov === j.k ? "translateY(-4px)" : "none", boxShadow: hov === j.k ? `0 14px 40px ${j.color}44` : "none" }}>
             <div style={{ marginBottom: 6 }}>{CARD_ICONS[j.k]}</div>
             <div style={{ fontSize: 20, fontWeight: 700, color: j.color, marginBottom: 3 }}>{j.title}</div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: j.color, letterSpacing: 1, opacity: 0.7, marginBottom: 6 }}>{j.sub}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: j.color, letterSpacing: 1, marginBottom: 6 }}>{j.sub}</div>
             <div style={{ fontSize: 13, color: C.txt, lineHeight: 1.5, marginBottom: 8 }}>{j.desc}</div>
             <div style={{ padding: "5px 12px", borderRadius: 6, background: j.color + "12", border: `1px solid ${j.color}22`, fontSize: 12, color: j.color, fontWeight: 600, display: "inline-block" }}>{j.brief}</div>
           </div>
@@ -2658,9 +2660,9 @@ function SyntheticHome({ hov, setHov, setJourney }) {
       </div>
 
       <div style={{ position: "relative", zIndex: 2, display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
-        <div style={{ padding: "7px 14px", borderRadius: 6, background: C.red + "10", border: `1px solid ${C.red}22`, fontSize: 14, color: C.red, fontWeight: 600 }}><HT s={9} /> Human-in-the-loop at every stage</div>
-        <div style={{ padding: "7px 14px", borderRadius: 6, background: C.green + "10", border: `1px solid ${C.green}22`, fontSize: 14, color: C.green, fontWeight: 600 }}>🔒 GDPR · HIPAA · EU AI Act · SOC 2</div>
-        <div style={{ padding: "7px 14px", borderRadius: 6, background: C.accent + "10", border: `1px solid ${C.accent}22`, fontSize: 14, color: C.accent, fontWeight: 600 }}>📋 Full compliance report per delivery</div>
+        <div style={{ padding: "7px 14px", borderRadius: 6, background: C.red + "25", border: `1px solid ${C.red}55`, fontSize: 14, color: C.red, fontWeight: 600 }}><HT s={9} /> Human-in-the-loop at every stage</div>
+        <div style={{ padding: "7px 14px", borderRadius: 6, background: C.green + "25", border: `1px solid ${C.green}55`, fontSize: 14, color: C.green, fontWeight: 600 }}>🔒 GDPR · HIPAA · EU AI Act · SOC 2</div>
+        <div style={{ padding: "7px 14px", borderRadius: 6, background: C.accent + "25", border: `1px solid ${C.accent}55`, fontSize: 14, color: C.accent, fontWeight: 600 }}>📋 Full compliance report per delivery</div>
       </div>
       </div>
     </div>
@@ -2698,6 +2700,10 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    document.body.style.background = C.bg;
+  }, [isLight]);
+
   return (
     <div style={{ minHeight: "100vh", background: C.bg, color: C.txt, fontFamily: "'TP Sans', 'DM Sans', sans-serif" }}>
       {/* Animated aurora orbs */}
@@ -2708,20 +2714,20 @@ export default function App() {
         <div style={{ position: "absolute", width: 700, height: 700, borderRadius: "50%", background: "radial-gradient(circle, rgba(236,72,153,0.35) 0%, transparent 70%)", filter: "blur(70px)", top: "50%", left: "5%", animation: "orbDrift2 20s 4s ease-in-out infinite" }} />
       </div>
       {/* Blurred GIF strip — fixed at bottom across all tabs */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 220, zIndex: 0, pointerEvents: "none", overflow: "hidden" }}>
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, height: 220, zIndex: 0, pointerEvents: "none", overflow: "hidden", display: isLight ? "none" : "block" }}>
         <img src="/banner.gif" alt="" aria-hidden="true" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top", filter: "blur(14px)", opacity: 0.55, transform: "scale(1.05)" }} />
         <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to bottom, ${C.bg} 0%, ${C.bg}4D 50%, transparent 100%)` }} />
       </div>
 
       <div>
-        <div style={{ padding: "0 3rem", height: 56, background: C.nav, display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
+        <div style={{ padding: "0 3rem", height: 56, background: "#0D0D0D", display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
           <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ height: 20, width: "auto", objectFit: "contain", objectPosition: "left center", position: "absolute", left: "3rem" }} />
           <div style={{ display: "flex", alignItems: "stretch", gap: 0, height: "100%" }}>
             {["Synthetic Data Generation", "Human Data Generation", "Human Data Collection"].map((label, i) => (
               <button key={i} onClick={() => setActiveTab(i)} style={{
                 background: "none", border: "none",
                 borderBottom: `2px solid ${activeTab === i ? C.accent : "transparent"}`,
-                color: activeTab === i ? C.hi : C.txt,
+                color: activeTab === i ? "#E5E0DB" : "#9E9E9E",
                 cursor: "pointer", fontSize: 17.5, fontWeight: activeTab === i ? 700 : 500,
                 fontFamily: "'TP Sans', 'DM Sans', sans-serif",
                 padding: "0 24px", letterSpacing: "0.01em", whiteSpace: "nowrap",
@@ -2729,22 +2735,26 @@ export default function App() {
               }}>{label}</button>
             ))}
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, position: "absolute", right: "1.5rem" }}>
-            {/* Camouflaged theme toggle — blends into nav, brightens on hover */}
+          <div style={{ display: "flex", alignItems: "center", position: "absolute", right: "3rem" }}>
             <button
               onClick={() => setIsLight(l => !l)}
-              title={isLight ? "Switch to dark mode" : "Switch to light mode"}
+              aria-label={isLight ? "Switch to dark mode" : "Switch to light mode"}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.5)"; e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "rgba(255,255,255,1)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)"; e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.7)"; }}
               style={{
-                background: "none", border: "none", cursor: "pointer",
-                fontSize: 16, lineHeight: 1, padding: "4px 6px", borderRadius: 6,
-                color: isLight ? C.nav : "#fff",
-                opacity: 0.18,
-                transition: "opacity .2s",
+                width: 36, height: 36,
+                borderRadius: "50%",
+                border: "1px solid rgba(255,255,255,0.2)",
+                background: "transparent",
+                color: "rgba(255,255,255,0.7)",
+                cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                transition: "border-color 0.15s, background 0.15s, color 0.15s",
+                padding: 0,
               }}
-              onMouseEnter={e => e.currentTarget.style.opacity = "0.75"}
-              onMouseLeave={e => e.currentTarget.style.opacity = "0.18"}
-            >{isLight ? "◑" : "☀"}</button>
-            <img src="/TP-logo.png" alt="TP" style={{ height: 26, width: "auto", objectFit: "contain" }} />
+            >
+              {isLight ? <Moon size={15} /> : <Sun size={15} />}
+            </button>
           </div>
         </div>
         <div style={{ height: 2, background: "linear-gradient(90deg, #5b21b6 0%, #9071f0 100%)" }} />
@@ -2753,8 +2763,8 @@ export default function App() {
       <div style={{ position: "relative", zIndex: 1 }}>
       <div style={{ display: activeTab === 0 ? "block" : "none" }}>
         {journey
-          ? <PipelineDemo type={journey} onBack={() => setJourney(null)} />
-          : <SyntheticHome hov={hov} setHov={setHov} setJourney={setJourney} />
+          ? <PipelineDemo type={journey} onBack={() => { setJourney(null); setHov(null); }} />
+          : <SyntheticHome hov={hov} setHov={setHov} setJourney={setJourney} isLight={isLight} />
         }
       </div>
       <div style={{ display: activeTab === 1 ? "block" : "none" }}>
