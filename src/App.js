@@ -306,7 +306,7 @@ function PipelineDemo({ type, onBack }) {
               <div style={cardS()}>
                 <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: "#8B5CF6" }}>2.</span> Generate</div>
                 {!genOn && !genDone && <button style={btn("#8B5CF6", false, { width: "100%" })} onClick={runGen}>🧠 Generate {conf.genLabel}</button>}
-                {genOn && <div><div style={{ height: 5, borderRadius: 3, background: C.bdr, overflow: "hidden", marginBottom: 6 }}><div style={{ height: "100%", width: `${genProg}%`, background: "#8B5CF6", borderRadius: 3, transition: "width .05s" }} /></div><div style={{ fontSize: 13, color: "#8B5CF6", fontWeight: 600 }}>{Math.round(genProg)}%</div></div>}
+                {genOn && <div><div style={{ height: 6, borderRadius: 3, background: C.bdr, overflow: "hidden", marginBottom: 6 }}><div style={{ height: 6, width: `${genProg}%`, background: "#8B5CF6", transition: "width .08s linear" }} /></div><div style={{ fontSize: 13, color: "#8B5CF6", fontWeight: 600 }}>{Math.round(genProg)}%</div></div>}
                 {genDone && <div><div style={{ fontSize: 14, color: C.green, fontWeight: 600, marginBottom: 6 }}>✓ {conf.vol} {conf.genLabel} generated</div><div style={{ padding: 5, borderRadius: 5, background: C.amber + "10", border: `1px solid ${C.amber}33`, marginBottom: 8, fontSize: 12, color: C.amber, display: "flex", alignItems: "center", gap: 3 }}><HT s={6}/> QA validated</div><button style={btn(tc, false, { width: "100%" })} onClick={() => setStage(2)}>Critique →</button></div>}
               </div>
             </div>
