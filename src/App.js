@@ -316,7 +316,7 @@ function PipelineDemo({ type, onBack }) {
                 <div style={{ opacity: genDone ? 1 : genOn ? 0.3 : 0.12, transition: "opacity 1s" }}>
                   {type === "warehouse" && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}><WH_Gen1 style={imgS()} /><WH_Gen2 style={imgS()} /><WH_Gen3 style={imgS()} /><WH_Gen4 style={imgS()} /></div>}
                   {type === "driving" && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}><DC_Gen1 style={imgS()} /><DC_Gen2 style={imgS()} /><DC_Gen3 style={imgS()} /><DC_Gen4 style={imgS()} /></div>}
-                  {type === "support" && <div style={{ padding: 10, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}`, maxHeight: 280, overflow: "auto" }}>{GEN_CHAT.map((t, i) => <ChatBubble key={i} turn={t} labels={false} />)}</div>}
+                  {type === "support" && <div style={{ padding: 10, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}`, maxHeight: "calc(100vh - 260px)", overflow: "auto" }}>{GEN_CHAT.map((t, i) => <ChatBubble key={i} turn={t} labels={false} />)}</div>}
                 </div>
               </div>
             </div>
