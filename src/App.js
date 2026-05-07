@@ -141,7 +141,30 @@ function FrameScrubber({ totalFrames = 300, fps = 30, showFaces, facesOk }) {
 // ===== CHAT BUBBLE =====
 function ChatBubble({ turn, labels }) {
   const isCust = turn.role === "customer";
-  return (<div style={{ display: "flex", justifyContent: isCust ? "flex-start" : "flex-end", marginBottom: 5 }}><div style={{ maxWidth: "85%", padding: "7px 10px", borderRadius: isCust ? "8px 8px 8px 2px" : "8px 8px 2px 8px", background: isCust ? "#1a1020" : "#0a1a18", border: `1px solid ${isCust ? "#EF444422" : "#10B98122"}` }}><div style={{ fontSize: 12, fontWeight: 700, color: isCust ? C.red : C.green, marginBottom: 2, display: "flex", alignItems: "center", gap: 3 }}>{isCust ? "👤 Customer" : "🎧 Agent"}{labels && <><span style={{ padding: "1px 4px", borderRadius: 3, fontSize: 11, background: (isCust ? C.red : C.green) + "18", color: isCust ? C.red : C.green }}>{turn.sentiment}</span><span style={{ padding: "1px 4px", borderRadius: 3, fontSize: 11, background: C.accent + "18", color: C.accent }}>{turn.intent}</span></>}{turn.pii && labels && <span style={{ padding: "1px 4px", borderRadius: 3, fontSize: 10, background: C.red + "22", color: C.red }}>PII</span>}</div><div style={{ fontSize: 13, color: C.hi, lineHeight: 1.5 }}>{turn.text}</div></div></div>);
+  const isLight = C.card === "#FFFFFF";
+  // Dark mode: near-black tinted bubbles (original look).
+  // Light mode: soft pastel tint so text (C.hi = #1A0F2E) is legible.
+  const bubbleBg = isLight
+    ? (isCust ? "#FEE2E2" : "#D1FAE5")
+    : (isCust ? "#1a1020" : "#0a1a18");
+  const borderCol = isCust
+    ? (isLight ? "#EF444455" : "#EF444422")
+    : (isLight ? "#10B98155" : "#10B98122");
+  return (
+    <div style={{ display: "flex", justifyContent: isCust ? "flex-start" : "flex-end", marginBottom: 8 }}>
+      <div style={{ maxWidth: "85%", padding: "9px 13px", borderRadius: isCust ? "10px 10px 10px 2px" : "10px 10px 2px 10px", background: bubbleBg, border: `1px solid ${borderCol}` }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: isCust ? C.red : C.green, marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+          {isCust ? "👤 Customer" : "🎧 Agent"}
+          {labels && <>
+            <span style={{ padding: "1px 5px", borderRadius: 3, fontSize: 11, background: (isCust ? C.red : C.green) + "22", color: isCust ? C.red : C.green }}>{turn.sentiment}</span>
+            <span style={{ padding: "1px 5px", borderRadius: 3, fontSize: 11, background: C.accent + "22", color: C.accent }}>{turn.intent}</span>
+          </>}
+          {turn.pii && labels && <span style={{ padding: "1px 5px", borderRadius: 3, fontSize: 11, background: C.red + "22", color: C.red }}>PII</span>}
+        </div>
+        <div style={{ fontSize: 15, color: C.hi, lineHeight: 1.6 }}>{turn.text}</div>
+      </div>
+    </div>
+  );
 }
 
 // ===== SEED CONVO =====
