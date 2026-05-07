@@ -665,7 +665,7 @@ function ChatHDGDemo({ onBack }) {
               <div style={{ fontSize: 36, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: "#8B5CF6" }}>2.</span> Authoring</div>
               <div style={{ fontSize: 20, color: C.txt, marginBottom: 10 }}>Contributor receives the brief and writes the conversation.</div>
               {!authoring && !authorDone && <button style={btn("#8B5CF6", false, { width: "100%" })} onClick={runAuthor}>✍️ Simulate Authoring</button>}
-              {authoring && <div><div style={{ fontSize: 20, color: "#8B5CF6", fontWeight: 600, marginBottom: 6 }}>Contributor writing...</div><div style={{ height: 5, borderRadius: 3, background: C.bdr, overflow: "hidden", marginBottom: 4 }}><div style={{ height: "100%", width: `${authorProg}%`, background: "#8B5CF6", transition: "width .05s" }} /></div><div style={{ fontSize: 18, color: C.txt }}>{Math.round(authorProg)}%</div></div>}
+              {authoring && <div><div style={{ fontSize: 20, color: "#8B5CF6", fontWeight: 600, marginBottom: 6 }}>Contributor writing...</div><div style={{ height: 5, borderRadius: 3, background: C.bdr, overflow: "hidden", marginBottom: 4 }}><div style={{ height: 5, width: `${authorProg}%`, background: "#8B5CF6", transition: "width .08s linear" }} /></div><div style={{ fontSize: 18, color: C.txt }}>{Math.round(authorProg)}%</div></div>}
               {authorDone && <div><div style={{ fontSize: 22, color: C.green, fontWeight: 600, marginBottom: 6 }}>✓ Submission received</div><div style={{ padding: 8, borderRadius: 6, background: C.green + "10", border: `1px solid ${C.green}22`, fontSize: 18, color: C.green, marginBottom: 10 }}>Contributor CTR-4471 · {chat.length} turns · 0m ago</div><button style={btn(C.accent, false, { width: "100%" })} onClick={() => advance(2)}>Send to QA →</button></div>}
             </div>
           </div>
@@ -1187,7 +1187,7 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
                     </button>
                   </div>
                   <div style={{ height:4, borderRadius:3, background:C.bdr, overflow:"hidden", marginBottom:5 }}>
-                    <div style={{ height:"100%", width:`${genProg}%`, background:paused?"#F97316":"#8B5CF6", transition:paused?"none":"width .08s" }} />
+                    <div style={{ height:4, width:`${genProg}%`, background:paused?"#F97316":"#8B5CF6", transition:paused?"none":"width .08s linear" }} />
                   </div>
                   <div style={{ fontSize:11, color:C.txt, marginBottom:10 }}>{Math.round(genProg)}%</div>
                 </div>
@@ -1222,7 +1222,7 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
                         <span style={{ fontSize:11, color:done?C.green:generating&&segProg>0?"#8B5CF6":C.txt, fontWeight:600, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", minWidth:0 }}>{loc?.flag} {loc?.label}</span>
                         <span style={{ fontSize:10, color:done?C.green:C.txt, flexShrink:0, marginLeft:4 }}>{done?"✓":generating&&segProg>0?`${Math.round(segProg)}%`:"—"}</span>
                       </div>
-                      {(generating||genDone) && <div style={{ height:2, borderRadius:2, background:C.bdr }}><div style={{ height:"100%", width:`${done?100:segProg}%`, background:done?C.green:"#8B5CF6", transition:"width .1s" }} /></div>}
+                      {(generating||genDone) && <div style={{ height:2, borderRadius:2, background:C.bdr }}><div style={{ height:2, width:`${done?100:segProg}%`, background:done?C.green:"#8B5CF6", transition:"width .1s linear" }} /></div>}
                     </div>
                   );
                 })}
@@ -1236,7 +1236,7 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
                     <span style={{ fontSize:14, fontWeight:800, color:accuracy>=98?C.green:C.amber, fontFamily:"monospace" }}>{Math.round(accuracy)}%</span>
                   </div>
                   <div style={{ height:4, borderRadius:3, background:C.bdr }}>
-                    <div style={{ height:"100%", borderRadius:3, width:`${accuracy}%`, background:accuracy>=98?C.green:`linear-gradient(90deg,${C.amber},#F97316)`, transition:"width .5s" }} />
+                    <div style={{ height:4, width:`${accuracy}%`, background:accuracy>=98?C.green:`linear-gradient(90deg,${C.amber},#F97316)`, transition:"width .5s linear" }} />
                   </div>
                   <div style={{ fontSize:10, color:C.txt, marginTop:3 }}>
                     {Object.keys(transcriptEdits).length+Object.keys(speakerEdits).length} correction{(Object.keys(transcriptEdits).length+Object.keys(speakerEdits).length)!==1?"s":""} · target 98%
@@ -1296,7 +1296,7 @@ function PodcastHDGDemo({ onBack, isActive = true }) {
                   <span style={{ fontFamily:"monospace", color:genDone?C.green:paused?"#F97316":"#8B5CF6" }}>{Math.round(genProg)}%</span>
                 </div>
                 <div style={{ height:5, borderRadius:3, background:C.bdr }}>
-                  <div style={{ height:"100%", borderRadius:3, width:`${genProg}%`, background:genDone?C.green:paused?"#F97316":"linear-gradient(90deg,#8B5CF6,#7C3AED)", transition:paused?"none":"width .1s" }} />
+                  <div style={{ height:5, width:`${genProg}%`, background:genDone?C.green:paused?"#F97316":"linear-gradient(90deg,#8B5CF6,#7C3AED)", transition:paused?"none":"width .1s linear" }} />
                 </div>
                 <div style={{ display:"flex", justifyContent:"space-between", marginTop:5, fontSize:10, color:"#555" }}>
                   <span>0:00</span><span>{numSpeakers===1?"10:00":"20:00"}</span>
@@ -1919,7 +1919,7 @@ function MeetingDataCollectDemo({ onBack }) {
                   <div>
                     <div style={{ fontSize: 13, color: "#8B5CF6", fontWeight: 600, marginBottom: 6 }}>Sessions recording...</div>
                     <div style={{ height: 4, borderRadius: 3, background: C.bdr, overflow: "hidden", marginBottom: 6 }}>
-                      <div style={{ height: "100%", width: `${(completedList.length / sessionList.length) * 100}%`, background: "#8B5CF6", transition: "width .2s" }} />
+                      <div style={{ height: 4, width: `${(completedList.length / sessionList.length) * 100}%`, background: "#8B5CF6", transition: "width .2s linear" }} />
                     </div>
                     <div style={{ fontSize: 13, color: C.txt, marginBottom: 4 }}>{completedList.length} / {sessionList.length} completed</div>
                     {recordingSession && <div style={{ fontSize: 12, color: "#8B5CF6", fontFamily: "monospace" }}>▶ {recordingSession.id} · {recordingSession.lang}</div>}
@@ -1990,7 +1990,7 @@ function MeetingDataCollectDemo({ onBack }) {
                     <span style={{ color: C.red, fontWeight: 700, fontSize: 14 }}>✗ Fail: {qcFail}</span>
                   </div>
                   <div style={{ height: 4, borderRadius: 3, background: C.bdr, overflow: "hidden", marginBottom: 6 }}>
-                    <div style={{ height: "100%", width: `${((qcPass+qcFail)/sessionList.length)*100}%`, background: C.amber, transition: "width .15s" }} />
+                    <div style={{ height: 4, width: `${((qcPass+qcFail)/sessionList.length)*100}%`, background: C.amber, transition: "width .15s linear" }} />
                   </div>
                   {qcDone && <div><div style={{ fontSize: 11, color: C.green, marginBottom: 8 }}>Re-work rate: {((qcFail/sessionList.length)*100).toFixed(1)}% &lt; 5% ✓</div><button style={btn(C.orange, false, { width: "100%" })} onClick={() => advance(3)}>Review Docs →</button></div>}
                 </div>
@@ -2242,7 +2242,7 @@ function VoiceClipHDC({ onBack }) {
             <div style={cardS()}>
               <div style={{ fontSize: 36, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: "#8B5CF6" }}>2.</span> Data Capture</div>
               {!capturing && !capDone && <button style={btn("#8B5CF6", false, { width: "100%" })} onClick={runCapture}>📡 Simulate Ingestion</button>}
-              {capturing && <div><div style={{ fontSize: 20, color: "#8B5CF6", fontWeight: 600, marginBottom: 6 }}>Participants submitting...</div><div style={{ height: 5, borderRadius: 3, background: C.bdr, overflow: "hidden", marginBottom: 4 }}><div style={{ height: "100%", width: `${capProg}%`, background: "#8B5CF6", transition: "width .05s" }} /></div><div style={{ fontSize: 18, color: C.txt }}>{Math.round(capProg / 100 * HDC_CLIPS.length)} / {HDC_CLIPS.length} clips received</div></div>}
+              {capturing && <div><div style={{ fontSize: 20, color: "#8B5CF6", fontWeight: 600, marginBottom: 6 }}>Participants submitting...</div><div style={{ height: 5, borderRadius: 3, background: C.bdr, overflow: "hidden", marginBottom: 4 }}><div style={{ height: 5, width: `${capProg}%`, background: "#8B5CF6", transition: "width .08s linear" }} /></div><div style={{ fontSize: 18, color: C.txt }}>{Math.round(capProg / 100 * HDC_CLIPS.length)} / {HDC_CLIPS.length} clips received</div></div>}
               {capDone && <div><div style={{ fontSize: 22, color: C.green, fontWeight: 600, marginBottom: 6 }}>✓ {HDC_CLIPS.length} clips ingested</div><div style={{ padding: 8, borderRadius: 6, background: C.green + "10", border: `1px solid ${C.green}22`, fontSize: 18, color: C.green, marginBottom: 10 }}>Voice-print scrub complete · PII metadata stripped</div><button style={btn(C.amber, false, { width: "100%" })} onClick={() => advance(2)}>Apply QA Filters →</button></div>}
             </div>
           </div>
@@ -2290,7 +2290,7 @@ function VoiceClipHDC({ onBack }) {
                   <span style={{ color: C.red, fontWeight: 700 }}>✗ Fail: {HDC_CLIPS.length - passCount}</span>
                 </div>
                 <div style={{ height: 5, borderRadius: 3, background: C.bdr, overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${(passCount / HDC_CLIPS.length) * 100}%`, background: C.green, transition: "width .3s" }} />
+                  <div style={{ height: 5, width: `${(passCount / HDC_CLIPS.length) * 100}%`, background: C.green, transition: "width .3s linear" }} />
                 </div>
               </div>
               <button style={btn(C.orange, false, { width: "100%" })} onClick={() => advance(3)}>Apply → Annotate</button>
