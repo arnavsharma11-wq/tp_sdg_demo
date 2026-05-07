@@ -348,7 +348,7 @@ function PipelineDemo({ type, onBack }) {
                       {type === "warehouse" && <WHComp style={imgS()} />}
                       {type === "driving" && <DCComp style={imgS()} />}
                       {type === "support" && (
-                        <div style={{ padding: 8, maxHeight: 80, overflow: "hidden", borderBottom: `1px solid ${C.bdr}` }}>
+                        <div style={{ padding: 8, maxHeight: 200, overflow: "auto", borderBottom: `1px solid ${C.bdr}` }}>
                           {GEN_CHAT.slice(i * 2, i * 2 + 2).map((t, j) => <ChatBubble key={j} turn={t} />)}
                         </div>
                       )}
