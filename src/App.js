@@ -423,11 +423,11 @@ function PipelineDemo({ type, onBack }) {
                 {["Quality Filter", "Deduplication", "Safety Screen", "Domain Route"].map((f, i) => (
                   <label key={f} style={{ display: "flex", alignItems: "center", gap: 5, padding: 6, marginBottom: 3, borderRadius: 5, background: filters[i] ? C.cyan + "10" : C.bg, border: `1px solid ${filters[i] ? C.cyan + "33" : C.bdr}`, cursor: "pointer" }}>
                     <input type="checkbox" checked={!!filters[i]} onChange={e => setFilters(p => ({ ...p, [i]: e.target.checked }))} style={{ accentColor: C.cyan }} />
-                    <span style={{ fontSize: 13, color: C.hi, flex: 1 }}>{f}</span>{i >= 2 && <HT s={6} />}
+                    <span style={{ fontSize: 13, color: C.hi, flex: 1 }}>{f}</span>{i >= 2 && <span style={{ fontSize: 11, fontWeight: 700, color: C.amber, background: C.amber + "18", padding: "1px 6px", borderRadius: 4 }}>👥 Human</span>}
                   </label>
                 ))}
                 {!filterDone && <button style={btn(C.cyan, false, { width: "100%", marginTop: 8 })} onClick={() => setTimeout(() => setFilterDone(true), 1500)}>Run Curation</button>}
-                {filterDone && <div style={{ marginTop: 8 }}><div style={{ fontSize: 13, color: C.green, fontWeight: 600, marginBottom: 6 }}>✓ Curation complete</div><button style={btn(tc, false, { width: "100%" })} onClick={() => setStage(4)}>Compliance →</button></div>}
+                {filterDone && <div style={{ marginTop: 8 }}><div style={{ fontSize: 13, color: C.green, fontWeight: 600, marginBottom: 6 }}>✓ Curation complete</div><div style={{ display: "flex", gap: 6 }}><button style={btn(tc, false, { flex: 1 })} onClick={() => setStage(4)}>Compliance →</button><button style={btn(C.txt, true, { padding: "6px 10px", fontSize: 12 })} onClick={() => { setFilterDone(false); setFilters({}); }}>↺ Reset</button></div></div>}
               </div>
             </div>
             <div style={{ flex: 1 }}>
