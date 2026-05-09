@@ -302,7 +302,7 @@ function PipelineDemo({ type, onBack }) {
           <div style={{ display: "flex", gap: 16 }}>
             <div style={{ flex: "0 0 340px" }}>
               <div style={cardS()}>
-                <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}><span style={{ color: C.accent }}>1.</span> Seed & Configure</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: C.hi, marginBottom: 8 }}><span style={{ color: C.accent }}>1.</span> Seed & Configure</div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: C.hi, marginBottom: 6, display: "flex", alignItems: "center" }}>📁 Seed Data <HT /> <span style={{ fontSize: 12, color: C.amber, marginLeft: 4 }}>Domain Experts</span></div>
                 {type === "warehouse" && <WH_Seed style={{ ...imgS(), marginBottom: 8 }} />}
                 {type === "driving" && <DC_Seed style={{ ...imgS(), marginBottom: 8 }} />}
@@ -335,7 +335,7 @@ function PipelineDemo({ type, onBack }) {
           <div style={{ display: "flex", gap: 16 }}>
             <div style={{ flex: "0 0 280px" }}>
               <div style={cardS()}>
-                <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: "#8B5CF6" }}>2.</span> Generate</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: C.hi, marginBottom: 10 }}><span style={{ color: "#8B5CF6" }}>2.</span> Generate</div>
                 {!genOn && !genDone && <button style={btn("#8B5CF6", false, { width: "100%" })} onClick={runGen}>🧠 Generate {conf.genLabel}</button>}
                 {genOn && <div><div style={{ height: 6, borderRadius: 3, background: C.bdr, overflow: "hidden", marginBottom: 6 }}><div style={{ height: 6, width: `${genProg}%`, background: "#8B5CF6", transition: "width .08s linear" }} /></div><div style={{ fontSize: 13, color: "#8B5CF6", fontWeight: 600 }}>{Math.round(genProg)}%</div></div>}
                 {genDone && <div><div style={{ fontSize: 14, color: C.green, fontWeight: 600, marginBottom: 6 }}>✓ {conf.vol} {conf.genLabel} generated</div><div style={{ padding: 5, borderRadius: 5, background: C.amber + "10", border: `1px solid ${C.amber}33`, marginBottom: 8, fontSize: 12, color: C.amber, display: "flex", alignItems: "center", gap: 3 }}><HT s={6}/> QA validated</div><button style={btn(tc, false, { width: "100%" })} onClick={() => setStage(2)}>Critique →</button></div>}
@@ -367,7 +367,7 @@ function PipelineDemo({ type, onBack }) {
           <div style={{ display: "flex", gap: 16 }}>
             <div style={{ flex: "0 0 280px" }}>
               <div style={cardS()}>
-                <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 4 }}><span style={{ color: C.red }}>3.</span> Critique & Iterate</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: C.hi, marginBottom: 4 }}><span style={{ color: C.red }}>3.</span> Critique & Iterate</div>
                 <div style={{ fontSize: 13, color: C.red, fontWeight: 700, marginBottom: 8 }}>🔄 ITERATIVE LOOP</div>
                 <div style={{ padding: 6, borderRadius: 5, background: C.amber + "10", border: `1px solid ${C.amber}33`, marginBottom: 8, fontSize: 12, color: C.amber }}><HT s={6}/> Expert Critics rate naturalness & accuracy</div>
                 {Object.values(approvals).filter(v => v).length >= 4 && <button style={btn(tc, false, { width: "100%" })} onClick={() => setStage(3)}>Quality Gate →</button>}
@@ -419,7 +419,7 @@ function PipelineDemo({ type, onBack }) {
           <div style={{ display: "flex", gap: 16 }}>
             <div style={{ flex: "0 0 280px" }}>
               <div style={cardS()}>
-                <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: C.cyan }}>4.</span> Curate & Filter</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: C.hi, marginBottom: 10 }}><span style={{ color: C.cyan }}>4.</span> Curate & Filter</div>
                 {["Quality Filter", "Deduplication", "Safety Screen", "Domain Route"].map((f, i) => (
                   <label key={f} style={{ display: "flex", alignItems: "center", gap: 5, padding: 6, marginBottom: 3, borderRadius: 5, background: filters[i] ? C.cyan + "10" : C.bg, border: `1px solid ${filters[i] ? C.cyan + "33" : C.bdr}`, cursor: "pointer" }}>
                     <input type="checkbox" checked={!!filters[i]} onChange={e => setFilters(p => ({ ...p, [i]: e.target.checked }))} style={{ accentColor: C.cyan }} />
@@ -450,7 +450,7 @@ function PipelineDemo({ type, onBack }) {
           <div style={{ display: "flex", gap: 16 }}>
             <div style={{ flex: "0 0 280px" }}>
               <div style={cardS()}>
-                <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: C.orange }}>5.</span> Compliance & Privacy</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: C.hi, marginBottom: 10 }}><span style={{ color: C.orange }}>5.</span> Compliance & Privacy</div>
                 {!piiDone && <button style={btn(C.orange, false, { width: "100%" })} onClick={() => setTimeout(() => setPiiDone(true), 2000)}>🔍 Detect PII</button>}
                 {piiDone && !deIdDone && <div><div style={{ fontSize: 13, color: C.green, fontWeight: 600, marginBottom: 4 }}>✓ {conf.piiLabel}</div><button style={btn(C.orange, false, { width: "100%" })} onClick={() => setDeIdDone(true)}>🎭 De-identify</button></div>}
                 {deIdDone && !privacyOk && (
@@ -494,7 +494,7 @@ function PipelineDemo({ type, onBack }) {
           <div style={{ display: "flex", gap: 16 }}>
             <div style={{ flex: "0 0 300px" }}>
               <div style={cardS()}>
-                <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: C.green }}>6.</span> Annotate & Package</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: C.hi, marginBottom: 10 }}><span style={{ color: C.green }}>6.</span> Annotate & Package</div>
                 {!labelsOk && <div style={{ padding: 8, borderRadius: 6, background: C.amber + "10", border: `1px solid ${C.amber}33`, marginBottom: 8 }}><div style={{ fontSize: 12, fontWeight: 700, color: C.amber, display: "flex", alignItems: "center", gap: 3, marginBottom: 3 }}><HT s={6}/> Labelers & Data Librarians</div><button style={btn(C.green, false, { padding: "6px 12px", fontSize: 13 })} onClick={() => setLabelsOk(true)}>✓ Approve Annotations</button></div>}
                 {labelsOk && !packed && <button style={btn(C.green, false, { width: "100%" })} onClick={() => setTimeout(() => setPacked(true), 1000)}>📦 Package</button>}
                 {packed && (
@@ -1908,7 +1908,7 @@ function MeetingDataCollectDemo({ onBack }) {
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ flex: "0 0 320px" }}>
             <div style={cardS()}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 12 }}><span style={{ color: C.cyan }}>1.</span> Collection Setup</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: C.hi, marginBottom: 12 }}><span style={{ color: C.cyan }}>1.</span> Collection Setup</div>
               <ChipGroup label="Meeting Type" options={["1:1","3-person","5-person","10-person"]} value={meetingType} onChange={setMeetingType} color={C.cyan} />
               <div style={{ marginBottom: 10 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: C.hi, marginBottom: 5 }}>Languages</div>
@@ -2024,7 +2024,7 @@ function MeetingDataCollectDemo({ onBack }) {
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ flex: "0 0 280px" }}>
             <div style={cardS()}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 12 }}><span style={{ color: C.amber }}>3.</span> Quality Control</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: C.hi, marginBottom: 12 }}><span style={{ color: C.amber }}>3.</span> Quality Control</div>
               {[["autoQC",autoQC,setAutoQC,"Automated QC","Speech quality · Agenda completeness · Duration"],["humanReview",humanReview,setHumanReview,"Human Review","Spot-check flagged sessions"]].map(([key,val,set,label,desc]) => (
                 <label key={key} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 10, cursor: "pointer" }}>
                   <input type="checkbox" checked={val} onChange={() => set(v=>!v)} style={{ marginTop: 2, accentColor: C.amber }} />
@@ -2075,7 +2075,7 @@ function MeetingDataCollectDemo({ onBack }) {
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ flex: "0 0 260px" }}>
             <div style={cardS()}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}><span style={{ color: C.orange }}>4.</span> Meeting Docs</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: C.hi, marginBottom: 8 }}><span style={{ color: C.orange }}>4.</span> Meeting Docs</div>
               <div style={{ fontSize: 11, color: C.txt, marginBottom: 8 }}>Click a session to review its artifacts</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 3, maxHeight: 300, overflowY: "auto", marginBottom: 10 }}>
                 {reviewSet.map(s => {
@@ -2142,7 +2142,7 @@ function MeetingDataCollectDemo({ onBack }) {
         <div style={{ display: "flex", gap: 16 }}>
           <div style={{ flex: "0 0 300px" }}>
             <div style={cardS()}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 10 }}><span style={{ color: C.green }}>5.</span> Final Delivery</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: C.hi, marginBottom: 10 }}><span style={{ color: C.green }}>5.</span> Final Delivery</div>
               {!delivered && <button style={btn(C.green, false, { width: "100%" })} onClick={() => setTimeout(() => setDelivered(true), 800)}>📦 Finalize Dataset Delivery</button>}
               {delivered && (
                 <div>
