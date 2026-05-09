@@ -2802,7 +2802,7 @@ export default function App() {
         <div style={{ padding: "0 3rem", height: 56, background: "#0D0D0D", display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
           <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ height: 20, width: "auto", objectFit: "contain", objectPosition: "left center", position: "absolute", left: "3rem" }} />
           <div style={{ display: "flex", alignItems: "stretch", gap: 0, height: "100%" }}>
-            {["Synthetic Data Generation", "Human Data"].map((label, i) => (
+            {["Synthetic Data Generation", "Human Data Generation/Collection"].map((label, i) => (
               <button key={i} onClick={() => setActiveTab(i)} style={{
                 background: "none", border: "none",
                 borderBottom: `2px solid ${activeTab === i ? C.accent : "transparent"}`,
