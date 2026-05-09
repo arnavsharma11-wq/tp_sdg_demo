@@ -1586,23 +1586,54 @@ function HumanDataGenDemo({ isActive = true }) {
   const [useCase, setUseCase] = useState(null);
   if (useCase === "chat")    return <ChatHDGDemo    onBack={() => setUseCase(null)} />;
   if (useCase === "podcast") return <PodcastHDGDemo onBack={() => setUseCase(null)} isActive={isActive} />;
+  return null;
+}
+
+function HumanDataDemo({ isActive = true }) {
+  const [useCase, setUseCase] = useState(null);
+  if (useCase === "chat")    return <ChatHDGDemo    onBack={() => setUseCase(null)} />;
+  if (useCase === "podcast") return <PodcastHDGDemo onBack={() => setUseCase(null)} isActive={isActive} />;
+  if (useCase === "voice")   return <VoiceClipHDC   onBack={() => setUseCase(null)} />;
+  if (useCase === "meeting") return <MeetingDataCollectDemo onBack={() => setUseCase(null)} />;
+
+  const sections = [
+    {
+      label: "Generation",
+      cards: [
+        { key: "chat",    icon: "💬", label: "Conversation Data Generation",          color: C.accent,   desc: "Human-authored chat conversations across domains. QA-reviewed, intent-labelled, and packaged for LLM alignment training.",                                        tag: "5 stages · HDG v1.0" },
+        { key: "podcast", icon: "🎙️", label: "Podcast-Style Human Audio Generation", color: "#F97316",  desc: "Human-recorded podcast audio across locales and topics. Transcribed, diarized, QA-checked, and published to the training corpus.", tag: "4 stages · PODCAST-HDG v1.0" },
+      ],
+    },
+    {
+      label: "Collection",
+      cards: [
+        { key: "voice",   icon: "📡", label: "Voice Clip Collection",                          color: C.cyan,   desc: "Crowdsourced short voice recordings from mobile contributors across India. ASR transcription, SNR filtering, and transcript annotation.", tag: "5 stages · HDC v1.0" },
+        { key: "meeting", icon: "🌐", label: "Multilingual Online Meeting Data Collection",    color: C.accent, desc: "Remote corporate meeting recordings across 8 languages and 4 meeting formats. QC, artifact generation, and content writer validation.",  tag: "5 stages · MTGDC v1.0" },
+      ],
+    },
+  ];
+
   return (
-    <div style={{ background:C.bg, color:C.txt, fontFamily:"'TP Sans','DM Sans',sans-serif", minHeight:"calc(100vh - 112px)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"32px 24px" }}>
-      <div style={{ fontSize:12, fontWeight:700, color:C.txt, letterSpacing:"0.14em", textTransform:"uppercase", marginBottom:8, textAlign:"center" }}>Human Data Generation</div>
-      <div style={{ fontSize:28, fontWeight:800, color:C.hi, marginBottom:32, textAlign:"center" }}>Select a use case</div>
-      <div style={{ display:"flex", gap:20, flexWrap:"wrap", justifyContent:"center", width:"100%", maxWidth:900 }}>
-        {[
-          { key:"chat",    icon:"💬", label:"Conversation Data Generation",          color:C.accent,  desc:"Human-authored chat conversations across domains. QA-reviewed, intent-labelled, and packaged for LLM alignment training.",                                        tag:"5 stages · HDG v1.0" },
-          { key:"podcast", icon:"🎙️", label:"Podcast-Style Human Audio Generation", color:"#F97316", desc:"Human-recorded podcast audio across locales and topics. Transcribed, diarized, QA-checked, and published to the training corpus.", tag:"4 stages · PODCAST-HDG v1.0" },
-        ].map(({ key, icon, label, color, desc, tag }) => (
-          <div key={key} onClick={() => setUseCase(key)}
-            style={{ flex:"1 1 340px", maxWidth:420, padding:"32px 28px", borderRadius:16, cursor:"pointer", border:`1px solid ${color}44`, background:C.card, transition:"border-color .2s, box-shadow .2s, transform .2s" }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor=color; e.currentTarget.style.boxShadow=`0 12px 40px ${color}22`; e.currentTarget.style.transform="translateY(-3px)"; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor=color+"44"; e.currentTarget.style.boxShadow="none"; e.currentTarget.style.transform="none"; }}>
-            <div style={{ fontSize:36, marginBottom:14 }}>{icon}</div>
-            <div style={{ fontSize:18, fontWeight:700, color, marginBottom:10, lineHeight:1.3 }}>{label}</div>
-            <div style={{ fontSize:14, color:C.txt, lineHeight:1.7, marginBottom:14 }}>{desc}</div>
-            <div style={{ fontSize:12, color, fontWeight:600, letterSpacing:"0.05em" }}>{tag} →</div>
+    <div style={{ background: C.bg, color: C.txt, fontFamily: "'TP Sans','DM Sans',sans-serif", minHeight: "calc(100vh - 112px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px 24px" }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: C.txt, letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 8, textAlign: "center" }}>Human Data</div>
+      <div style={{ fontSize: 28, fontWeight: 800, color: C.hi, marginBottom: 40, textAlign: "center" }}>Select a use case</div>
+      <div style={{ width: "100%", maxWidth: 980, display: "flex", flexDirection: "column", gap: 36 }}>
+        {sections.map(({ label, cards }) => (
+          <div key={label}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: C.txt, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 14, paddingBottom: 6, borderBottom: `1px solid ${C.bdr}` }}>{label}</div>
+            <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+              {cards.map(({ key, icon, label: cardLabel, color, desc, tag }) => (
+                <div key={key} onClick={() => setUseCase(key)}
+                  style={{ flex: "1 1 340px", maxWidth: 460, padding: "32px 28px", borderRadius: 16, cursor: "pointer", border: `1px solid ${color}44`, background: C.card, transition: "border-color .2s, box-shadow .2s, transform .2s" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = color; e.currentTarget.style.boxShadow = `0 12px 40px ${color}22`; e.currentTarget.style.transform = "translateY(-3px)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = color + "44"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}>
+                  <div style={{ fontSize: 36, marginBottom: 14 }}>{icon}</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color, marginBottom: 10, lineHeight: 1.3 }}>{cardLabel}</div>
+                  <div style={{ fontSize: 14, color: C.txt, lineHeight: 1.7, marginBottom: 14 }}>{desc}</div>
+                  <div style={{ fontSize: 12, color, fontWeight: 600, letterSpacing: "0.05em" }}>{tag} →</div>
+                </div>
+              ))}
+            </div>
           </div>
         ))}
       </div>
@@ -2188,31 +2219,7 @@ const HDC_CLIPS = [
 
 // ===== HUMAN DATA COLLECTION DEMO =====
 function HumanDataCollectDemo() {
-  const [useCase, setUseCase] = useState(null);
-  if (useCase === "voice") return <VoiceClipHDC onBack={() => setUseCase(null)} />;
-  if (useCase === "meeting") return <MeetingDataCollectDemo onBack={() => setUseCase(null)} />;
-  return (
-    <div style={{ background: C.bg, color: C.txt, fontFamily: "'TP Sans','DM Sans',sans-serif", minHeight: "calc(100vh - 112px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px 24px" }}>
-      <div style={{ fontSize: 12, fontWeight: 700, color: C.txt, letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 8, textAlign: "center" }}>Human Data Collection</div>
-      <div style={{ fontSize: 28, fontWeight: 800, color: C.hi, marginBottom: 32, textAlign: "center" }}>Select a use case</div>
-      <div style={{ display: "flex", gap: 20, flexWrap: "wrap", justifyContent: "center", width: "100%", maxWidth: 900 }}>
-        {[
-          { key: "voice", icon: "📡", label: "Voice Clip Collection", color: C.cyan, desc: "Crowdsourced short voice recordings from mobile contributors across India. ASR transcription, SNR filtering, and transcript annotation.", tag: "5 stages · HDC v1.0" },
-          { key: "meeting", icon: "🌐", label: "Multilingual Online Meeting Data Collection", color: C.accent, desc: "Remote corporate meeting recordings across 8 languages and 4 meeting formats. QC, artifact generation, and content writer validation.", tag: "5 stages · MTGDC v1.0" },
-        ].map(({ key, icon, label, color, desc, tag }) => (
-          <div key={key} onClick={() => setUseCase(key)}
-            style={{ flex: "1 1 340px", maxWidth: 420, padding: "32px 28px", borderRadius: 16, cursor: "pointer", border: `1px solid ${color}44`, background: C.card, transition: "border-color .2s, box-shadow .2s, transform .2s" }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = color; e.currentTarget.style.boxShadow = `0 12px 40px ${color}22`; e.currentTarget.style.transform = "translateY(-3px)"; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = color+"44"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}>
-            <div style={{ fontSize: 36, marginBottom: 14 }}>{icon}</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color, marginBottom: 10, lineHeight: 1.3 }}>{label}</div>
-            <div style={{ fontSize: 14, color: C.txt, lineHeight: 1.7, marginBottom: 14 }}>{desc}</div>
-            <div style={{ fontSize: 12, color, fontWeight: 600, letterSpacing: "0.05em" }}>{tag} →</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  return null;
 }
 
 function VoiceClipHDC({ onBack }) {
@@ -2795,7 +2802,7 @@ export default function App() {
         <div style={{ padding: "0 3rem", height: 56, background: "#0D0D0D", display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
           <img src="/tp-ai-data-services-logo.png" alt="TP.ai DataServices" style={{ height: 20, width: "auto", objectFit: "contain", objectPosition: "left center", position: "absolute", left: "3rem" }} />
           <div style={{ display: "flex", alignItems: "stretch", gap: 0, height: "100%" }}>
-            {["Synthetic Data Generation", "Human Data Generation", "Human Data Collection"].map((label, i) => (
+            {["Synthetic Data Generation", "Human Data"].map((label, i) => (
               <button key={i} onClick={() => setActiveTab(i)} style={{
                 background: "none", border: "none",
                 borderBottom: `2px solid ${activeTab === i ? C.accent : "transparent"}`,
@@ -2840,10 +2847,7 @@ export default function App() {
         }
       </div>
       <div style={{ display: activeTab === 1 ? "block" : "none" }}>
-        <HumanDataGenDemo isActive={activeTab === 1} />
-      </div>
-      <div style={{ display: activeTab === 2 ? "block" : "none" }}>
-        <HumanDataCollectDemo />
+        <HumanDataDemo isActive={activeTab === 1} />
       </div>
       </div>
     </div>
