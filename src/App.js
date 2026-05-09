@@ -374,7 +374,7 @@ function PipelineDemo({ type, onBack }) {
               </div>
             </div>
             <div style={{ flex: 1 }}>
-              <div style={cardS()}>
+              <div style={{ ...cardS(), overflow: "auto", maxHeight: "calc(100vh - 140px)" }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Rate & Approve</div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                   {conf.prompts.map((p, i) => {
