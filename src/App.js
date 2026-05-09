@@ -173,13 +173,43 @@ const SEED_CHAT = [
   { role: "agent", text: "I'm really sorry about the recurring heart rate issues. I understand how frustrating that must be. Let me look into your device diagnostics right away.", sentiment: "empathetic", intent: "acknowledge" },
   { role: "customer", text: "I paid $249 for this thing and it can't even do the ONE thing it's supposed to do.", sentiment: "angry", intent: "value_complaint" },
 ];
-const GEN_CHAT = [
-  { role: "customer", text: "This is UNBELIEVABLE. My FitPulse Pro dies after 4 hours. The box says 7-day battery life. SEVEN DAYS. I want my money back RIGHT NOW.", sentiment: "furious", intent: "battery_complaint", pii: false },
-  { role: "agent", text: "I hear you — that battery performance is way below what you should be getting. Let me help fix this.", sentiment: "empathetic", intent: "de_escalation", pii: false },
-  { role: "customer", text: "Fix it? I've already 'fixed' it three times with your useless firmware updates. I want a refund or I'm posting this everywhere.", sentiment: "threatening", intent: "refund_demand", pii: false },
-  { role: "agent", text: "I completely understand. Let me escalate this — I can process a full refund or send a replacement Pro unit with expedited shipping. Which would you prefer?", sentiment: "empathetic", intent: "offer_resolution", pii: false },
-  { role: "customer", text: "...fine. Send me a replacement. But if this one has the same issue, I WILL be getting that refund.", sentiment: "reluctant", intent: "accept_resolution", pii: false },
-  { role: "agent", text: "Absolutely fair. I'm also flagging your account for priority support. You'll get a tracking number within 2 hours.", sentiment: "proactive", intent: "confirm_action", pii: false },
+const GEN_CHATS = [
+  // Battery Rage → Refund Demand
+  [
+    { role: "customer", text: "This is UNBELIEVABLE. My FitPulse Pro dies after 4 hours. The box says 7-day battery life. SEVEN DAYS. I want my money back RIGHT NOW.", sentiment: "furious", intent: "battery_complaint", pii: false },
+    { role: "agent", text: "I hear you — that battery performance is way below what you should be getting. Let me help fix this.", sentiment: "empathetic", intent: "de_escalation", pii: false },
+    { role: "customer", text: "Fix it? I've already 'fixed' it three times with your useless firmware updates. I want a refund or I'm posting this everywhere.", sentiment: "threatening", intent: "refund_demand", pii: false },
+    { role: "agent", text: "I completely understand. Let me escalate this — I can process a full refund or send a replacement Pro unit with expedited shipping. Which would you prefer?", sentiment: "empathetic", intent: "offer_resolution", pii: false },
+    { role: "customer", text: "...fine. Send me a replacement. But if this one has the same issue, I WILL be getting that refund.", sentiment: "reluctant", intent: "accept_resolution", pii: false },
+    { role: "agent", text: "Absolutely fair. I'm also flagging your account for priority support. You'll get a tracking number within 2 hours.", sentiment: "proactive", intent: "confirm_action", pii: false },
+  ],
+  // Sleep Tracking Sarcasm
+  [
+    { role: "customer", text: "Oh wow, FitPulse says I got 9 hours of 'deep sleep' last night. Amazing, considering I was up until 3am stress-eating and watching TV. Truly groundbreaking technology.", sentiment: "sarcastic", intent: "accuracy_complaint", pii: false },
+    { role: "agent", text: "I'm sorry the sleep data doesn't seem accurate — that's definitely not the experience you should be having. Can you tell me which FitPulse model you have?", sentiment: "empathetic", intent: "diagnose", pii: false },
+    { role: "customer", text: "FitPulse Band 3 Pro. And before you suggest restarting it — I've done that. Four times. It still thinks I'm a comatose narcoleptic.", sentiment: "sarcastic", intent: "troubleshoot_rejected", pii: false },
+    { role: "agent", text: "Understood, and I apologize for the frustration. Sleep tracking accuracy on Band 3 Pro can be impacted by how the band is worn. That said, if basic steps haven't helped, I can escalate this for a replacement or a full refund.", sentiment: "empathetic", intent: "offer_resolution", pii: false },
+    { role: "customer", text: "A replacement? Sure — maybe the next one will correctly detect that I'm a human being and not a hibernating bear.", sentiment: "sarcastic", intent: "accept_resolution", pii: false },
+    { role: "agent", text: "Replacement has been submitted — you'll receive a shipping confirmation within 24 hours. I've also noted the sarcasm. Completely valid.", sentiment: "proactive", intent: "confirm_action", pii: false },
+  ],
+  // Skin Rash + Legal Threat
+  [
+    { role: "customer", text: "I need to speak with a manager IMMEDIATELY. I've developed a severe skin rash after wearing your FitPulse band and I have photos. My dermatologist says it's a contact allergy. I am consulting my attorney.", sentiment: "threatening", intent: "health_complaint", pii: false },
+    { role: "agent", text: "I'm genuinely sorry to hear you're experiencing a health issue — your safety is our top priority. I'm escalating this to our product safety team right now.", sentiment: "empathetic", intent: "escalate_safety", pii: false },
+    { role: "customer", text: "I don't want to be 'escalated'. I want to know if there's a known defect with the band material and whether you're hiding it from customers.", sentiment: "threatening", intent: "demand_transparency", pii: false },
+    { role: "agent", text: "I understand your concern and want to be transparent with you. We take all health reports seriously and they go into our safety review process. I can also issue an immediate full refund while the safety team investigates.", sentiment: "empathetic", intent: "offer_resolution", pii: false },
+    { role: "customer", text: "Issue the refund. And I want written confirmation that this incident has been logged with your safety team.", sentiment: "firm", intent: "demand_documentation", pii: false },
+    { role: "agent", text: "Refund processed. You'll receive a written safety incident confirmation at your registered email within 2 business hours. Case ID: FP-SAF-9312.", sentiment: "proactive", intent: "confirm_action", pii: false },
+  ],
+  // Subscription Price Hike Fury
+  [
+    { role: "customer", text: "You just raised my FitPulse Premium subscription from $9.99 to $14.99 with TWO WEEKS notice. Are you serious? That's a 50% increase. I'm cancelling everything.", sentiment: "furious", intent: "price_complaint", pii: false },
+    { role: "agent", text: "I completely understand why that feels abrupt, and I apologize for the short notice. The price change reflects new features including AI coaching and advanced health insights.", sentiment: "empathetic", intent: "explain_change", pii: false },
+    { role: "customer", text: "I don't care about AI coaching I didn't ask for. I'm going to leave a 1-star review on every platform I can find and tell everyone I know to cancel.", sentiment: "threatening", intent: "churn_threat", pii: false },
+    { role: "agent", text: "Your loyalty means a lot to us. I can offer you a 12-month lock-in at your current $9.99 rate, and you'd still get access to all the new features.", sentiment: "empathetic", intent: "retention_offer", pii: false },
+    { role: "customer", text: "...that's actually reasonable. Fine. Lock in the $9.99 rate for 12 months. But make sure it doesn't auto-jump after that without notice.", sentiment: "reluctant", intent: "accept_resolution", pii: false },
+    { role: "agent", text: "Done — your rate is locked at $9.99 through next year with a 60-day renewal notice. You'll get a confirmation email shortly.", sentiment: "proactive", intent: "confirm_action", pii: false },
+  ],
 ];
 
 // ===== COMPLIANCE REPORT =====
@@ -247,6 +277,7 @@ function PipelineDemo({ type, onBack }) {
   const [packed, setPacked] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [selectedPrompts, setSelectedPrompts] = useState([true, true, true, false]);
 
   const runGen = () => { setGenOn(true); setGenProg(0); const st = Date.now(); const t = () => { const p = Math.min(100, ((Date.now() - st) / 3000) * 100); setGenProg(p); if (p < 100) requestAnimationFrame(t); else { setGenOn(false); setGenDone(true); } }; requestAnimationFrame(t); };
 
@@ -288,8 +319,8 @@ function PipelineDemo({ type, onBack }) {
               <div style={cardS()}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: C.hi, marginBottom: 4, display: "flex", alignItems: "center" }}>✏️ Prompt Templates <HT /> <span style={{ fontSize: 12, color: C.amber, marginLeft: 4 }}>Prompt Engineers</span></div>
                 {conf.prompts.map((p, i) => (
-                  <div key={i} style={{ padding: 10, borderRadius: 8, background: C.bg, border: `1px solid ${i < 3 ? tc + "44" : C.bdr}`, marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
-                    <input type="checkbox" defaultChecked={i < 3} style={{ accentColor: tc }} />
+                  <div key={i} style={{ padding: 10, borderRadius: 8, background: C.bg, border: `1px solid ${selectedPrompts[i] ? tc + "44" : C.bdr}`, marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
+                    <input type="checkbox" checked={!!selectedPrompts[i]} onChange={e => setSelectedPrompts(s => { const n = [...s]; n[i] = e.target.checked; return n; })} style={{ accentColor: tc }} />
                     <span style={{ fontSize: 13, fontWeight: 700, color: C.hi, flex: 1 }}>{p}</span>
                     <button onClick={() => setEditing(editing === i ? null : i)} style={{ fontSize: 12, padding: "2px 8px", borderRadius: 4, background: tc + "18", color: tc, border: "none", cursor: "pointer", fontWeight: 600 }}>{editing === i ? "Close" : "Edit"}</button>
                     {editing === i && <div style={{ position: "absolute" }}></div>}
@@ -316,7 +347,16 @@ function PipelineDemo({ type, onBack }) {
                 <div style={{ opacity: genDone ? 1 : genOn ? 0.3 : 0.12, transition: "opacity 1s" }}>
                   {type === "warehouse" && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}><WH_Gen1 style={imgS()} /><WH_Gen2 style={imgS()} /><WH_Gen3 style={imgS()} /><WH_Gen4 style={imgS()} /></div>}
                   {type === "driving" && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}><DC_Gen1 style={imgS()} /><DC_Gen2 style={imgS()} /><DC_Gen3 style={imgS()} /><DC_Gen4 style={imgS()} /></div>}
-                  {type === "support" && <div style={{ padding: 10, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}`, maxHeight: "calc(100vh - 260px)", overflow: "auto" }}>{GEN_CHAT.map((t, i) => <ChatBubble key={i} turn={t} labels={false} />)}</div>}
+                  {type === "support" && (
+                    <div style={{ maxHeight: "calc(100vh - 260px)", overflow: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
+                      {conf.prompts.map((p, i) => !selectedPrompts[i] ? null : (
+                        <div key={i} style={{ borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}` }}>
+                          <div style={{ padding: "6px 10px", borderBottom: `1px solid ${C.bdr}`, fontSize: 12, fontWeight: 700, color: tc }}>{p}</div>
+                          <div style={{ padding: 10 }}>{GEN_CHATS[i].map((t, j) => <ChatBubble key={j} turn={t} labels={false} />)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -349,7 +389,7 @@ function PipelineDemo({ type, onBack }) {
                       {type === "driving" && <DCComp style={imgS()} />}
                       {type === "support" && (
                         <div style={{ padding: 8, maxHeight: 200, overflow: "auto", borderBottom: `1px solid ${C.bdr}` }}>
-                          {GEN_CHAT.slice(i * 2, i * 2 + 2).map((t, j) => <ChatBubble key={j} turn={t} />)}
+                          {GEN_CHATS[i].slice(0, 2).map((t, j) => <ChatBubble key={j} turn={t} />)}
                         </div>
                       )}
                       <div style={{ padding: 10 }}>
@@ -474,7 +514,16 @@ function PipelineDemo({ type, onBack }) {
                   <div style={{ fontSize: 14, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Annotated Output</div>
                   {type === "warehouse" && <WH_Gen1 style={{ ...imgS(), marginBottom: 8 }} showBoxes={true} facesOk={true} />}
                   {type === "driving" && <FrameScrubber totalFrames={300} fps={10} />}
-                  {type === "support" && <div style={{ padding: 10, borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}`, maxHeight: 200, overflow: "auto", marginBottom: 8 }}>{GEN_CHAT.map((t, i) => <ChatBubble key={i} turn={t} labels={true} />)}</div>}
+                  {type === "support" && (
+                    <div style={{ maxHeight: 260, overflow: "auto", display: "flex", flexDirection: "column", gap: 8, marginBottom: 8 }}>
+                      {conf.prompts.map((p, i) => !selectedPrompts[i] ? null : (
+                        <div key={i} style={{ borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}` }}>
+                          <div style={{ padding: "6px 10px", borderBottom: `1px solid ${C.bdr}`, fontSize: 12, fontWeight: 700, color: tc }}>{p}</div>
+                          <div style={{ padding: 10 }}>{GEN_CHATS[i].map((t, j) => <ChatBubble key={j} turn={t} labels={true} />)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div style={{ fontSize: 13, fontWeight: 700, color: C.hi, marginBottom: 4 }}>Provenance</div>
                   <div style={{ padding: 8, borderRadius: 6, background: C.bg, border: `1px solid ${C.bdr}` }}>
                     {[{ k: "Source", v: "TP.ai SDG Pipeline v2.0" }, { k: "Model", v: type === "support" ? "Gemini 2.0 Flash" : type === "driving" ? "NVIDIA Cosmos" : "FLUX.1 + ControlNet" }, { k: "PII", v: "Fully de-identified" }, { k: "ToS Snapshot", v: new Date().toISOString().split("T")[0] }, { k: "Quality", v: "0.94 (mean)" }].map((m, i) => (
