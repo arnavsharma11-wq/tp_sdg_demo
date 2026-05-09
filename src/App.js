@@ -1620,7 +1620,6 @@ function HumanDataDemo({ isActive = true }) {
       <div style={{ width: "100%", maxWidth: 980, display: "flex", flexDirection: "column", gap: 36 }}>
         {sections.map(({ label, cards }) => (
           <div key={label}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: C.txt, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 14, paddingBottom: 6, borderBottom: `1px solid ${C.bdr}` }}>{label}</div>
             <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
               {cards.map(({ key, icon, label: cardLabel, color, desc, tag }) => (
                 <div key={key} onClick={() => setUseCase(key)}
