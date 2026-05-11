@@ -463,7 +463,7 @@ function PipelineDemo({ type, onBack }) {
                     </div>
                   </div>
                 )}
-                {privacyOk && <div style={{ marginTop: 8 }}><div style={{ fontSize: 13, color: C.green, fontWeight: 600, marginBottom: 6 }}>✓ Privacy Audit Passed</div><button style={btn(tc, false, { width: "100%" })} onClick={() => setStage(5)}>Annotate →</button></div>}
+                {privacyOk && <div style={{ marginTop: 8 }}><div style={{ fontSize: 13, color: C.green, fontWeight: 600, marginBottom: 6 }}>✓ Privacy Audit Passed</div><button style={btn(tc, false, { width: "100%" })} onClick={() => setStage(5)}>{type === "support" ? "Package →" : "Annotate →"}</button></div>}
               </div>
             </div>
             <div style={{ flex: 1 }}>
@@ -494,9 +494,9 @@ function PipelineDemo({ type, onBack }) {
           <div style={{ display: "flex", gap: 16 }}>
             <div style={{ flex: "0 0 300px" }}>
               <div style={cardS()}>
-                <div style={{ fontSize: 18, fontWeight: 800, color: C.hi, marginBottom: 10 }}><span style={{ color: C.green }}>6.</span> Annotate & Package</div>
-                {!labelsOk && <div style={{ padding: 8, borderRadius: 6, background: C.amber + "10", border: `1px solid ${C.amber}33`, marginBottom: 8 }}><div style={{ fontSize: 12, fontWeight: 700, color: C.amber, display: "flex", alignItems: "center", gap: 3, marginBottom: 3 }}><HT s={6}/> Labelers & Data Librarians</div><button style={btn(C.green, false, { padding: "6px 12px", fontSize: 13 })} onClick={() => setLabelsOk(true)}>✓ Approve Annotations</button></div>}
-                {labelsOk && !packed && <button style={btn(C.green, false, { width: "100%" })} onClick={() => setTimeout(() => setPacked(true), 1000)}>📦 Package</button>}
+                <div style={{ fontSize: 18, fontWeight: 800, color: C.hi, marginBottom: 10 }}><span style={{ color: C.green }}>6.</span> {type === "support" ? "Package" : "Annotate & Package"}</div>
+                {type !== "support" && !labelsOk && <div style={{ padding: 8, borderRadius: 6, background: C.amber + "10", border: `1px solid ${C.amber}33`, marginBottom: 8 }}><div style={{ fontSize: 12, fontWeight: 700, color: C.amber, display: "flex", alignItems: "center", gap: 3, marginBottom: 3 }}><HT s={6}/> Labelers & Data Librarians</div><button style={btn(C.green, false, { padding: "6px 12px", fontSize: 13 })} onClick={() => setLabelsOk(true)}>✓ Approve Annotations</button></div>}
+                {(type === "support" || labelsOk) && !packed && <button style={btn(C.green, false, { width: "100%" })} onClick={() => setTimeout(() => setPacked(true), 1000)}>📦 Package</button>}
                 {packed && (
                   <div>
                     <div style={{ fontSize: 16, color: C.green, fontWeight: 700, marginBottom: 6 }}>🎉 Complete!</div>
@@ -511,19 +511,9 @@ function PipelineDemo({ type, onBack }) {
             <div style={{ flex: 1 }}>
               {showReport ? <ComplianceReport type={type} onClose={() => setShowReport(false)} /> : (
                 <div style={cardS()}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Annotated Output</div>
+                  {type !== "support" && <div style={{ fontSize: 14, fontWeight: 700, color: C.hi, marginBottom: 8 }}>Annotated Output</div>}
                   {type === "warehouse" && <WH_Gen1 style={{ ...imgS(), marginBottom: 8 }} showBoxes={true} facesOk={true} />}
                   {type === "driving" && <FrameScrubber totalFrames={300} fps={10} />}
-                  {type === "support" && (
-                    <div style={{ maxHeight: 260, overflow: "auto", display: "flex", flexDirection: "column", gap: 8, marginBottom: 8 }}>
-                      {conf.prompts.map((p, i) => !selectedPrompts[i] ? null : (
-                        <div key={i} style={{ borderRadius: 8, background: C.bg, border: `1px solid ${C.bdr}` }}>
-                          <div style={{ padding: "6px 10px", borderBottom: `1px solid ${C.bdr}`, fontSize: 12, fontWeight: 700, color: tc }}>{p}</div>
-                          <div style={{ padding: 10 }}>{GEN_CHATS[i].map((t, j) => <ChatBubble key={j} turn={t} labels={true} />)}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                   <div style={{ fontSize: 13, fontWeight: 700, color: C.hi, marginBottom: 4 }}>Provenance</div>
                   <div style={{ padding: 8, borderRadius: 6, background: C.bg, border: `1px solid ${C.bdr}` }}>
                     {[{ k: "Source", v: "TP.ai SDG Pipeline v2.0" }, { k: "Model", v: type === "support" ? "Gemini 2.0 Flash" : type === "driving" ? "NVIDIA Cosmos" : "FLUX.1 + ControlNet" }, { k: "PII", v: "Fully de-identified" }, { k: "ToS Snapshot", v: new Date().toISOString().split("T")[0] }, { k: "Quality", v: "0.94 (mean)" }].map((m, i) => (
